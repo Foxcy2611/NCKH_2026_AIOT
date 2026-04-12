@@ -1,68 +1,75 @@
-# 🫁 IoT-TinyML Asthma Monitor: Hệ Thống Theo Dõi và Cảnh Báo Sớm Hen Suyễn
+# 🫁 Edge AI & IoT: Hệ Thống Giám Sát, Dự Báo Và Cảnh Báo Sớm Hen Suyễn Đa Yếu Tố
 
-![TinyML](https://img.shields.io/badge/AI-TinyML-blueviolet.svg)
-![IoT](https://img.shields.io/badge/Platform-IoT-blue.svg)
-![EdgeImpulse](https://img.shields.io/badge/Training-Edge%20Impulse-orange.svg)
-![Status](https://img.shields.io/badge/Status-Research--in--Progress-yellow.svg)
+![ESP32](https://img.shields.io/badge/MCU-ESP32%20Dual--Core-red.svg)
+![OS](https://img.shields.io/badge/OS-FreeRTOS-blue.svg)
+![AI](https://img.shields.io/badge/AI-Edge%20Impulse%20TinyML-orange.svg)
+![Network](https://img.shields.io/badge/Network-ESP--NOW%20%7C%204G%20LTE-brightgreen.svg)
 
-> **Đề tài:** Nghiên cứu, thiết kế và chế tạo hệ thống IoT ứng dụng TinyML hỗ trợ theo dõi và cảnh báo sớm cho bệnh nhân hen suyễn.
+> **Đề tài Nghiên cứu:** Nghiên cứu, thiết kế và chế tạo hệ thống IoT ứng dụng TinyML trên vi điều khiển hỗ trợ theo dõi sức khỏe và các yếu tố môi trường kích thích cơn hen suyễn.
 
 ## 📝 Giới thiệu
-Dự án này tập trung vào việc xây dựng một thiết bị đeo thông minh (Wearable Device) tích hợp trí tuệ nhân tạo tại biên (TinyML). Hệ thống có khả năng thu thập dữ liệu sinh học thời gian thực (nhịp tim, nồng độ oxy trong máu) và tín hiệu âm thanh (tiếng ho, tiếng thở khò khè) để đưa ra dự báo sớm về các cơn hen suyễn tiềm ẩn, giúp bệnh nhân can thiệp kịp thời.
+Dự án phát triển một hệ thống nhúng phân tán (Distributed Embedded System) nhằm giám sát toàn diện bệnh nhân hen suyễn. Khác với các hệ thống truyền thống, thiết bị không chỉ đo chỉ số sinh tồn (Nhịp tim, SpO2, Âm thanh hô hấp) mà còn theo dõi liên tục các thông số môi trường xung quanh (CO2, VOC, Nhiệt độ, Độ ẩm) - vốn là các tác nhân chính gây khởi phát cơn hen. 
 
-## 🚀 Tính năng chính
-- **Thu thập dữ liệu đa kênh:** Cảm biến MAX30102 thu thập nhịp tim/SpO2 và Microphone thu thập âm thanh hô hấp.
-- **Xử lý AI tại biên (Edge AI):** Chạy model suy luận (Inference) trực tiếp trên Raspberry Pi để giảm độ trễ và tăng tính bảo mật dữ liệu.
-- **Cảnh báo thông minh:** Phân loại trạng thái sức khỏe (Bình thường vs. Cảnh báo cơn hen) dựa trên dữ liệu cảm biến và âm thanh.
-- **Giao diện Giám sát:** Dashboard trực quan hóa dữ liệu thời gian thực được viết bằng ngôn ngữ QML (Qt Framework).
+Trí tuệ nhân tạo (TinyML) được tích hợp trực tiếp trên Node Cảm biến (Edge AI) để phân tích dữ liệu đa kênh theo thời gian thực, đưa ra mức độ cảnh báo trước khi gửi qua Gateway 4G về trung tâm.
 
-## 🏗 Kiến trúc hệ thống
-Hệ thống được thiết kế theo mô hình 3 tầng:
+## 🚀 Tính năng nổi bật
+- **Sensor Fusion & Edge AI:** Xử lý mô hình học máy kết hợp (Audio model + Sensor model) ngay trên ESP32 để xuất ra mức độ cảnh báo (`alert_level`) và độ tin cậy (`confidence %`) với độ trễ siêu thấp.
+- **Mạng cục bộ ESP-NOW:** Truyền tải luồng dữ liệu (raw data) và trạng thái khẩn cấp giữa Sensor Node và Gateway ổn định, tiết kiệm năng lượng.
+- **Hệ điều hành thời gian thực (FreeRTOS):** Quản lý đồng thời hàng loạt tác vụ đọc cảm biến phức tạp thông qua cơ chế Queue và Task Scheduler.
+- **Cảnh báo Đa phương thức:**
+  - *Tại chỗ:* Màn hình OLED & Buzzer.
+  - *Từ xa:* Gửi tin nhắn SMS và Gọi điện khẩn cấp cho người thân qua module 4G A7680C kèm tọa độ GPS (NEO-M8N).
+- **Giám sát Trung tâm:** Dashboard viết bằng QML kết hợp Firebase để lưu trữ lịch sử bệnh án trên nền tảng Cloud.
 
-1.  **End-Node (STM32):** Thu thập dữ liệu thô (Raw data) từ cảm biến MAX30102 và Microphone.
-2.  **Gateway (ESP32):** Trung chuyển dữ liệu từ End-node về Server qua giao thức không dây.
-3.  **Local Server & Inference (Raspberry Pi):** Nhận dữ liệu, thực hiện suy luận TinyML và hiển thị Dashboard QML.
+## 🏗 Kiến trúc Hệ thống
+
+Hệ thống được thiết kế theo kiến trúc 2 Node xử lý song song, giao tiếp qua giao thức ESP-NOW:
+
+### 1. ESP32 #1 — Sensor Node (Thu thập & Inference)
+Đảm nhiệm việc đọc dữ liệu môi trường và sinh tồn, chạy mô hình AI và cảnh báo tại chỗ.
+- **Lớp Cảm biến (FreeRTOS Tasks):**
+  - `MAX30102`: Nhịp tim (HR) và Nồng độ Oxy máu (SpO2).
+  - `INMP441`: Microphone (I2S) thu âm thanh tiếng ho/khò khè.
+  - `SGP30 + MQ135`: Theo dõi nồng độ CO2 và khí gas/VOC.
+  - `DHT11 + BMP280`: Theo dõi nhiệt độ, độ ẩm, áp suất khí quyển.
+- **Lớp Xử lý AI:** Sử dụng Edge Impulse C++ Library để chạy song song 2 luồng nhận diện (Audio & Sensor), sau đó kết hợp (Fusion) để đưa ra mức độ cảnh báo.
+- **Lớp Đầu ra:** Hiển thị OLED, kích hoạt Buzzer và gửi gói tin `{raw_data + alert_level}` qua ESP-NOW.
+
+### 2. ESP32 #2 — Gateway (Xử lý Đám mây & Khẩn cấp)
+Đóng vai trò trạm trung chuyển dữ liệu diện rộng và thiết bị cảnh báo khẩn cấp độc lập.
+- **Lớp Đầu vào:** Nhận dữ liệu từ ESP-NOW; đọc liên tục tọa độ từ GPS NEO-M8N (Multi-GNSS) qua UART2.
+- **Lớp Xử lý (FreeRTOS Tasks):**
+  - *Task 1 (Data Logging):* Đóng gói dữ liệu và Publish lên Mosquitto Broker (Local/VPS) thông qua kết nối mạng LTE/WiFi.
+  - *Task 2 (Emergency Alert):* Giám sát `alert_level`. Nếu phát hiện cơn hen nguy kịch, tự động kích hoạt module 4G A7680C để gửi SMS tọa độ và gọi điện cho bác sĩ/người nhà (Hoạt động như một Fallback khi mất kết nối Internet).
+
+### 3. Server & Application UI
+- **Mosquitto Broker:** Điều phối bản tin MQTT.
+- **QML Dashboard:** Giao diện điều khiển trung tâm (C++/Qt) hiển thị Biểu đồ (Charts), Bản đồ vị trí (Map), và Bảng cảnh báo (Alert panel).
+- **Firebase:** Đồng bộ và lưu trữ chuỗi dữ liệu lịch sử trên Cloud phục vụ cho việc tái huấn luyện AI sau này.
+
+## 📂 Tổ chức Mã nguồn (Repository Structure)
 
 ```text
-Project_Structure/
-├── 1_STM32_Firmware/        # Mã nguồn thu thập dữ liệu (C/SPL)
-├── 2_ESP32_Gateway/         # Mã nguồn trung chuyển dữ liệu (WiFi/UART)
-├── 3_ML_Models/             # File model .tflite và header từ Edge Impulse
-├── 4_RPi_Dashboard/         # Giao diện giám sát (C++/QML)
-└── 5_Data_Collector/        # Scripts Python hỗ trợ thu thập Dataset để train AI
+Asthma_EdgeAI_System/
+│
+├── 1_ESP32_SensorNode/          # Mã nguồn cho ESP32 #1 (Edge Impulse, Sensors, ESP-NOW TX)
+│   ├── lib/edge_impulse/        # Thư viện TinyML Export từ Edge Impulse
+│   ├── src/tasks/               # Chứa các FreeRTOS Tasks đọc sensor
+│   └── src/main.cpp
+│
+├── 2_ESP32_Gateway/             # Mã nguồn cho ESP32 #2 (ESP-NOW RX, 4G, GPS, MQTT)
+│   ├── src/sim_a7680c/          # Driver tập lệnh AT command cho module 4G
+│   ├── src/gps_neo8m/           # Xử lý chuỗi NMEA từ GPS
+│   └── src/main.cpp
+│
+└── 3_QML_Dashboard/             # Mã nguồn giao diện Qt/C++ giám sát trung tâm
+    ├── src/mqtt_client/         # Kết nối Backend
+    └── qml/views/               # Giao diện Chart, Map, Alert Panel
 ```
 
-## 🛠 Công nghệ & Phần cứng
-- **Vi điều khiển:** STM32F103 (End-Node), ESP32-S3 (Gateway).
-- **Xử lý trung tâm:** Raspberry Pi 4.
-- **Cảm biến:** MAX30102 (PPG), Microphone I2S/Analog.
-- **Phần mềm/Công cụ:**
-  - **AI:** Edge Impulse (DSP & Training).
-  - **UI:** Qt 6 (QML/C++).
-  - **IDE:** Keil C, VS Code.
+## 🛠 Cài đặt và Phát triển
+- **Môi trường:** Dự án được phát triển và biên dịch bằng **PlatformIO** (VS Code) và **Qt Creator**.
+- **Cấu hình phần cứng:** Vui lòng kiểm tra kỹ sơ đồ đấu nối chân (Pinout) I2C, SPI, UART, và I2S trong thư mục `docs/schematics`.
 
-## 📊 Quy trình triển khai TinyML
-1.  **Thu thập dữ liệu (Data Acquisition):** Ghi lại các mẫu nhịp tim và âm thanh hô hấp thực tế thông qua thiết bị.
-2.  **Huấn luyện (Training):** Sử dụng Edge Impulse để trích xuất đặc trưng (DSP) và huấn luyện mô hình Neural Network.
-3.  **Triển khai (Deployment):** Tối ưu hóa mô hình bằng TensorFlow Lite for Microcontrollers và tích hợp vào mã nguồn Raspberry Pi.
-
-## 🛠 Cài đặt & Chạy thử
-### Yêu cầu:
-- Đã cài đặt Qt 6.x trên Raspberry Pi.
-- Đã nạp Firmware cho STM32 và ESP32.
-
-### Các bước:
-1.  **Khởi động Server trên Pi:**
-    ```bash
-    cd 4_RPi_Dashboard
-    mkdir build && cd build
-    cmake ..
-    make
-    ./AsthmaMonitor
-    ```
-2.  **Kết nối thiết bị:** Đảm bảo End-node đã được cấp nguồn và kết nối cùng mạng nội bộ với Raspberry Pi.
-
-## 📜 Giấy phép & Liên hệ
-Dự án được thực hiện phục vụ mục đích nghiên cứu khoa học.
-- **Người thực hiện:** Nguyen Ngoc Chien (NgocChien Trùm VT01!)
-- **Đơn vị:** Khoa Điện tử Viễn thông - Học viện Công nghệ Bưu chính Viễn thông (PTIT).
+---
+*Dự án NCKH thực hiện bởi: Nguyen Ngoc Chien (NgocChien Trùm VT01!) - PTIT.*
