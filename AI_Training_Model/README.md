@@ -1,59 +1,59 @@
-# 🌐 Quy trình Train AI Model
+# 🌐 Asthma TinyML: Hệ thống Cảnh báo Hen suyễn tại biên
 
-## Giai đoạn 1: Thu thập & Gán nhãn (Data Collection & Labeling) - Tìm data và phân loại
+Dự án nghiên cứu khoa học: Hệ thống cảnh báo hen suyễn sớm sử dụng trí tuệ nhân tạo tại biên (Edge AI), kết hợp phân tích âm thanh hô hấp và các chỉ số sinh tồn/môi trường trên nền tảng vi điều khiển.
 
-> AI không học từ không khí, nó học từ ví dụ. Cần chuẩn bị dữ liệu đầu vào cực kỳ chuẩn.
+## 🛠️ Yêu cầu Phần cứng (Hardware Requirements)
+* **Vi điều khiển chính:** ESP32 (Node Sensor & Node Gateway)
+* **Cảm biến Âm thanh:** Micro INMP441 (Giao tiếp I2S)
+* **Cảm biến Sinh tồn:** MAX30102 (Đo nhịp tim & SpO2)
+* **Cảm biến Môi trường:** DHT22, BMP280, MQ135, SGP30
+* **Module Cảnh báo:** SIM800L, Còi Buzzer, Màn hình OLED
 
-* Với INMP441 (Âm thanh): Thu thập hàng trăm/ngàn file .wav ngắn (1-2 giây) và chia vào các thư mục rõ ràng:
-  * Cough_asthma (ho do hen)
-  * Wheeze (tiếng khò khè)
-  * Normal_speech (nói chuyện)
-  * Background_noise (tiếng quạt, tiếng đường phố)
+## 💻 Cài đặt Môi trường (Setup & Run)
+Để chạy các script huấn luyện AI trong thư mục này, vui lòng cài đặt các thư viện Python sau:
 
-* Với Cảm biến (SpO2, Bụi mịn, Khí độc): Thu thập các mảng số liệu tương ứng với các trạng thái: Bình thường, Nguy cơ, Đang lên cơn hen.
+    pip install numpy librosa scikit-learn tensorflow matplotlib
 
-> Bí quyết: Dữ liệu của càng đa dạng (nhiều người ho khác nhau, nhiều môi trường nhiễu khác nhau), con AI dự đoán chuẩn và ít đoán sai.
+---
 
-## Giai đoạn 2: Tiền xử lý (Preprocessing) - Xử lý data
+## 🚀 Quy trình Huấn luyện AI Model (Training Pipeline)
 
-> Nhét nguyên file .wav vào AI là nó "chết nghẹn" ngay. Sử dụng code Python (thư viện librosa) để biến đổi.
+### 🗂️ Giai đoạn 1: Thu thập & Gán nhãn (Data Collection & Labeling)
+> **💡 Lưu ý:** AI không học từ không khí, nó học từ ví dụ. Cần chuẩn bị dữ liệu đầu vào cực kỳ chuẩn.
 
-* Trích xuất đặc trưng:
-  * Chuyển sóng âm thành biểu đồ MFCC
-  * Đây là lúc sóng âm thanh biến thành một ma trận số liệu toán học gọn gàng.
+* **🎤 Với INMP441 (Âm thanh):** Thu thập hàng trăm/ngàn file .wav ngắn (1-2 giây) ở tần số lấy mẫu 16kHz và chia vào các thư mục:
+  * 🤧 `Cough_asthma`: Ho do hen suyễn
+  * 😮‍💨 `Wheeze`: Tiếng thở khò khè
+  * 🗣️ `Normal_speech`: Tiếng nói chuyện bình thường
+  * 🚗 `Background_noise`: Nhiễu môi trường (tiếng quạt, tiếng đường phố)
 
-* Chuẩn hóa (Normalization):
-  * Dữ liệu SpO2 dao động từ 90-100, nhưng dữ liệu bụi mịn có thể từ 10-500.
-  * Cần phải đưa tất cả về cùng một hệ quy chiếu (ví dụ từ 0 đến 1) bằng Scikit-learn để AI không bị "thiên vị" cảm biến nào.
+* **🩸 Với Cảm biến (SpO2, Bụi mịn, Khí độc):** Thu thập các mảng số liệu tương ứng với các trạng thái: Bình thường, Nguy cơ, Đang lên cơn hen.
 
-## Giai đoạn 3: Huấn luyện (Training)
+### ⚙️ Giai đoạn 2: Tiền xử lý (Preprocessing)
+> **⚠️ Cảnh báo:** Không đưa nguyên sóng âm thô vào Model. Sử dụng thư viện librosa để biến đổi.
 
-> Đây là lúc viết code dùng TensorFlow/Keras để tạo hình Mạng Nơ-ron.
+* **🎵 Trích xuất đặc trưng âm thanh:** Chuyển sóng âm thành biểu đồ đặc trưng **MFCC**. Quá trình này biến đổi âm thanh thô thành một ma trận số liệu toán học gọn gàng mà vi điều khiển có thể xử lý được.
+* **⚖️ Chuẩn hóa (Normalization):** Đưa tất cả dữ liệu cảm biến (SpO2, AQI...) về cùng một hệ quy chiếu (vd: từ 0 đến 1) bằng Scikit-learn để tránh việc AI bị lệch trọng số.
 
-* Định nghĩa kiến trúc mô hình (ví dụ: một mạng CNN 1D để phân tích MFCC).
-  * Đưa dữ liệu đã tiền xử lý ở Bước 2 vào.
-  * AI sẽ bắt đầu lặp đi lặp lại nhiều vòng (gọi là Epochs).
-  * Ở mỗi vòng, nó thử đoán, nếu sai nó sẽ tự điều chỉnh lại các "trọng số" toán học bên trong nó để lần sau đoán đúng hơn.
-    
-* Quá trình này tạo ra 2 đường cong sống còn:
-  * Đường Loss (Độ lỗi - càng thấp càng tốt)
-  * Đường Accuracy (Độ chính xác - càng cao càng tốt).
+### 🧠 Giai đoạn 3: Huấn luyện (Training)
+> **🏗️ Luyện đan:** Sử dụng TensorFlow/Keras để nhào nặn Mạng Nơ-ron.
 
-## Giai đoạn 4: Đánh giá & Tinh chỉnh (Evaluation & Tuning) - Kiểm tra chất lượng
+* Định nghĩa kiến trúc mô hình (ví dụ: một mạng **CNN 1D** hoặc mạng Dense nhỏ gọn để phân tích MFCC).
+* Đưa dữ liệu đã tiền xử lý vào huấn luyện qua nhiều vòng (**Epochs**).
+* Quá trình này tối ưu hóa 2 đường cong cốt lõi: **Đường Loss** (Độ lỗi - càng thấp càng tốt) và **Đường Accuracy** (Độ chính xác - càng cao càng tốt).
 
-> Không phải cứ Train xong là đem xài luôn. Cần phải dùng một bộ dữ liệu "Lạ" (Validation/Test Set) mà AI chưa từng thấy bao giờ để test nó.
+### 🕵️‍♂️ Giai đoạn 4: Đánh giá & Tinh chỉnh (Evaluation & Tuning)
+> **🛑 Kiểm tra:** Dùng bộ dữ liệu "Lạ" (Validation/Test Set) để đánh giá thực tế.
 
-* Nếu nó nhận diện đúng 95% dữ liệu học, nhưng chỉ nhận diện đúng 50% dữ liệu test
-  *  AI của bạn bị "Học Vẹt" (Overfitting).
-  *  Lúc này cần phải quay lại Bước 3 để chỉnh sửa (thêm nhiễu vào dữ liệu, giảm bớt lớp nơ-ron).
+* **Bắt bệnh "Học Vẹt" (Overfitting):** Nếu AI nhận diện đúng 95% dữ liệu học, nhưng chỉ đoán đúng 50% dữ liệu test thực tế -> Mô hình đã bị Overfitting.
+* Tiến hành tinh chỉnh: Thêm nhiễu (Data Augmentation), giảm bớt lớp Nơ-ron, hoặc thêm các lớp Dropout.
 
-## Giai đoạn 5: Ép khuôn & Triển khai (Deploy to ESP32) - Nhét não vào vi điều khiển
+### 📦 Giai đoạn 5: Triển khai lên ESP32 (Deployment)
+> **🚀 Nhét não vào vi điều khiển:** Xử lý file model Keras (.h5) để chạy trên MCU.
 
-> Sau khi đã có một model Keras (.h5) cực kỳ thông minh trên máy tính:
+1. 🗜️ Dùng **TFLite Converter** ép model từ dạng số thực 32-bit xuống số nguyên 8-bit siêu nhẹ (**Quantization**).
+2. 📄 Chuyển đổi file .tflite thành một mảng code C/C++ (Hex array).
+3. ⚡ Nạp mảng C++ đó vào bộ nhớ của **ESP32**, gọi hàm Invoke() của thư viện **TensorFlow Lite Micro**.
 
-* Dùng TFLite Converter ép nó từ dạng số thực 32-bit to đùng xuống dạng số nguyên 8-bit siêu nhẹ (Quantization).
-* Chuyển file .tflite thành một mảng code C++ (Hex array).
-* Nạp mảng C++ đó vào ESP32, gọi hàm Invoke() của thư viện TFLite Micro
-
----   
-   ESP32 đã biết nghe tiếng ho.
+---
+*Trạm AI tại biên (Edge Node) hoàn chỉnh, sẵn sàng hoạt động độc lập và thời gian thực!*
