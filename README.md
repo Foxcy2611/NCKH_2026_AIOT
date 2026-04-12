@@ -2,7 +2,9 @@
 
 ![ESP32](https://img.shields.io/badge/MCU-ESP32%20Dual--Core-red.svg)
 ![OS](https://img.shields.io/badge/OS-FreeRTOS-blue.svg)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![AI](https://img.shields.io/badge/AI-Edge%20Impulse%20TinyML-orange.svg)
+![C](https://img.shields.io/badge/C-00599C?style=for-the-badge&logo=c&logoColor=white)
 ![Network](https://img.shields.io/badge/Network-ESP--NOW%20%7C%204G%20LTE-brightgreen.svg)
 
 > **Đề tài Nghiên cứu:** Nghiên cứu, thiết kế và chế tạo hệ thống IoT ứng dụng TinyML trên vi điều khiển hỗ trợ theo dõi sức khỏe và các yếu tố môi trường kích thích cơn hen suyễn.
@@ -76,4 +78,4 @@ Asthma_EdgeAI_System/
 - **Cấu hình phần cứng:** Vui lòng kiểm tra kỹ sơ đồ đấu nối chân (Pinout) I2C, SPI, UART, và I2S trong thư mục `docs/schematics`.
 
 ---
-*Dự án NCKH thực hiện bởi: Nguyen Ngoc Chien (NgocChien Trùm VT01!) - PTIT.*
+*Dự án NCKH thực hiện bởi: ARM LAB - PTIT.*
