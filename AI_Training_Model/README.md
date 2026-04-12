@@ -2,13 +2,6 @@
 
 Dự án nghiên cứu khoa học: Hệ thống cảnh báo hen suyễn sớm sử dụng trí tuệ nhân tạo tại biên (Edge AI), kết hợp phân tích âm thanh hô hấp và các chỉ số sinh tồn/môi trường trên nền tảng vi điều khiển.
 
-## 🛠️ Yêu cầu Phần cứng (Hardware Requirements)
-* **Vi điều khiển chính:** ESP32 (Node Sensor & Node Gateway)
-* **Cảm biến Âm thanh:** Micro INMP441 (Giao tiếp I2S)
-* **Cảm biến Sinh tồn:** MAX30102 (Đo nhịp tim & SpO2)
-* **Cảm biến Môi trường:** DHT22, BMP280, MQ135, SGP30
-* **Module Cảnh báo:** SIM800L, Còi Buzzer, Màn hình OLED
-
 ## 💻 Cài đặt Môi trường (Setup & Run)
 Để chạy các script huấn luyện AI trong thư mục này, vui lòng cài đặt các thư viện Python sau:
 
