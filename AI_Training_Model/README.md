@@ -14,7 +14,7 @@ Lưu ý: TensorFlow chỉ hỗ trợ cho Python 3.11 trở về, kiểm tra môi
     python --version
 ---
 
-Nếu Python trên 3.11 thì phải cài thêm môi trường theo link
+Nếu Python trên 3.11 thì phải cài thêm môi trường Python (Ưu tiên cài bản 3.11.9) theo link
 
     https://www.python.org/downloads/
 ---    
