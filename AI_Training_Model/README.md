@@ -3,7 +3,7 @@
 Dự án nghiên cứu khoa học: Hệ thống cảnh báo hen suyễn sớm sử dụng trí tuệ nhân tạo tại biên (Edge AI), kết hợp phân tích âm thanh hô hấp và các chỉ số sinh tồn/môi trường trên nền tảng vi điều khiển.
 
 ## 💻 Cài đặt Môi trường (Setup & Run)
-Để chạy các script huấn luyện AI trong thư mục này, vui lòng cài đặt các thư viện Python sau:
+Để chạy các script huấn luyện AI trong thư mục này, vui lòng cài đặt các thư viện Python sau (Run CMD hoặc PowerShell):
 
     pip install numpy soundfile librosa scikit-learn tensorflow matplotlib
 
