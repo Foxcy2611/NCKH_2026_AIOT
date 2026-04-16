@@ -1,6 +1,6 @@
-# 🌐 Asthma TinyML: Hệ thống Cảnh báo Hen suyễn tại biên
+# 🌐 Asthma TinyML: Mô hình Cảnh báo Hen suyễn tại biên
 
-Dự án nghiên cứu khoa học: Hệ thống cảnh báo hen suyễn sớm sử dụng trí tuệ nhân tạo tại biên (Edge AI), kết hợp phân tích âm thanh hô hấp và các chỉ số sinh tồn/môi trường trên nền tảng vi điều khiển.
+Nhiệm vụ: Thực hiện triển khai mô hình AI dự đoán bệnh hen suyễn thông qua giọng nói
 
 ## 💻 Cài đặt Môi trường (Setup & Run)
 Để chạy các script huấn luyện AI trong thư mục này, vui lòng cài đặt các thư viện Python sau (Run CMD hoặc PowerShell):
@@ -35,8 +35,8 @@ Nếu Python trên 3.11 thì phải cài thêm môi trường Python (Ưu tiên 
 ### ⚙️ Giai đoạn 2: Tiền xử lý (Preprocessing)
 > **⚠️ Cảnh báo:** Không đưa nguyên sóng âm thô vào Model. Sử dụng thư viện librosa để biến đổi.
 
-* **🎵 Trích xuất đặc trưng âm thanh:** Chuyển sóng âm thành biểu đồ đặc trưng **MFCC**. Quá trình này biến đổi âm thanh thô thành một ma trận số liệu toán học gọn gàng mà vi điều khiển có thể xử lý được.
-* **⚖️ Chuẩn hóa (Normalization):** Đưa tất cả dữ liệu cảm biến (SpO2, AQI...) về cùng một hệ quy chiếu (vd: từ 0 đến 1) bằng Scikit-learn để tránh việc AI bị lệch trọng số.
+* **🎵 Trích xuất đặc trưng âm thanh:** Chuyển sóng âm thành biểu đồ đặc trưng **MFCC, vận tốc và gia tốc âm thanh**. Quá trình này biến đổi âm thanh thô thành một ma trận số liệu toán học gọn gàng mà vi điều khiển có thể xử lý được.
+* **⚖️ Chuẩn hóa (Normalization):** Đưa tất cả dữ liệu cảm biến được chuẩn hóa trên, đóng thành các file để thực hiện quá trình huấn luyện
 
 ### 🧠 Giai đoạn 3: Huấn luyện (Training)
 > **🏗️ Luyện đan:** Sử dụng TensorFlow/Keras để nhào nặn Mạng Nơ-ron.
