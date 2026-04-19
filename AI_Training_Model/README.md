@@ -5,7 +5,7 @@ Nhiệm vụ: Thực hiện triển khai mô hình AI dự đoán bệnh hen suy
 ## 💻 Cài đặt Môi trường (Setup & Run)
 Để chạy các script huấn luyện AI trong thư mục này, vui lòng cài đặt các thư viện Python sau (Run CMD hoặc PowerShell):
 
-    pip install numpy soundfile librosa scikit-learn tensorflow matplotlib
+    pip install numpy soundfile seaborn librosa scikit-learn tensorflow matplotlib
 
 ---
 
