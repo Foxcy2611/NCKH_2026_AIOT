@@ -18,9 +18,13 @@ def fix_length(y, sr, duration):
         return y[:target]
     return np.pad(y, (0, target - len(y)), mode='constant')
 
+''' 
+1 2 3 4 5
+y[1:]: Tất cả ptu sau vị trí 0 (2 3 4 5)
+y[:-1]: Tất cả ptu trừ ptu cuối (1 2 3 4)
+'''
+
 def pre_emphasis(y, coef = 0.97):
-    # Công thức bộ lọc thông cao bậc 1
-    # y[0]: giữ tín hiệu nguyên mẫu ban đầu
     return np.append(y[0], y[1:] - coef * y[:-1])
 
 def extract_features(y, sr):
