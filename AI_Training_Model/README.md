@@ -1,0 +1,62 @@
+# 🌐 Asthma TinyML: Mô hình Cảnh báo Hen suyễn tại biên
+
+Nhiệm vụ: Thực hiện triển khai mô hình AI dự đoán bệnh hen suyễn thông qua giọng nói bằng Python
+
+## 💻 Cài đặt Môi trường (Setup & Run)
+Để chạy các script huấn luyện AI trong thư mục này, vui lòng cài đặt các thư viện Python sau (Run CMD hoặc PowerShell):
+
+    pip install numpy librosa scikit-learn tensorflow matplotlib
+
+---
+
+Lưu ý: TensorFlow chỉ hỗ trợ cho Python 3.11 trở về, kiểm tra môi trường python trên Windows bằng cách
+
+    python --version
+---
+
+Nếu Python trên 3.11 thì phải cài thêm môi trường Python (Ưu tiên cài bản 3.11.9) theo link
+
+    https://www.python.org/downloads/
+---    
+
+## 🚀 Quy trình Huấn luyện AI Model (Training Pipeline)
+
+### 🗂️ Giai đoạn 1: Thu thập & Gán nhãn (Data Collection & Labeling)
+> **💡 Lưu ý:** AI cần các dữ liệu chuẩn đã được thu thập theo 1 tiêu chuẩn.
+
+* **🎤 Với INMP441 (Âm thanh):** Thu thập hàng trăm/ngàn file .wav ngắn (1-2 giây) ở tần số lấy mẫu 16kHz và chia vào các thư mục:
+  * 🤧 `Cough_asthma`: Ho do hen suyễn
+  * 😮‍💨 `Wheeze`: Tiếng ho do các bệnh khác (Số lượng ít hơn nhiều so với hen suyễn)
+  * 🗣️ `Normal_speech`: Tiếng nói chuyện bình thường
+  * 🚗 `Background_noise`: Nhiễu môi trường (tiếng quạt, tiếng đường phố)
+
+* **🩸 Với Cảm biến (SpO2, Bụi mịn, Khí độc):** Thu thập các mảng số liệu tương ứng với các trạng thái: Bình thường, Nguy cơ, Đang lên cơn hen.
+
+### ⚙️ Giai đoạn 2: Tiền xử lý (Preprocessing)
+> **⚠️ Cảnh báo:** Không đưa nguyên sóng âm thô vào Model. Sử dụng thư viện librosa để biến đổi.
+
+* **🎵 Trích xuất đặc trưng âm thanh:** Chuyển sóng âm thành biểu đồ đặc trưng **MFCC, vận tốc và gia tốc âm thanh**. Quá trình này biến đổi âm thanh thô thành một ma trận số liệu toán học gọn gàng mà vi điều khiển có thể xử lý được.
+* **⚖️ Chuẩn hóa (Normalization):** Đưa tất cả dữ liệu cảm biến được chuẩn hóa trên, đóng thành các file để thực hiện quá trình huấn luyện
+
+### 🧠 Giai đoạn 3: Huấn luyện (Training)
+> **🏗️ Luyện đan:** Sử dụng TensorFlow/Keras để nhào nặn Mạng Nơ-ron.
+
+* Định nghĩa kiến trúc mô hình (ví dụ: một mạng **CNN 1D** hoặc mạng Dense nhỏ gọn để phân tích MFCC).
+* Đưa dữ liệu đã tiền xử lý vào huấn luyện qua nhiều vòng (**Epochs**).
+* Quá trình này tối ưu hóa 2 đường cong cốt lõi: **Đường Loss** (Độ lỗi - càng thấp càng tốt) và **Đường Accuracy** (Độ chính xác - càng cao càng tốt).
+
+### 🕵️‍♂️ Giai đoạn 4: Đánh giá & Tinh chỉnh (Evaluation & Tuning)
+> **🛑 Kiểm tra:** Dùng bộ dữ liệu "Lạ" (Validation/Test Set) để đánh giá thực tế.
+
+* **Bắt bệnh "Học Vẹt" (Overfitting):** Nếu AI nhận diện đúng 95% dữ liệu học, nhưng chỉ đoán đúng 50% dữ liệu test thực tế -> Mô hình đã bị Overfitting.
+* Tiến hành tinh chỉnh: Thêm nhiễu (Data Augmentation), giảm bớt lớp Nơ-ron, hoặc thêm các lớp Dropout.
+
+### 📦 Giai đoạn 5: Triển khai lên ESP32 (Deployment)
+> **🚀 Nhét não vào vi điều khiển:** Xử lý file model Keras (.h5) để chạy trên MCU.
+
+1. 🗜️ Dùng **TFLite Converter** ép model từ dạng số thực 32-bit xuống số nguyên 8-bit siêu nhẹ (**Quantization**).
+2. 📄 Chuyển đổi file .tflite thành một mảng code C/C++ (Hex array).
+3. ⚡ Nạp mảng C++ đó vào bộ nhớ của **ESP32**, gọi hàm Invoke() của thư viện **TensorFlow Lite Micro**.
+
+---
+*Trạm AI tại biên (Edge Node) hoàn chỉnh, sẵn sàng hoạt động độc lập và thời gian thực!*

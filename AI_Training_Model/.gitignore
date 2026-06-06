@@ -1,0 +1,4 @@
+*.npy
+dataset/
+Out_put_TXL/
+*.wav
