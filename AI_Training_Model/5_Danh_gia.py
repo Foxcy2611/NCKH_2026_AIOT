@@ -20,10 +20,6 @@ model = load_model("best_model.keras")
 # 3. Định nghĩa lại LABELS (Dựa vào thư mục dataset của bạn)
 LABELS = ["Asthma", "Others", "Background"] 
 
-# ==========================================
-# PHẦN CODE CŨ CỦA BẠN BẮT ĐẦU TỪ ĐÂY
-# ==========================================
-
 # Đánh giá trên tập test
 loss, acc = model.evaluate(X_test, y_test, verbose=0)
 print(f"Test Loss    : {loss:.4f}")
