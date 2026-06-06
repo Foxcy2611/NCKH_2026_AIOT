@@ -29,6 +29,11 @@ Nếu Python trên 3.11 thì phải cài thêm môi trường Python (Ưu tiên 
   * 😮‍💨 `Wheeze`: Tiếng ho do các bệnh khác (Số lượng ít hơn nhiều so với hen suyễn)
   * 🗣️ `Normal_speech`: Tiếng nói chuyện bình thường
   * 🚗 `Background_noise`: Nhiễu môi trường (tiếng quạt, tiếng đường phố)
+  * 🔇 `Silent`: Im lặng, không 1 động tĩnh
+
+* Các file .wav phần 1-2 được lấy từ trang web kaggle để lấy các mẫu (.wav) phục vụ quá trình training model
+
+    <https://www.kaggle.com/datasets/mohammedtawfikmusaed/asthma-detection-dataset-version-2?resource=download>
 
 * **🩸 Với Cảm biến (SpO2, Bụi mịn, Khí độc):** Thu thập các mảng số liệu tương ứng với các trạng thái: Bình thường, Nguy cơ, Đang lên cơn hen.
 
