@@ -45,7 +45,7 @@ Hệ thống được thiết kế theo kiến trúc 2 Node xử lý song song, 
   - `INMP441`: Microphone (I2S) thu âm thanh tiếng ho/khò khè.
   - `SGP30 + MQ135`: Theo dõi nồng độ CO2 và khí gas/VOC.
   - `DHT11 + BMP280`: Theo dõi nhiệt độ, độ ẩm, áp suất khí quyển.
-- **Lớp Xử lý AI:** Sử dụng Edge Impulse C++ Library để chạy song song 2 luồng nhận diện (Audio & Sensor), sau đó kết hợp (Fusion) để đưa ra mức độ cảnh báo.
+- **Lớp Xử lý AI:** Sử dụng Edge Impulse C++ Library kết hợp TensorFlow để chạy song song 2 luồng nhận diện (Audio & Sensor), sau đó kết hợp (Fusion) để đưa ra mức độ cảnh báo.
 - **Lớp Đầu ra:** Hiển thị OLED, kích hoạt Buzzer và gửi gói tin `{raw_data + alert_level}` qua ESP-NOW.
 
 ### 2. ESP32 #2 — Gateway (Xử lý Đám mây & Khẩn cấp)
