@@ -28,7 +28,7 @@ Trí tuệ nhân tạo (TinyML) được tích hợp trực tiếp trên Node C�
 <img width="1912" height="914" alt="Sodo" src="https://github.com/user-attachments/assets/a6dcb139-1cb2-4cbe-bcc3-d6441e2b7d5e" />
 
 ## 🛠️ Yêu cầu Phần cứng (Hardware Requirements)
-* **Vi điều khiển chính:** ESP32 (Node Sensor & Node Gateway)
+* **Vi điều khiển chính:** ESP32 (Node Sensor & S3 cho Node Gateway)
 * **Cảm biến Âm thanh:** Micro INMP441 (Giao tiếp I2S)
 * **Cảm biến Sinh tồn:** MAX30102 (Đo nhịp tim & SpO2)
 * **Cảm biến Môi trường:** DHT22, BMP280, MQ135, SGP30
