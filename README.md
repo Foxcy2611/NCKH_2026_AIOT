@@ -15,7 +15,7 @@ Dự án phát triển một hệ thống nhúng phân tán (Distributed Embedde
 Trí tuệ nhân tạo (TinyML) được tích hợp trực tiếp trên Node Cảm biến (Edge AI) để phân tích dữ liệu đa kênh theo thời gian thực, đưa ra mức độ cảnh báo trước khi gửi qua Gateway 4G về trung tâm.
 
 ## 🚀 Tính năng nổi bật
-- **Sensor Fusion & Edge AI:** Xử lý mô hình học máy kết hợp (Audio model + Sensor model) ngay trên ESP32 để xuất ra mức độ cảnh báo (`alert_level`) và độ tin cậy (`confidence %`) với độ trễ siêu thấp.
+- **Sensor Fusion & Edge AI:** Xử lý mô hình học máy kết hợp (Audio model + Sensor model) ngay trên ESP32-S3 để xuất ra mức độ cảnh báo (`alert_level`) và độ tin cậy (`confidence %`) với độ trễ siêu thấp.
 - **Mạng cục bộ ESP-NOW:** Truyền tải luồng dữ liệu (raw data) và trạng thái khẩn cấp giữa Sensor Node và Gateway ổn định, tiết kiệm năng lượng.
 - **Hệ điều hành thời gian thực (FreeRTOS):** Quản lý đồng thời hàng loạt tác vụ đọc cảm biến phức tạp thông qua cơ chế Queue và Task Scheduler.
 - **Cảnh báo Đa phương thức:**
