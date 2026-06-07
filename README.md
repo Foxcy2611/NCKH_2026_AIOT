@@ -7,7 +7,7 @@
 ![C](https://img.shields.io/badge/C-00599C?style=for-the-badge&logo=c&logoColor=white)
 ![Network](https://img.shields.io/badge/Network-ESP--NOW%20%7C%204G%20LTE-brightgreen.svg)
 
-> **Đề tài Nghiên cứu:** Nghiên cứu, thiết kế và chế tạo hệ thống IoT ứng dụng TinyML trên vi điều khiển hỗ trợ theo dõi sức khỏe và các yếu tố môi trường kích thích cơn hen suyễn.
+> **Tên đề tài Nghiên cứu:** Nghiên cứu, thiết bị và chế tạo hệ thống IoT ứng dụng TinyML hỗ trợ theo dõi và cảnh báo sớm cho bệnh nhân hen suyễn.
 
 ## 📝 Giới thiệu
 Dự án phát triển một hệ thống nhúng phân tán (Distributed Embedded System) nhằm giám sát toàn diện bệnh nhân hen suyễn. Khác với các hệ thống truyền thống, thiết bị không chỉ đo chỉ số sinh tồn (Nhịp tim, SpO2, Âm thanh hô hấp) mà còn theo dõi liên tục các thông số môi trường xung quanh (CO2, VOC, Nhiệt độ, Độ ẩm) - vốn là các tác nhân chính gây khởi phát cơn hen. 
