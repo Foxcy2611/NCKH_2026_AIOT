@@ -7,7 +7,7 @@
 ![C](https://img.shields.io/badge/C-00599C?style=for-the-badge&logo=c&logoColor=white)
 ![Network](https://img.shields.io/badge/Network-ESP--NOW%20%7C%204G%20LTE-brightgreen.svg)
 
-> **Đề tài Nghiên cứu:** Nghiên cứu, thiết kế và chế tạo hệ thống IoT ứng dụng TinyML trên vi điều khiển hỗ trợ theo dõi sức khỏe và các yếu tố môi trường kích thích cơn hen suyễn.
+> **Tên đề tài Nghiên cứu:** Nghiên cứu, thiết bị và chế tạo hệ thống IoT ứng dụng TinyML hỗ trợ theo dõi và cảnh báo sớm cho bệnh nhân hen suyễn.
 
 ## 📝 Giới thiệu
 Dự án phát triển một hệ thống nhúng phân tán (Distributed Embedded System) nhằm giám sát toàn diện bệnh nhân hen suyễn. Khác với các hệ thống truyền thống, thiết bị không chỉ đo chỉ số sinh tồn (Nhịp tim, SpO2, Âm thanh hô hấp) mà còn theo dõi liên tục các thông số môi trường xung quanh (CO2, VOC, Nhiệt độ, Độ ẩm) - vốn là các tác nhân chính gây khởi phát cơn hen. 
@@ -15,7 +15,7 @@ Dự án phát triển một hệ thống nhúng phân tán (Distributed Embedde
 Trí tuệ nhân tạo (TinyML) được tích hợp trực tiếp trên Node Cảm biến (Edge AI) để phân tích dữ liệu đa kênh theo thời gian thực, đưa ra mức độ cảnh báo trước khi gửi qua Gateway 4G về trung tâm.
 
 ## 🚀 Tính năng nổi bật
-- **Sensor Fusion & Edge AI:** Xử lý mô hình học máy kết hợp (Audio model + Sensor model) ngay trên ESP32 để xuất ra mức độ cảnh báo (`alert_level`) và độ tin cậy (`confidence %`) với độ trễ siêu thấp.
+- **Sensor Fusion & Edge AI:** Xử lý mô hình học máy kết hợp (Audio model + Sensor model) ngay trên ESP32-S3 để xuất ra mức độ cảnh báo (`alert_level`) và độ tin cậy (`confidence %`) với độ trễ siêu thấp.
 - **Mạng cục bộ ESP-NOW:** Truyền tải luồng dữ liệu (raw data) và trạng thái khẩn cấp giữa Sensor Node và Gateway ổn định, tiết kiệm năng lượng.
 - **Hệ điều hành thời gian thực (FreeRTOS):** Quản lý đồng thời hàng loạt tác vụ đọc cảm biến phức tạp thông qua cơ chế Queue và Task Scheduler.
 - **Cảnh báo Đa phương thức:**
@@ -25,10 +25,10 @@ Trí tuệ nhân tạo (TinyML) được tích hợp trực tiếp trên Node C�
 
 ## ⭐ Sơ đồ hệ thống
 
-<img width="1912" height="914" alt="Sodo" src="https://github.com/user-attachments/assets/474e8be7-f494-443d-b622-f38ea197b361" />
+<img width="1912" height="914" alt="Sodo" src="https://github.com/user-attachments/assets/a6dcb139-1cb2-4cbe-bcc3-d6441e2b7d5e" />
 
 ## 🛠️ Yêu cầu Phần cứng (Hardware Requirements)
-* **Vi điều khiển chính:** ESP32 (Node Sensor & Node Gateway)
+* **Vi điều khiển chính:** ESP32 (Node Sensor & S3 cho Node Gateway)
 * **Cảm biến Âm thanh:** Micro INMP441 (Giao tiếp I2S)
 * **Cảm biến Sinh tồn:** MAX30102 (Đo nhịp tim & SpO2)
 * **Cảm biến Môi trường:** DHT22, BMP280, MQ135, SGP30
@@ -45,7 +45,7 @@ Hệ thống được thiết kế theo kiến trúc 2 Node xử lý song song, 
   - `INMP441`: Microphone (I2S) thu âm thanh tiếng ho/khò khè.
   - `SGP30 + MQ135`: Theo dõi nồng độ CO2 và khí gas/VOC.
   - `DHT11 + BMP280`: Theo dõi nhiệt độ, độ ẩm, áp suất khí quyển.
-- **Lớp Xử lý AI:** Sử dụng Edge Impulse C++ Library để chạy song song 2 luồng nhận diện (Audio & Sensor), sau đó kết hợp (Fusion) để đưa ra mức độ cảnh báo.
+- **Lớp Xử lý AI:** Sử dụng Edge Impulse C++ Library kết hợp TensorFlow để chạy song song 2 luồng nhận diện (Audio & Sensor), sau đó kết hợp (Fusion) để đưa ra mức độ cảnh báo.
 - **Lớp Đầu ra:** Hiển thị OLED, kích hoạt Buzzer và gửi gói tin `{raw_data + alert_level}` qua ESP-NOW.
 
 ### 2. ESP32 #2 — Gateway (Xử lý Đám mây & Khẩn cấp)
