@@ -2,8 +2,8 @@ import os
 import librosa
 import soundfile as sf
 
-FILE_GOC = "th3.wav"               
-THU_MUC_LUU = "dataset/2_Background"   
+FILE_GOC = "th3.wav" # File bạn tự thu trong 5-10p     
+THU_MUC_LUU = "dataset/2_TuThu"   
 TEN_TIEN_TO_1 = "quat_phim" 
 TEN_TIEN_TO_2 = "im_lang" 
 TEN_TIEN_TO_3 = "postcard"                
@@ -16,7 +16,7 @@ def bam_am_thanh():
     
     print(f"Đang load file gốc: {FILE_GOC} (Tần số {SR}Hz)...")
 
-    y, sr = librosa.load(FILE_GOC, sr=SR)
+    y, _ = librosa.load(FILE_GOC, sr=SR)
     # => trả về mảng tín hiệu và tần số
 
     # 5 giây * 16000 = 80,000 data cho 1 file
@@ -36,6 +36,7 @@ def bam_am_thanh():
         chunk = y[start:end]
         
         # Đặt tên file:
+        # TEN_TIEN_TO thay phiên đổi 1 - 2 - 3 phù hợp
         file_name = f"{TEN_TIEN_TO_3}_{i:03d}.wav"
         file_path = os.path.join(THU_MUC_LUU, file_name)
         
