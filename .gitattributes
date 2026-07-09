@@ -1,0 +1,3 @@
+AI_Training_Model/7_Output_TFLite/*.h linguist-generated=true
+AI_Training_Model/8_Exported_C_Headers/*.h linguist-generated=true
+Deploy_Model/1_Test_Model_Static/include/*.h linguist-generated=true
