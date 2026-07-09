@@ -1,3 +1,9 @@
+"""
+=========================================================
+1, Phân chia file âm thanh tự thu thành các file wav ngắn
+=========================================================
+"""
+
 import os
 import librosa
 import soundfile as sf

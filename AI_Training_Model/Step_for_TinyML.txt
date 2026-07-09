@@ -1,0 +1,13 @@
+1. Đọc File: librosa.load ép về 16kHz, dài 5s.
+
+2. Chuẩn hóa biên độ (Peak Normalization): Ép dải biến thiên về [-1.0, 1.0].
+
+3. Lọc Butterworth Bandpass: Giữ lại dải 50Hz - 4000Hz, gọt sạch rác hai đầu.
+
+4. Lọc Pre-emphasis: Khuếch đại tần số cao cho rõ tiếng rít.
+
+5. Chia khung & Cửa sổ hóa (Framing & Hamming Window): Băm nhỏ âm thanh thành các khung 25ms chống rò rỉ phổ.
+
+6. STFT: Biến đổi tín hiệu sang miền tần số.
+
+7. Lọc thang Mel (Mel Filterbank): Tạo ra bức ảnh Mel-Spectrogram cuối cùng để ném vào mạng DS-CNN.
