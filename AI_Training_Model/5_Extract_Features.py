@@ -206,7 +206,8 @@ Output ta có 2 file
 + X_data_mel: 1 mảng 4 chiều (đơn vị dB, các giá trị đều <= 0)
 -> 2000 phần tử ứng vs số lượng file âm thanh
 -> 64: Chiều cao của ảnh (Trục Y - 64 dải tần số Mel)
--> 129: Số pixel 1 ảnh (Trục X - Thời gian) 
+Tuy nhiên không đều, không phải cứ cộng đều đặn lên 512 rồi 1024
+-> 129: Trục X - Thời gian: Với mỗi cột ứng với cột thời gian từ 0 -> 5s
 Vì ngầm center=true ở melspec (tự động căn giữa ô thời gian nên cần độn thêm 0)
 -> 1: Kênh màu
 

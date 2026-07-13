@@ -5,7 +5,7 @@ Folder này mô tả quy trình 3 giai đoạn để tích hợp và kiểm th�
 ---
 
 ## 🟢 GIAI ĐOẠN 1: TEST TĨNH (STATIC INFERENCE)
-**Project:** 1_Test_Model_Static
+**Project:** 1_Test_Model_Static.  
 **Mục tiêu:** Chứng minh "bộ não" TFLite Micro có thể load thành công trọng số (`.h`) và chạy phép toán chính xác trên cấu trúc phần cứng ESP32-S3.
 
 * **Bước 1 (Khởi động bộ não):** Cho đầu vào toàn rác (Số 0) để ESP32-S3 có thể in ra Serial, nhằm chắc chắn khởi động bộ não thành công mà không gặp các lỗi
@@ -18,17 +18,17 @@ Folder này mô tả quy trình 3 giai đoạn để tích hợp và kiểm th�
 ---
 
 ## 🟡 GIAI ĐOẠN 2: ÉP XUNG VÀ ĐO LƯỜNG (PROFILING)
-**Project:** 2_Test_Model_Profiling
+**Project:** 2_Test_Model_Profiling.  
 **Mục tiêu:** Đánh giá tốc độ phản hồi (Latency) và giới hạn bộ nhớ SRAM của mạch.
 
 * **Bước 1 (Đo thời gian):** Sử dụng hàm `esp_timer_get_time()` bọc quanh hàm `Invoke()`. Tính toán thời gian suy luận cho 1 khung hình (Inference Time). Yêu cầu: < 100ms.
 * **Bước 2 (Tối ưu RAM):** Giảm thiểu `tensor_arena` dần dần cho đến khi báo lỗi. Chốt con số bộ nhớ tối ưu.
-* **Bước 3 (Tối ưu CPU):** Đảm bảo project đã bật cấu hình tối ưu hóa phần cứng vector của ESP32-S3 (ESP-NN / DSP instruction set) trong Menuconfig.
+* **Bước 3 (Tối ưu CPU):** Đảm bảo project đã bật cấu hình tối ưu hóa phần cứng vector của ESP32-S3 (ESP-NN / DSP instruction set) trong Menuconfig, đảm bảo tốc độ suy luận < 100ms.
 
 ---
 
 ## 🔴 GIAI ĐOẠN 3: TEST ĐỘNG THỜI GIAN THỰC (REAL-TIME PIPELINE)
-**Project:** 3_Test_Model_LiveMic
+**Project:** 3_Test_Model_LiveMic.  
 **Mục tiêu:** Nối thông toàn bộ luồng dữ liệu từ Micro thu âm -> Tiền xử lý -> Trí tuệ nhân tạo.
 
 * **Bước 1 (Giao tiếp phần cứng):** Khởi tạo I2S, đọc dữ liệu luồng từ Micro INMP441 (16kHz, 16-bit).
