@@ -1,6 +1,6 @@
 # QtEnvDash-ESP32 🌡️📊
 
-Project này sử dụng board ESP32 tiêu chuẩn để thu thập dữ liệu (Nhiệt độ & Độ ẩm) và đẩy lên MQTT Broker thông qua kết nối Wi-Fi. Một ứng dụng desktop tùy chỉnh được xây dựng bằng Qt Creator 5 sẽ đăng ký (subscribe) các topic MQTT này và trực quan hóa dữ liệu lên đồ thị theo thời gian thực.
+Project này kiểm chứng (Test) sử dụng board ESP32 tiêu chuẩn để thu thập dữ liệu (Nhiệt độ & Độ ẩm) và đẩy lên MQTT Broker thông qua kết nối Wi-Fi. Một ứng dụng desktop tùy chỉnh được xây dựng bằng Qt Creator 5 sẽ đăng ký (subscribe) các topic MQTT này và trực quan hóa dữ liệu lên đồ thị theo thời gian thực.
 
 ## 🏗️ Kiến trúc hệ thống
 

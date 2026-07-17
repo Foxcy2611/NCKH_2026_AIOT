@@ -46,3 +46,138 @@ Toàn bộ Driver tự viết được tổ chức gọn gàng trong thư mục 
 │   └── main.cpp     # Nơi gọi và điều phối các module độc lập
 ├── platformio.ini   # Cấu hình board esp32dev, trống lib_deps
 └── README.md
+```
+
+## 📖 Tóm Tắt Quy Trình Giao Tiếp Phần Cứng (Protocol Reference)
+
+Dự án này tương tác với phần cứng ở tầng Bare-Metal. Dưới đây là tóm tắt quy trình chuẩn (dựa trên Datasheet) để giao tiếp và ép các module/cảm biến trả về dữ liệu.
+
+### 1. Module 4G LTE (A7680C) - Giao tiếp UART & AT Command
+Sử dụng cổng UART (Baudrate mặc định 115200, 8N1). Vi điều khiển đóng vai trò Master, gửi lệnh dạng ASCII và phân tích chuỗi phản hồi.
+
+* **Khởi động & Cấu hình:**
+  1. MCU gửi `AT\r\n` để kiểm tra module thức tỉnh (Chờ phản hồi `OK`).
+  2. Gửi `ATE0\r\n` để tắt chế độ nhại lệnh (Echo), giúp buffer nhận về sạch sẽ hơn.
+  3. Kiểm tra SIM bằng `AT+CPIN?` (Chờ phản hồi `+CPIN: READY`).
+  4. Đọc chất lượng sóng bằng `AT+CSQ` (Trích xuất giá trị dải 0-31, bỏ qua nếu bằng 99).
+  5. Đăng ký mạng bằng `AT+CEREG?` (Chờ trạng thái `0,1` hoặc `0,5` là đã vào mạng).
+* **Quy trình Cảnh báo:**
+  * **Gọi điện:** Gửi `ATD<Số_điện_thoại>;\r\n` (Bắt buộc có dấu `;`). Đợi người dùng bắt máy (kiểm tra bằng `AT+CLCC`) rồi gửi `ATH\r\n` để cúp máy.
+  * **Nhắn tin:** Gửi `AT+CMGF=1` (đưa về Text mode). Gửi `AT+CMGS="Số_điện_thoại"`. Chờ module trả về dấu nhắc `>`. MCU đẩy nội dung tin nhắn và kết thúc bằng mã ASCII `0x1A` (Ctrl+Z).
+
+### 2. Cảm biến Áp suất/Nhiệt độ (BMP280) - Giao tiếp I2C & Memory Map
+Giao tiếp qua bus I2C ở địa chỉ `0x76` (khi chân SDO nối GND). Quy trình đọc bắt buộc phải qua bước bù trừ sai số (Calibration) do giới hạn vật lý của cảm biến MEMS.
+
+* **Quy trình Khởi tạo (Boot Sequence):**
+  1. **Check ID:** MCU đọc 1 byte từ thanh ghi `0xD0`. Nếu trả về `0x58` -> Đúng chip BMP280.
+  2. **Soft Reset:** MCU ghi giá trị `0xB6` vào thanh ghi `0xE0` để dọn dẹp cấu hình rác.
+  3. **Đọc ROM:** MCU đọc 24 bytes liên tục từ dải địa chỉ `0x88` đến `0xA1`. Đây là các hệ số bù sai số (Calibration Coefficients) được Bosch nạp cứng tại nhà máy.
+  4. **Cấu hình:** Ghi vào thanh ghi `0xF5` (Cài Standby time và bộ lọc IIR) và thanh ghi `0xF4` (Cài Oversampling và chọn Normal Mode).
+* **Quy trình Lấy mẫu (Burst Read):**
+  1. MCU gửi yêu cầu đọc 6 bytes liên tục bắt đầu từ thanh ghi `0xF7`.
+  2. Cảm biến trả về lần lượt: Áp suất (MSB, LSB, XLSB) và Nhiệt độ (MSB, LSB, XLSB).
+  3. MCU ghép các byte thành dữ liệu thô (20-bit), sau đó đưa vào công thức Double Precision cùng với 24 bytes ROM ở bước 3 để tính ra giá trị thực (Độ C và hPa).
+
+### 3. Cảm biến Nhiệt ẩm (DHT11) - Giao tiếp 1-Wire vi giây
+Giao tiếp qua một dây tín hiệu duy nhất (Half-duplex) yêu cầu trở kéo lên (Pull-up). Mọi bit dữ liệu (0 hoặc 1) đều được định nghĩa bằng **độ rộng xung** tính bằng micro-giây.
+
+* **Quy trình Bắt tay (Handshake):**
+  1. **MCU Start:** MCU đổi chân tín hiệu thành Output Open-Drain, kéo xuống mức LOW tối thiểu 18ms để đánh thức DHT11. Sau đó MCU nhả ra (mức HIGH) trong 20-40µs và chuyển chân sang Input.
+  2. **DHT11 ACK:** DHT11 phản hồi bằng cách kéo LOW 80µs, sau đó kéo HIGH 80µs.
+* **Quy trình Đọc Dữ liệu (40 bits):**
+  1. DHT11 bơm ra 40 bits, tương đương 5 Bytes (Độ ẩm phần nguyên, độ ẩm thập phân, nhiệt độ nguyên, nhiệt độ thập phân, Checksum).
+  2. **Phân biệt logic:** Mỗi bit đều bắt đầu bằng 50µs mức LOW.
+     * Nếu mức HIGH tiếp theo kéo dài **~26-28µs** -> Bit 0.
+     * Nếu mức HIGH tiếp theo kéo dài **~70µs** -> Bit 1.
+  3. *(Lưu ý HĐH: Trên ESP32, quá trình đo các vi giây này bắt buộc phải khóa ngắt phần cứng (Disable Interrupts) để tránh HĐH FreeRTOS làm sai lệch thời gian).*
+* **Xác thực:** Tổng của 4 bytes đầu phải bằng đúng byte thứ 5 (Checksum).
+
+### 4. Cảm biến Nhịp tim/SpO2 (MAX30102) - Giao tiếp I2C & Quản lý FIFO/Ngắt
+Giao tiếp qua bus I2C (địa chỉ `0x57`). Đây là cảm biến quang học hoạt động ở chế độ đo ngầm. Nó tự động chớp LED, lấy mẫu và đẩy dữ liệu vào bộ nhớ đệm vòng (FIFO 32 mẫu) tích hợp sẵn trong chip. Vi điều khiển không cần lấy mẫu liên tục mà chỉ việc chờ tín hiệu Ngắt (Interrupt) để vào lấy dữ liệu, giải phóng hoàn toàn CPU.
+
+* **Quy trình Khởi tạo & Cấu hình:**
+  1. **Xác thực (Part ID):** Đọc thanh ghi `0xFF`. Bắt buộc phải trả về `0x15` để đảm bảo kết nối đúng chip.
+  2. **Reset:** Ghi bit 6 vào thanh ghi `0x09` để reset toàn bộ phần cứng về trạng thái gốc.
+  3. **Cấu hình Ngắt:** Ghi vào thanh ghi `0x02` (INT_ENABLE_1) giá trị `0x40` để bật cờ `PPG_RDY`. Khi có 1 mẫu data mới được đo xong, cảm biến sẽ kéo chân `INT` xuống mức LOW.
+  4. **Cấu hình FIFO & Lấy mẫu:** * `0x08` (FIFO Config): Bật chế độ tự động ghi đè khi đầy (Rollover) và lấy trung bình 4 mẫu phần cứng để giảm nhiễu.
+     * `0x09` (Mode Config): Bật chế độ SpO2 (Kích hoạt cả 2 LED Đỏ và Hồng ngoại).
+     * `0x0A` (SpO2 Config): Cài dải đo ADC lớn nhất, tốc độ 100Hz, độ rộng xung 411µs (để lấy độ phân giải tối đa 18-bit).
+     * `0x0C` & `0x0D`: Cài đặt dòng điện cho 2 LED ở mức vừa phải (~7mA) để tối ưu công suất và tránh bão hòa ánh sáng.
+* **Quy trình Đọc dữ liệu (Hardware Interrupt):**
+  1. **Bắt Ngắt (Trigger):** ESP32 cấu hình ngắt sườn xuống (FALLING) trên chân GPIO nối với `INT`. Khi cờ ngắt phần cứng bật lên, MCU tạm dừng các việc khác để ưu tiên lấy dữ liệu.
+  2. **Kiểm tra Pointer:** Đọc con trỏ ghi `0x04` (wrPtr) và con trỏ đọc `0x06` (rdPtr). Nếu hai con trỏ khác nhau tức là có dữ liệu mới.
+  3. **Burst Read:** MCU yêu cầu đọc liên tục 6 bytes từ thanh ghi `0x07` (FIFO Data). 3 bytes đầu chứa dữ liệu LED Đỏ, 3 bytes sau chứa dữ liệu LED Hồng ngoại (IR).
+  4. **Giải mã 18-bit:** Dữ liệu bị phân mảnh trong 3 bytes. MCU sử dụng phép dịch bit (`<<`) và mặt nạ bit (`& 0x03FFFF`) để ép khối dữ liệu này về đúng số nguyên 18-bit chuẩn, loại bỏ các bit rác.
+  5. **Xóa Ngắt (Clear Interrupt):** Bắt buộc phải thực hiện lệnh đọc thanh ghi trạng thái ngắt `0x00` (INT_STAT_1). Việc đọc này đóng vai trò reset mạch ngắt nội bộ, MAX30102 sẽ tự động thả chân `INT` lên lại mức HIGH để chuẩn bị cho chu kỳ nhịp tim tiếp theo.
+
+### 5. Cảm biến Khí tổng hợp (MQ135) - Giao tiếp Analog & Toán học Hồi quy
+MQ135 là cảm biến nung nóng (Heater) sử dụng lõi $SnO_2$. Nó không giao tiếp bằng giao thức số mà trả về tín hiệu điện áp tương tự (Analog).
+
+* **Đấu nối (Đòi hỏi Cầu phân áp):**
+  * `VCC` và chân `H` của module phải nối với nguồn **5.0V** (Để đủ nhiệt nung nóng lõi).
+  * Chân `A0` xuất ra dải 0-5V. Bắt buộc dùng mạch phân áp (R1 = 10k nối từ A0 sang ADC, R2 = 20k nối từ ADC xuống GND) để hạ điện áp xuống dải 0-3.3V an toàn cho ESP32.
+* **Quy trình Khởi động (Pre-heating & Calibration):**
+  1. **Nung nóng:** Khi mới cấp điện, cần chờ từ 3-5 phút (thực tế mạch nung cần tới 48h để đạt độ ổn định tuyệt đối) để lõi gốm đạt nhiệt độ chuẩn, điện áp A0 hạ xuống mức ổn định.
+  2. **Hiệu chuẩn (Calibrate):** Đặt cảm biến trong không khí sạch. MCU đọc điện áp, tính ra điện trở hiện tại ($R_s$). Lưu giá trị điện trở chuẩn $R_0 = R_s / 3.6$ vào bộ nhớ.
+* **Quy trình Lấy mẫu và Tính toán (Toán Log-Log):**
+  1. **Đọc ADC:** Lấy trung bình 20-50 mẫu ADC để lọc nhiễu.
+  2. **Khôi phục điện áp:** Chuyển ADC thành điện áp GPIO (0-3.3V), sau đó nhân với hệ số phân áp (1.5) để tìm lại điện áp thật ở chân A0 ($V_{A0}$).
+  3. **Tính điện trở ($R_s$):** Áp dụng định luật Ohm: $R_s = R_L \cdot (5.0 - V_{A0}) / V_{A0}$.
+  4. **Nội suy Nồng độ (ppm):** Đưa tỉ lệ $R_s/R_0$ vào hàm lũy thừa $ppm = A \cdot (R_s/R_0)^B$. Trong đó $A$ và $B$ là hằng số được tính ngược từ đồ thị Log-Log trong Datasheet đối với từng loại khí mục tiêu.
+
+### 6. Module Định vị Toàn cầu (NEO-M8N) - Giao tiếp UART & Parsing NMEA
+NEO-M8N là module GNSS đồng thời, có khả năng bắt sóng vệ tinh GPS, GLONASS và BeiDou cùng lúc để đạt độ chính xác cao. Module tự động phát luồng dữ liệu (streaming) theo chuẩn ASCII NMEA 0183 ngay khi được cấp nguồn.
+
+* **Đấu nối:**
+  * `RX_GPS` nối với chân TX chỉ định của ESP32.
+  * `TX_GPS` nối với chân RX chỉ định của ESP32 (VD: Chân 32).
+  * `VCC/GND` cấp nguồn 3.3V hoặc 5V (tùy mạch tích hợp LDO).
+* **Quy trình Giao tiếp (Data Streaming & Parsing):**
+  1. **Khởi tạo UART:** MCU mở cổng Serial ở tốc độ mặc định `9600 Baud` theo quy định của nhà sản xuất u-blox. Không cần gửi lệnh cấu hình.
+  2. **Bắt luồng (Buffer Polling):** MCU liên tục đọc từng ký tự (char) từ bộ đệm UART, ghép thành các chuỗi văn bản hoàn chỉnh dựa trên ký tự kết thúc dòng `\n`.
+  3. **Lọc dữ liệu (Pattern Matching):** Bộ Parser quét các chuỗi văn bản, chỉ giữ lại các dòng có Header là `$GNRMC` (hoặc `$GPRMC`), đây là gói dữ liệu chứa Tọa độ, Trạng thái và Tốc độ.
+  4. **Giải mã (Tokenizing & Math):** * Phân tách chuỗi bằng dấu phẩy `,`. Kiểm tra cờ trạng thái (Ký tự `A` = Đã fix được vệ tinh, `V` = Đang tìm kiếm).
+     * Bóc tách các trường Vĩ độ, Kinh độ ở định dạng thô `ddmm.mmmm` (Độ, Phút).
+     * Áp dụng toán học quy đổi về Độ thập phân chuẩn quốc tế: `Decimal = dd + (mm.mmmm / 60)`. Thêm dấu âm (-) nếu hướng là W (Tây) hoặc S (Nam).
+
+### 7. Cảm biến Chất lượng Không khí (SGP30) - Giao tiếp I2C & Đa pixel
+
+SGP30 là cảm biến khí đa điểm (multi-pixel) của Sensirion, sử dụng công nghệ CMOSens để đo đồng thời TVOC (Tổng hợp hợp chất hữu cơ dễ bay hơi) và eCO2 (Carbon Dioxide tương đương). Đây là cảm biến kỹ thuật số thông minh có thuật toán bù nền tích hợp.
+
+* **Đấu nối:**
+    * Giao tiếp qua bus I2C (Địa chỉ cố định `0x58`).
+    * Lưu ý: Chip hoạt động ở mức 1.8V, các module trên thị trường đã tích hợp sẵn mạch hạ áp và chuyển đổi mức logic (Level Shifter) nên có thể cắm trực tiếp vào ESP32 (3.3V).
+
+* **Quy trình Giao tiếp (Communication Protocol):**
+    1. **Khởi tạo (Init):** Gửi lệnh `0x2003` (Init_air_quality) để bắt đầu thuật toán đo đạc.
+    2. **Đọc dữ liệu (Measurement):**
+        * Gửi lệnh `0x2008` (Measure_air_quality).
+        * Đợi tối thiểu 12ms để chip xử lý.
+        * Đọc 6 byte phản hồi từ cảm biến.
+
+* **Cấu trúc gói tin 6-byte:**
+    * Dữ liệu trả về chia làm 2 cụm độc lập: [CO2_MSB, CO2_LSB, CO2_CRC] và [TVOC_MSB, TVOC_LSB, TVOC_CRC].
+    * Mỗi cụm dữ liệu (2 byte) luôn kèm theo 1 byte `CRC-8` để kiểm tra tính toàn vẹn.
+
+* **Lưu ý kỹ thuật quan trọng:**
+    * Chu kỳ đo 1s: Bắt buộc gửi lệnh đo đều đặn mỗi 1 giây để thuật toán bù đường nền (Baseline compensation) hoạt động chính xác.
+    * Giai đoạn Warm-up: Trong 15 giây đầu sau khi khởi tạo, cảm biến sẽ trả về giá trị mặc định (400ppm eCO2, 0ppb TVOC) để làm nóng lõi gốm.
+    * Bảo mật dữ liệu (CRC-8): Mọi giao tiếp đều phải kiểm tra mã CRC (Đa thức `0x31`, khởi tạo `0xFF`) để đảm bảo dữ liệu không bị nhiễu do môi trường.
+
+### 8. Màn hình OLED (SSD1306) - Giao tiếp I2C & Frame Buffer
+
+Màn hình OLED đơn sắc kích thước 128x64 pixel, sử dụng IC điều khiển SSD1306. Thư viện hiển thị được lập trình từ mức thanh ghi (Register-level) kết hợp bộ đệm khung hình (Frame Buffer), hoạt động hoàn toàn độc lập mà không cần phụ thuộc vào các thư viện cồng kềnh như Adafruit_GFX hay U8g2.
+
+* **Đấu nối:**
+    * **Giao tiếp:** Qua bus I2C (Địa chỉ 7-bit chuẩn: `0x3C`).
+    * **Nguồn cấp:** 3.3V hoặc 5V (tùy mạch) kết nối trực tiếp với nguồn của ESP32.
+
+* **Cơ chế hoạt động (Frame Buffer & Rendering):**
+    * **Cấp phát bộ đệm:** Sử dụng một mảng tĩnh 1024 bytes (128x64/8) trên RAM của ESP32 để lưu trữ toàn bộ trạng thái điểm ảnh.
+    * **Xử lý ngoại tuyến (Offline Rendering):** Mọi thao tác tính toán tọa độ, vẽ điểm ảnh (`OLED_DrawPixel`) hoặc ghi đè font chữ đều thao tác trực tiếp trên mảng RAM cục bộ. Điều này giúp hệ thống không bị thắt cổ chai ở đường truyền I2C.
+    * **Đồng bộ hóa (Flush):** Gọi hàm `OLED_UpdateScreen()` để đẩy toàn bộ 1024 bytes từ RAM nội bộ xuống IC SSD1306 trong một vòng lặp tối ưu nhất.
+
+* **Tính năng nổi bật của Thư viện:**
+    * **Tích hợp sẵn bộ Font 5x7:** Bao phủ toàn bộ bảng mã ASCII chuẩn (từ 32 đến 126).
+    * **Logic tự động ngắt dòng (Word Wrap):** Tự động tính toán đẩy con trỏ xuống hàng dưới khi gặp ký tự `\n` hoặc khi chuỗi văn bản vượt quá chiều ngang 128 pixel.
+    * **Hỗ trợ định dạng chuỗi động (Variadic Format):** Khai thác `stdarg.h` để xây dựng hàm `OLED_Printf`, cho phép in trực tiếp biến số nguyên (`%d`), số thực (`%.2f`), chuỗi (`%s`) ra màn hình với cú pháp chuẩn C/C++, giải quyết triệt để vấn đề tràn bộ nhớ (Memory Fragmentation) so với việc dùng class `String` của Arduino.
