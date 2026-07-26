@@ -53,8 +53,7 @@ Trí tuệ nhân tạo (**TinyML**) được huấn luyện bằng Python (Tenso
 * 🌍 **Định vị & Kết nối diện rộng:** NEO-M8N (GPS/GNSS), A7680C (4G LTE)
 * 🔔 **Module Cảnh báo:** Còi Buzzer, Màn hình OLED SSD1306
 
-> 📌 *Sơ đồ pinout chi tiết (ESP32 thường, ESP32-S3, và bảng bố trí SRAM/PSRAM) xem tại thư mục `ESP32_Pinout/`.*
-
+> 📌 *Sơ đồ pinout chi tiết (ESP32 thường, ESP32-S3, và bảng bố trí SRAM/PSRAM) xem tại thư mục [ESP32 Pinout](./ESP32_Pinout/).*
 ---
 
 ## 🏗 Kiến trúc Hệ thống
@@ -114,7 +113,7 @@ Quy trình kiểm thử đi qua 4 giai đoạn (chi tiết xem `Deploy_Model/REA
 3. 🎤 **Kiểm thử toàn diện & Xử lý nhiễu (Real-time Pipeline):** Nối thông Micro → DSP → AI, phát hiện và xử lý vấn đề nhiễu môi trường thực tế qua ngưỡng 3 vùng + Voting.
 4. 📦 **Đóng gói chính thức (Final Deployment):** Dọn dẹp mã nguồn, loại bỏ toàn bộ debug/test code, chỉ giữ vòng lặp sản xuất tinh gọn: `STATE_LISTENING → STATE_RECORDING → STATE_PROCESSING → STATE_INTERFACE`.
 
-> 💡 *Toàn bộ quá trình chuyển đổi thuật toán DSP từ Python sang C++ (Butterworth SOS, Mel Slaney-scale, quantize INT8) được ghi chú chi tiết tại `Deploy_Model/doc/`.*
+> 💡 *Toàn bộ quá trình chuyển đổi thuật toán DSP từ Python sang C++ (Butterworth SOS, Mel Slaney-scale, quantize INT8) được ghi chú chi tiết tại [Deploy the model to ESP32](./Deploy_Model/3_Test_Model_LiveMic/doc/).*
 
 ---
 
@@ -124,7 +123,7 @@ Thư mục `ESP32-Qt-Telemetry/` chứa bản thử nghiệm đầu tiên của 
 - 🟢 `QtEnvDash-ESP32/`: Firmware ESP32 đọc DHT11, publish dữ liệu lên MQTT Broker.
 - 📈 `Dashboard_DHT11/`: Ứng dụng Qt6 subscribe MQTT, vẽ biểu đồ thời gian thực.
 
-*Đây là bản proof-of-concept cho luồng Gateway → MQTT → Dashboard, sẽ được mở rộng đầy đủ (thêm cảm biến, alert panel, bản đồ GPS) trong `Final_Project_NCKH/`.*
+*Đây là bản proof-of-concept cho luồng Gateway → MQTT → Dashboard, sẽ được mở rộng đầy đủ (thêm cảm biến, alert panel, bản đồ GPS) trong [Final Project](./Final_Project_NCKH/).*
 
 ---
 
@@ -169,10 +168,10 @@ NCKH_2026_AIOT/
 
 ## 🛠 Cài đặt và Phát triển
 
-- **Môi trường AI:** Python 3.x, TensorFlow/Keras, librosa, scipy — xem `AI_Training_Model/requirements.txt` (nếu có) hoặc cài thủ công theo import ở đầu mỗi script.
+- **Môi trường AI:** Python 3.x, TensorFlow/Keras, librosa, scipy hoặc cài thủ công theo import ở đầu mỗi script.
 - **Môi trường Firmware:** PlatformIO (VS Code), framework Arduino cho ESP32/ESP32-S3.
-- **Môi trường Dashboard:** Qt Creator (Qt6), MQTT client library.
-- **Cấu hình phần cứng:** Kiểm tra kỹ sơ đồ đấu nối chân (I2C, SPI, UART, I2S) tại `ESP32_Pinout/`.
+- **Môi trường Dashboard:** Qt Creator (Qt6), MQTT client library (HiveMQ).
+- **Cấu hình phần cứng:** Kiểm tra kỹ sơ đồ đấu nối chân (I2C, SPI, UART, I2S) tại [ESP32 Pinout](./ESP32_Pinout/).
 
 ---
 
