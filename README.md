@@ -12,9 +12,6 @@
 
 ---
 
-<img width="967" height="821" alt="Screenshot 2026-07-22 000827" src="https://github.com/user-attachments/assets/452edd4e-4338-4e8b-9083-b12c9295a58d" />
-
-
 ## 📝 Giới thiệu
 
 Dự án phát triển một hệ thống nhúng phân tán (**Distributed Embedded System**) nhằm giám sát toàn diện bệnh nhân hen suyễn. Khác với các hệ thống truyền thống, thiết bị không chỉ đo chỉ số sinh tồn (Nhịp tim, SpO2, Nhiệt độ cơ thể, Âm thanh hô hấp) mà còn theo dõi liên tục các thông số môi trường xung quanh (CO2, VOC, Nhiệt độ, Độ ẩm) — vốn là các tác nhân chính gây khởi phát cơn hen.
