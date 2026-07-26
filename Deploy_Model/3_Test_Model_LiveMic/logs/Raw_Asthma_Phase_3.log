@@ -1,0 +1,300 @@
+#include "Raw_Include_Phase_3/Raw_Asthma_Audio_1.h" // Quạt + Phím + Asth
+
+/*
+[DEBUG] mel_db_buff frame 0, 10 gia tri dau:
+-50.0039 -50.2156 -57.0147 -62.2338 -63.8764 -59.4509 -61.7842 -67.2548 -59.4335 -59.1939 
+[DEBUG] mel_db_buff FRAME 64:
+-28.4562 -27.3844 -24.4052 -27.0563 -34.7262 -31.0031 -31.0309 -36.0329 -38.3731 -32.4956 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+-32 -17 -16 -27 0 -16 -5 1 0 -7 
+[DEBUG] So gia tri = 127: 0 / 8256 | = -128: 2 / 8256
+[DEBUG] Output raw int8: -124, scale=0.003906, zero_point=-128
+>> CẢNH BÁO: Phát hiện tiếng rít Hen Suyễn - ASTHMA! (98.44%)
+*/
+
+#include "Raw_Include_Phase_3/Raw_Asthma_Audio_2.h" // Tiếng đọc Podcast + Asthma
+
+/*
+[DEBUG] mel_db_buff frame 0, 10 gia tri dau:
+-13.4343 -12.1720 -14.3922 -11.3859 -10.9111 -11.6383 -12.1896 -15.0828 -13.8529 -13.2544 
+[DEBUG] mel_db_buff FRAME 64:
+-20.8303 -24.4515 -21.7003 -19.5069 -20.9176 -21.8146 -23.9509 -19.2716 -23.6853 -20.9574 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+84 69 51 31 51 44 20 5 36 46 
+[DEBUG] So gia tri = 127: 0 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: -128, scale=0.003906, zero_point=-128
+>> CẢNH BÁO: Phát hiện tiếng rít Hen Suyễn - ASTHMA! (100.00%)
+*/
+
+#include "Raw_Include_Phase_3/Raw_Asthma_Audio_3.h" // White Noise + Asthma
+
+/*
+[DEBUG] mel_db_buff frame 0, 10 gia tri dau:
+-30.3679 -26.3568 -26.4489 -21.2936 -19.0171 -15.7733 -14.9916 -17.3945 -21.2381 -13.9531 
+[DEBUG] mel_db_buff FRAME 64:
+-29.3517 -29.0591 -33.3146 -36.4695 -23.4000 -17.8526 -18.9164 -28.4006 -27.1313 -24.3114 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+30 12 29 3 21 16 -19 -9 -12 0 
+[DEBUG] So gia tri = 127: 0 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: -128, scale=0.003906, zero_point=-128
+>> CẢNH BÁO: Phát hiện tiếng rít Hen Suyễn - ASTHMA! (100.00%)
+*/
+
+#include "Raw_Include_Phase_3/Raw_Asthma_Audio_4.h" // Pitch: Đổi cao độ nhịp thở gốc
+
+/*
+[DEBUG] mel_db_buff frame 0, 10 gia tri dau:
+-31.7058 -31.2312 -29.8247 -28.5496 -29.5905 -23.2452 -18.9284 -13.2423 -14.5572 -23.9470 
+[DEBUG] mel_db_buff FRAME 64:
+-11.4109 -14.6637 -16.1693 -15.0934 -22.8811 -16.4897 -18.0971 -24.2350 -26.9356 -19.5818 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+25 50 28 29 41 26 39 42 43 18 
+[DEBUG] So gia tri = 127: 0 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: -102, scale=0.003906, zero_point=-128
+>> CẢNH BÁO: Phát hiện tiếng rít Hen Suyễn - ASTHMA! (89.84%)
+*/
+
+#include "Raw_Include_Phase_3/Raw_Asthma_Audio_5.h" // Kéo giãn hoặc nén time
+
+/*
+[DEBUG] mel_db_buff frame 0, 10 gia tri dau:
+-25.8286 -20.6984 -16.8129 -18.1146 -24.8677 -17.6827 -20.6662 -22.5752 -22.1700 -27.3818 
+[DEBUG] mel_db_buff FRAME 64:
+-23.4204 -20.7522 -29.7918 -26.5840 -31.6190 -34.0872 -35.0980 -40.7633 -48.9286 -44.0342 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+44 76 81 71 49 83 57 61 40 1 
+[DEBUG] So gia tri = 127: 0 / 8256 | = -128: 892 / 8256
+[DEBUG] Output raw int8: -118, scale=0.003906, zero_point=-128
+>> CẢNH BÁO: Phát hiện tiếng rít Hen Suyễn - ASTHMA! (96.09%)
+*/
+
+#include "Raw_Include_Phase_3/Raw_Asthma_Audio_6.h" // Dịch khung time 
+
+/*
+[DEBUG] mel_db_buff frame 0, 10 gia tri dau:
+-22.1446 -20.1229 -22.7006 -26.1666 -29.2262 -29.9059 -31.4274 -44.0431 -43.1983 -40.7174 
+[DEBUG] mel_db_buff FRAME 64:
+-23.3764 -23.9874 -30.3303 -32.3596 -34.6671 -33.8109 -36.4649 -38.2177 -44.1178 -43.6837 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+56 81 46 44 87 72 70 36 77 86 
+[DEBUG] So gia tri = 127: 0 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: -128, scale=0.003906, zero_point=-128
+>> CẢNH BÁO: Phát hiện tiếng rít Hen Suyễn - ASTHMA! (100.00%)
+*/
+
+#include "Raw_Include_Phase_3/Raw_Asthma_Audio_7.h" // Real từ Kaggle
+
+/*
+[DEBUG] mel_db_buff frame 0, 10 gia tri dau:
+-26.2823 -28.1458 -29.9343 -27.4829 -27.7608 -29.9665 -29.5117 -27.9532 -27.1367 -28.1200 
+[DEBUG] mel_db_buff FRAME 64:
+-36.9810 -37.2566 -32.4313 -35.1983 -38.6674 -46.4880 -55.8001 -57.0064 -54.8962 -63.5988 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+43 42 39 59 84 92 103 106 126 108 
+[DEBUG] So gia tri = 127: 0 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: -127, scale=0.003906, zero_point=-128
+>> CẢNH BÁO: Phát hiện tiếng rít Hen Suyễn - ASTHMA! (99.61%)
+*/
+
+
+
+// ---------------------------------------------------------- //
+
+
+ 
+#include "Raw_Include_Phase_3/Raw_Non_Asthma_Audio_1.h" // Bronchial
+
+/*
+[DEBUG] mel_db_buff frame 0, 10 gia tri dau:
+-26.3237 -22.7874 -24.3387 -24.3977 -24.8722 -26.8077 -29.8179 -36.2184 -43.7361 -54.2710 
+[DEBUG] mel_db_buff FRAME 64:
+-26.4836 -25.9328 -32.8537 -30.5848 -25.3184 -34.1688 -34.7295 -32.0929 -28.2593 -29.1038 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+43 32 41 36 30 52 52 47 58 52 
+[DEBUG] So gia tri = 127: 0 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: 127, scale=0.003906, zero_point=-128
+>> Bình thường. (99.61%)
+*/
+
+#include "Raw_Include_Phase_3/Raw_Non_Asthma_Audio_2.h" // COPD
+
+/*
+[DEBUG] mel_db_buff frame 0, 10 gia tri dau:
+-80.0000 -80.0000 -80.0000 -80.0000 -80.0000 -80.0000 -80.0000 -80.0000 -80.0000 -80.0000 
+[DEBUG] mel_db_buff FRAME 64:
+-29.5151 -19.1468 -21.2043 -21.3738 -18.9077 -16.7065 -16.9712 -30.5062 -27.6665 -30.7174 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+-128 -128 28 78 83 55 54 46 54 20 
+[DEBUG] So gia tri = 127: 0 / 8256 | = -128: 128 / 8256
+[DEBUG] Output raw int8: 127, scale=0.003906, zero_point=-128
+>> Bình thường. (99.61%)
+*/
+
+#include "Raw_Include_Phase_3/Raw_Non_Asthma_Audio_3.h" // Healthy
+
+/*
+[DEBUG] mel_db_buff frame 0, 10 gia tri dau:
+-27.7827 -21.9106 -23.7359 -22.6333 -23.0959 -23.8841 -25.8736 -25.9558 -24.7249 -23.1315 
+[DEBUG] mel_db_buff FRAME 64:
+-30.6786 -33.1711 -36.4410 -35.6366 -37.3741 -29.5603 -31.9314 -36.8885 -39.1337 -38.2194 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+38 87 82 37 52 29 16 70 112 16 
+[DEBUG] So gia tri = 127: 0 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: 127, scale=0.003906, zero_point=-128
+>> Bình thường. (99.61%)
+*/
+
+#include "Raw_Include_Phase_3/Raw_Non_Asthma_Audio_4.h" // Pneumonia
+
+/*
+[DEBUG] mel_db_buff frame 0, 10 gia tri dau:
+-18.3615 -15.8276 -21.0662 -31.5240 -24.6039 -22.0359 -25.0973 -22.6942 -20.1178 -20.0516 
+[DEBUG] mel_db_buff FRAME 64:
+-35.4319 -23.1231 -24.2061 -40.1344 -37.4129 -31.0419 -29.9714 -32.7857 -40.7281 -48.5716 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+68 84 49 57 66 46 61 47 50 35 
+[DEBUG] So gia tri = 127: 0 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: 127, scale=0.003906, zero_point=-128
+>> Bình thường. (99.61%)
+*/
+
+#include "Raw_Include_Phase_3/Raw_Non_Asthma_Audio_5.h" // Im lặng
+
+/*
+[DEBUG] mel_db_buff frame 0, 10 gia tri dau:
+-18.0373 -15.5057 -14.5954 -14.7948 -18.7207 -19.4575 -17.8270 -17.9301 -16.2695 -18.0422 
+[DEBUG] mel_db_buff FRAME 64:
+-26.9336 -16.2860 -14.3242 -23.3034 -21.9680 -17.1940 -12.6183 -9.7406 -14.7231 -19.0627 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+69 88 87 100 44 100 102 103 85 68 
+[DEBUG] So gia tri = 127: 0 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: 120, scale=0.003906, zero_point=-128
+>> Bình thường. (96.88%)
+*/
+
+#include "Raw_Include_Phase_3/Raw_Non_Asthma_Audio_6.h" // Podcast
+
+/*
+[DEBUG] mel_db_buff frame 0, 10 gia tri dau:
+-39.0884 -33.7106 -34.9738 -38.5649 -45.6827 -47.2579 -46.9357 -38.0129 -30.1555 -25.3062 
+[DEBUG] mel_db_buff FRAME 64:
+-42.3813 -41.2203 -40.9447 -33.4174 -36.3542 -36.4728 -39.3685 -52.7969 -44.8631 -36.1667 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+2 34 31 17 9 15 12 27 27 11 
+[DEBUG] So gia tri = 127: 0 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: 127, scale=0.003906, zero_point=-128
+>> Bình thường. (99.61%)
+*/
+
+#include "Raw_Include_Phase_3/Raw_Non_Asthma_Audio_7.h" // Quạt/Phím
+
+/*
+[DEBUG] mel_db_buff frame 0, 10 gia tri dau:
+-28.7064 -28.5978 -37.3297 -35.2160 -32.6424 -33.9624 -32.2803 -30.3020 -26.5187 -25.7447 
+[DEBUG] mel_db_buff FRAME 64:
+-33.3304 -34.4968 -26.7799 -28.9083 -31.0726 -29.8025 -27.8789 -31.9662 -26.9315 -21.5352 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+35 70 71 63 71 62 52 39 32 46 
+[DEBUG] So gia tri = 127: 0 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: 127, scale=0.003906, zero_point=-128
+>> Bình thường. (99.61%)
+*/
+
+
+
+// ---------------------------------------------------------- //
+
+
+
+========================================
+   HỆ THỐNG AI CHẨN ĐOÁN HEN SUYỄN
+========================================
+
+[CÀI ĐẶT] Đang khởi tạo Mel Filterbank...
+[CÀI ĐẶT] Mel Filterbank sẵn sàng.
+[CÀI ĐẶT] Đang khởi tạo mô hình TFLite...
+[DEBUG] model_data_len = 543976 bytes
+[AI] Đã cấp phát thành công trên PSRAM !
+[DEBUG] Input scale=0.003922, zero_point=-128
+[AI] Khởi tạo mô hình Asthma TFLite THÀNH CÔNG!
+[AI] Input shape: [1, 64, 129, 1]
+[CÀI ĐẶT] Đang khởi tạo Microphone I2S...
+[CÀI ĐẶT] I2S sẵn sàng.
+
+[CÀI ĐẶT] HỆ THỐNG SẴN SÀNG! Đang lắng nghe...
+
+[MIC] Đã thu đủ 5 giây âm thanh! Chuyển sang AI ...
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri dau:
+-57.5338 -54.4144 -55.6345 -55.8482 -57.5532 -65.8674 -60.9797 -58.3207 -60.4471 -65.3324 
+[DEBUG] mel_db_buff FRAME 64:
+-60.2216 -53.5378 -59.9471 -55.7396 -44.4701 -47.0631 -54.2396 -48.9561 -50.1679 -51.7844 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+-56 -71 -76 -65 -75 -87 -73 -21 -52 -64 
+[DEBUG] So gia tri = 127: 0 / 8256 | = -128: 1 / 8256
+[DEBUG] Output raw int8: 127, scale=0.003906, zero_point=-128
+>> Bình thường. (99.61%)
+[VOTE] Lan 1/3 - Asthma:0 Normal:1 Unsure:0
+
+[CAI DAT] HE THONG SAN SANG! Dang lang nghe...
+[VAD] Phát hiện tiếng động! - Năng lượng: 5778
+Bắt đầu ghi !!
+[MIC] Đã thu đủ 5 giây âm thanh! Chuyển sang AI ...
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri dau:
+-32.1762 -33.8878 -35.5240 -26.8837 -27.2135 -29.8570 -23.4446 -19.3241 -20.9428 -23.6608 
+[DEBUG] mel_db_buff FRAME 64:
+-50.8478 -25.6352 -26.7829 -51.8530 -55.0499 -60.4182 -48.3562 -40.9594 -35.8309 -52.9551 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+24 20 14 13 56 25 26 -4 -40 -79 
+[DEBUG] So gia tri = 127: 0 / 8256 | = -128: 2 / 8256
+[DEBUG] Output raw int8: -90, scale=0.003906, zero_point=-128
+>> CẢNH BÁO: Phát hiện tiếng rít Hen Suyễn - ASTHMA! (85.16%)
+[VOTE] Lan 2/3 - Asthma:1 Normal:1 Unsure:0
+
+[CAI DAT] HE THONG SAN SANG! Dang lang nghe...
+[VAD] Phát hiện tiếng động! - Năng lượng: 5456
+Bắt đầu ghi !!
+[MIC] Đã thu đủ 5 giây âm thanh! Chuyển sang AI ...
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri dau:
+-33.2574 -25.5382 -28.4878 -26.9709 -22.7698 -21.9725 -20.4605 -25.2590 -24.5978 -23.7813 
+[DEBUG] mel_db_buff FRAME 64:
+-46.4295 -35.8247 -33.7919 -50.6204 -48.3433 -45.8988 -48.3079 -44.5613 -35.8733 -29.7982 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+20 35 29 21 17 25 10 2 31 -3 
+[DEBUG] So gia tri = 127: 0 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: 127, scale=0.003906, zero_point=-128
+>> Bình thường. (99.61%)
+[VOTE] Lan 3/3 - Asthma:1 Normal:2 Unsure:0
+
+========== KẾT LUẬN SAU 3 LẦN ĐO ==========
+>>> KẾT LUẬN CUỐI: BÌNH THƯỜNG
+=============================================

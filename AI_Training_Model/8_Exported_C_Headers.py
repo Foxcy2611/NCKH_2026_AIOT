@@ -1,4 +1,10 @@
-
+"""
+=========================================================
+8. TRÍCH XUẤT MẪU ĐẶC TRƯNG
+Lấy trực tiếp 2 file thuộc Asthma và Non-Asthma, đi qua 
+tiền xử lý để lấy làm 2 mẫu test đầu vào bộ não TFLite
+=========================================================
+"""
 
 import os
 import librosa

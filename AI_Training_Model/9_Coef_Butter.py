@@ -1,15 +1,19 @@
-import scipy.signal as signal
+"""
+=========================================================
+9. TRÍCH XUẤT HỆ SỐ
+- Lấy các hệ số của bộ lọc Butterworth
+- Làm nguyên liệu cho quá trình xây dựng tiền xử lý bằng C++
+=========================================================
+"""
 
-def generate_cpp_coefficients(lowcut, highcut, fs, order):
+
+from scipy.signal import butter
+
+def Butter_Bandpass_SOS(lowcut, highcut, fs, order):
     nyq = 0.5 * fs
-    low = lowcut / nyq
-    high = highcut / nyq
-    # Lấy hệ số
-    b, a = signal.butter(order, [low, high], btype='band')
-    
-    # In ra định dạng mảng C++
-    print(f"const float b[{len(b)}] = {{ {', '.join([f'{x:.8f}f' for x in b])} }};")
-    print(f"const float a[{len(a)}] = {{ {', '.join([f'{x:.8f}f' for x in a])} }};")
+    sos = butter(order, [lowcut/nyq, highcut/nyq], btype='band', output='sos')
+    return sos
 
-# Chạy thử với dải 100Hz - 2000Hz, Sample Rate 16kHz, Bậc 5
-generate_cpp_coefficients(100, 2000, 16000, 5)
+sos = Butter_Bandpass_SOS(100, 2000, 16000, 5)
+print("Số sections:", sos.shape[0])
+print(repr(sos))

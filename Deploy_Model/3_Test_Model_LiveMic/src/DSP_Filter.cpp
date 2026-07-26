@@ -1,86 +1,95 @@
-#include "DSP_Filter.h"
+#include "DSP_Preprocessing/DSP_Filter.h"
 
-#define FILTER_ORDER 10   // Bậc 10 do bandpass bậc 5 -> 2*order
-#define NUM_COEFFS (FILTER_ORDER + 1) // 11 hệ số
+// ==== BỘ LỌC BUTTERWORTH BANDPASS BẬC 5 - DẠNG SOS (CASCADE BIQUAD) ====
+// Hệ số lấy từ 9_Coef_Butter.py:
+// scipy.signal.butter(5, [100,2000]/nyq, btype='band', output='sos')
+// # y[n] = b0.x[n] + b1.x[n-1] + b2.x[n-2] - a1.y[n-1] - a2.y[n-2]
 
-// Dùng static để giữ trạng thái qua các gói I2S liên tiếp
-static float x_hist[NUM_COEFFS] = {0.0f}; 
-static float y_hist[NUM_COEFFS] = {0.0f}; 
-
-// Cặp hệ số trích xuất từ Python (Bandpass Order 5 -> 11 hệ số)
-const float b_coeffs[11] = { 
-    0.00264860f, 0.00000000f, -0.01324299f, 0.00000000f, 0.02648598f, 
-    0.00000000f, -0.02648598f, 0.00000000f, 0.01324299f, 0.00000000f, -0.00264860f 
+struct BiquadCoeffs {
+    float b0, b1, b2;
+    float a1, a2;
 };
 
-const float a_coeffs[11] = { 
-    1.00000000f, -7.47679917f, 25.28763160f, -51.07773608f, 68.37666187f, 
-    -63.47504863f, 41.40605064f, -18.74144078f, 5.63215595f, -1.01462709f, 0.08315169f 
+#define NUM_SECTIONS 5
+
+static const BiquadCoeffs sos_coeffs[NUM_SECTIONS] = {
+    // {  b0,          b1,          b2,          a1,           a2        }
+    {  0.0026486f,  0.0052972f,  0.0026486f, -0.96499274f,  0.31053903f },
+    {  1.0f,         2.0f,        1.0f,      -1.1858251f,   0.66801213f },
+    {  1.0f,         0.0f,       -1.0f,      -1.41421356f,  0.43740897f },
+    {  1.0f,        -2.0f,        1.0f,      -1.93546095f,  0.93714828f },
+    {  1.0f,        -2.0f,        1.0f,      -1.97630681f,  0.97785523f }
 };
 
-// Filter Pre-Amphasis
-// y[n] = x[n] - a.x[n-1]
-void Apply_Pre_Emphasis(int16_t* signal, int length){
+// Trạng thái trễ (delay line) — đổi tên tránh trùng với hàm math.h (y1, y2 là hàm Bessel)
+static float sos_x1[NUM_SECTIONS] = {0.0f}; // x[n-1]
+static float sos_x2[NUM_SECTIONS] = {0.0f}; // x[n-2]
+static float sos_y1[NUM_SECTIONS] = {0.0f}; // y[n-1]
+static float sos_y2[NUM_SECTIONS] = {0.0f}; // y[n-2]
+
+// ==== PRE-EMPHASIS ====
+// y[n] = x[n] - coef . x[n-1]
+void Apply_Pre_Emphasis(float* signal, int length){
     if(length <= 1) return;
 
     for(int i = length - 1 ; i >= 1 ; i--){
-        signal[i] = signal[i] - (int16_t)(Pre_Coef * signal[i - 1]);
+        signal[i] = signal[i] - Pre_Coef * signal[i - 1];
     }
 }
 
-// Reset trạng thái (Gọi khi bắt đầu state STATE_RECORDING)
+// ==== RESET TRẠNG THÁI BUTTERWORTH ====
 void Butterworth_Reset(void) {
-    for (int i = 0; i < NUM_COEFFS; i++) {
-        x_hist[i] = 0.0f;
-        y_hist[i] = 0.0f;
+    for (int i = 0; i < NUM_SECTIONS; i++) {
+        sos_x1[i] = sos_x2[i] = sos_y1[i] = sos_y2[i] = 0.0f;
     }
 }
 
-// Lọc từng sample (Logic đã được làm đồng bộ, mượt mà hơn)
-// Công thức: y[n] = sigma(k=0 -> 10)(bk.x[n-k]) - sigma(k=1 -> 10)(ak.y[n-k])
+// ==== LỌC 1 SAMPLE QUA 5 SECTION NỐI TIẾP (CASCADE) ====
+// Mô phỏng phương trình bộ lọc
+// Dòng chảy dữ liệu: Tín hiệu đi vào section 0, tính toán ra out. 
+// Giá trị out này lập tức trở thành in cho section 1, 
+// cứ thế cuốn cuốn qua đủ 5 lớp
+// y[n] = b0.x[n] + b1.x[n-1] + b2.x[n-2] - a1.y[n-1] - a2.y[n-2]
 float Butterworth_Process_Sample(float x_new) {
-    // 1. Dịch toàn bộ lịch sử input và output lùi lại 1 bước
-    for (int i = NUM_COEFFS - 1; i > 0; i--) {
-        x_hist[i] = x_hist[i - 1];
-        y_hist[i] = y_hist[i - 1];
-    }
-    
-    // 2. Nạp giá trị hiện tại vào đầu mảng input
-    x_hist[0] = x_new;
+    float in = x_new;
 
-    // 3. Tính toán phương trình sai phân
-    float acc = 0.0f;
-    for (int k = 0; k < NUM_COEFFS; k++) {
-        acc += b_coeffs[k] * x_hist[k];
-    }
-    for (int k = 1; k < NUM_COEFFS; k++) {
-        acc -= a_coeffs[k] * y_hist[k]; // <-- Giờ chỉ cần gọi y_hist[k], không cần [k-1] nữa
+    for (int s = 0; s < NUM_SECTIONS; s++) {
+        const BiquadCoeffs& coef = sos_coeffs[s];
+
+        float out = coef.b0 * in + coef.b1 * sos_x1[s] + coef.b2 * sos_x2[s]
+                     - coef.a1 * sos_y1[s] - coef.a2 * sos_y2[s];
+
+        sos_x2[s] = sos_x1[s];
+        sos_x1[s] = in;
+        sos_y2[s] = sos_y1[s];
+        sos_y1[s] = out;
+
+        in = out;
     }
 
-    // 4. Lưu lại kết quả output hiện tại và trả về
-    y_hist[0] = acc;
-    return acc;
+    return in;
 }
 
-// Lọc cả buffer (Đã đổi sang int16_t để khớp với kho audio_buffer của I2S)
-void Butterworth_Process_Buffer(int16_t* buffer, int length) {
+// ==== LỌC CẢ BUFFER ====
+void Butterworth_Process_Buffer(float* buffer, int length) {
     for (int i = 0; i < length; i++) {
-        // Ép kiểu int16_t sang float để xử lý, sau đó ép ngược lại in-place
-        float x_float = (float)buffer[i];
-        float y_float = Butterworth_Process_Sample(x_float);
-        buffer[i] = (int16_t)y_float;
+        buffer[i] = Butterworth_Process_Sample(buffer[i]);
     }
 }
 
+// ==== CHUẨN HÓA int16 -> float [-1, 1] ====
+// int32 tránh tràn số khi đạt max dải
 void Normalize_To_Float(int16_t* input, float* output, int length){
-    int16_t max_val = 0;
+    int32_t max_val = 0;
     
+    // Tìm giá trị max làm tham chiếu
     for(int i = 0 ; i < length ; i++){
-        int16_t abs_val = abs(input[i]);
+        int32_t abs_val = abs(input[i]);
 
         if(abs_val > max_val) max_val = abs_val;
     }
-
+    
+    // Chống chia cho 0
     if(max_val == 0) max_val = 1;
 
     for(int i = 0 ; i < length ; i++){

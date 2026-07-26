@@ -10,13 +10,28 @@ Dự án Nghiên cứu khoa học (NCKH) tập trung vào việc tự nghiên c�
 
 ### 1. ESP32 #1: Sensor Node (Thu thập & Xử lý Cục bộ)
 * **MAX30102:** Cấu hình thanh ghi điều khiển LED, chế độ lấy mẫu (SpO2/HR) và đọc mảng dữ liệu qua bộ đệm FIFO bằng giao tiếp **I2C**.
-* **SGP30 & MQ135:** Đo chỉ số eCO2, TVOC (qua tập lệnh I2C của SGP30) và các khí độc hại (qua bộ chuyển đổi **ADC** kết hợp công thức tính điện trở cảm biến).
+* **SGP30:** Đo chỉ số eCO2, TVOC (qua tập lệnh I2C của SGP30) về chất lượng không khí.
 * **DHT11 & BMP280:** Đọc thông số vi khí hậu. Riêng với BMP280, tự viết hàm bóc tách các hệ số bù (Calibration Coefficients) từ bộ nhớ ROM của chip để tính toán nhiệt độ và áp suất chính xác.
+* **MLX90614:** Đọc thông số nhiệt độ cơ thể con người từ đó theo dõi sát sao cơ thể
 * **Xử lý cảnh báo tại chỗ:** Tự xây dựng bộ đệm hiển thị đồ họa trên màn hình **OLED (SSD1306)** qua I2C và điều khiển còi **Buzzer** báo động.
 
 ### 2. ESP32 #2: Gateway Node (Định vị & Cảnh báo Khẩn cấp)
 * **NEO-M8N:** Cấu hình cổng **UART**, tự viết bộ Parser xử lý chuỗi ký tự thô NMEA để lọc lấy tọa độ GPS (`$GPRMC`, `$GPGGA`).
 * **A7680C (4G LTE):** Đóng gói bộ thư viện gửi nhận tập lệnh **AT Commands** qua UART để điều khiển module di động thực hiện cuộc gọi khẩn cấp (Voice Call) và gửi tin nhắn SMS chứa tọa độ cứu trợ khi `alert_level` vượt ngưỡng an toàn.
+
+### 3. Danh sách và Chức năng các Module phần cứng
+
+| Module / Cảm biến | Chuẩn giao tiếp | Chức năng chính |
+| :--- | :---: | :--- |
+| **A7680C** | UART (115200) | Module viễn thông 4G LTE |
+| **BMP280** | I2C (`0x76`) | Đo áp suất khí quyển và nhiệt độ |
+| **DHT11** | 1-Wire (GPIO) | Đo nhiệt độ, độ ẩm môi trường |
+| **INMP441** | I2S / ADC | Thu thập dữ liệu âm thanh ho / hô hấp / nói chuyện |
+| **MAX30102** | I2C (`0x57`) | Đo nhịp tim và nồng độ oxy trong máu bệnh nhân |
+| **MLX90614** | I2C (`0x5A`) | Đo nhiệt độ môi trường xung quang và đối tượng nhìn thấy | 
+| **NEO-M8N** | UART (9600) | Module định vị vệ tinh GPS/GLONASS |
+| **SGP30** | I2C (`0x58`) | Cảm biến chất lượng không khí (CO2 và TVOC) |
+| **SSD1306** | I2C (`0x3C`) | Màn hình hiển thị OLED (128x64) |
 
 ---
 
@@ -36,7 +51,7 @@ Toàn bộ Driver tự viết được tổ chức gọn gàng trong thư mục 
 │   ├── MAX30102/    # Đo SpO2 & Nhịp tim qua thanh ghi (I2C)
 │   ├── INMP441/     # [Đã hoàn thiện] Cấu hình thu âm (I2S Native)
 │   ├── SGP30/       # Giao tiếp lấy dữ liệu eCO2 & TVOC (I2C)
-│   ├── MQ135/       # Tính toán chất lượng không khí qua điện áp (ADC)
+│   ├── MLX90614/    # Tính toán nhiệt độ cơ thể con người (I2C)
 │   ├── DHT11/       # Đọc Nhiệt độ & Độ ẩm (Xử lý xung 1-Wire)
 │   ├── BMP280/      # Tính toán Áp suất & Nhiệt độ từ hệ số bù (I2C)
 │   ├── OLED/        # Tự build buffer điều khiển màn hình SSD1306 (I2C)
@@ -110,20 +125,20 @@ Giao tiếp qua bus I2C (địa chỉ `0x57`). Đây là cảm biến quang họ
   4. **Giải mã 18-bit:** Dữ liệu bị phân mảnh trong 3 bytes. MCU sử dụng phép dịch bit (`<<`) và mặt nạ bit (`& 0x03FFFF`) để ép khối dữ liệu này về đúng số nguyên 18-bit chuẩn, loại bỏ các bit rác.
   5. **Xóa Ngắt (Clear Interrupt):** Bắt buộc phải thực hiện lệnh đọc thanh ghi trạng thái ngắt `0x00` (INT_STAT_1). Việc đọc này đóng vai trò reset mạch ngắt nội bộ, MAX30102 sẽ tự động thả chân `INT` lên lại mức HIGH để chuẩn bị cho chu kỳ nhịp tim tiếp theo.
 
-### 5. Cảm biến Khí tổng hợp (MQ135) - Giao tiếp Analog & Toán học Hồi quy
-MQ135 là cảm biến nung nóng (Heater) sử dụng lõi $SnO_2$. Nó không giao tiếp bằng giao thức số mà trả về tín hiệu điện áp tương tự (Analog).
+### 5. Cảm biến Thân nhiệt Hồng ngoại (MLX90614) - Giao tiếp SMBus/I2C & Xử lý CRC-8
+MLX90614 là cảm biến đo nhiệt độ hồng ngoại không tiếp xúc. Nó không cần mạch phân áp hay hàm toán học phức tạp mà giao tiếp trực tiếp qua chuẩn số SMBus (tương thích I2C).
 
-* **Đấu nối (Đòi hỏi Cầu phân áp):**
-  * `VCC` và chân `H` của module phải nối với nguồn **5.0V** (Để đủ nhiệt nung nóng lõi).
-  * Chân `A0` xuất ra dải 0-5V. Bắt buộc dùng mạch phân áp (R1 = 10k nối từ A0 sang ADC, R2 = 20k nối từ ADC xuống GND) để hạ điện áp xuống dải 0-3.3V an toàn cho ESP32.
-* **Quy trình Khởi động (Pre-heating & Calibration):**
-  1. **Nung nóng:** Khi mới cấp điện, cần chờ từ 3-5 phút (thực tế mạch nung cần tới 48h để đạt độ ổn định tuyệt đối) để lõi gốm đạt nhiệt độ chuẩn, điện áp A0 hạ xuống mức ổn định.
-  2. **Hiệu chuẩn (Calibrate):** Đặt cảm biến trong không khí sạch. MCU đọc điện áp, tính ra điện trở hiện tại ($R_s$). Lưu giá trị điện trở chuẩn $R_0 = R_s / 3.6$ vào bộ nhớ.
-* **Quy trình Lấy mẫu và Tính toán (Toán Log-Log):**
-  1. **Đọc ADC:** Lấy trung bình 20-50 mẫu ADC để lọc nhiễu.
-  2. **Khôi phục điện áp:** Chuyển ADC thành điện áp GPIO (0-3.3V), sau đó nhân với hệ số phân áp (1.5) để tìm lại điện áp thật ở chân A0 ($V_{A0}$).
-  3. **Tính điện trở ($R_s$):** Áp dụng định luật Ohm: $R_s = R_L \cdot (5.0 - V_{A0}) / V_{A0}$.
-  4. **Nội suy Nồng độ (ppm):** Đưa tỉ lệ $R_s/R_0$ vào hàm lũy thừa $ppm = A \cdot (R_s/R_0)^B$. Trong đó $A$ và $B$ là hằng số được tính ngược từ đồ thị Log-Log trong Datasheet đối với từng loại khí mục tiêu.
+* **Đấu nối (Giao tiếp I2C Chuẩn):**
+  * `VDD` và `VSS` (GND): Tùy thuộc vào phiên bản phần cứng, dòng MLX90614Bxx (phiên bản 3V) đặc biệt phù hợp để cấp nguồn 3.3V trực tiếp từ vi điều khiển.
+  * `PWM/SDA` và `SCL/Vz`: Nối trực tiếp vào bus I2C của MCU. Hệ thống bắt buộc phải có điện trở kéo lên (pull-up resistors) trên cả hai đường tín hiệu này để đảm bảo giao tiếp SMBus ổn định, do chân SDA của cảm biến hoạt động ở chế độ Open Drain NMOS.
+* **Quy trình Khởi động (Plug & Play):**
+  * Không giống cảm biến nung nóng, MLX90614 đã được hiệu chuẩn sẵn (factory calibrated) từ nhà máy. Cảm biến hỗ trợ dải đo nhiệt độ môi trường từ **-40°C** đến **125°C**, và nhiệt độ đối tượng từ **-70°C** đến **380°C**. Không cần thời gian nung nóng (pre-heating) hay tự hiệu chuẩn (calibration).
+  * Địa chỉ Slave mặc định trên đường truyền là `0x5A` (Hex).
+* **Quy trình Lấy mẫu và Tính toán (Giao thức Read Word & Mã PEC):**
+  * **Đọc RAM:** Gửi lệnh đọc tới thanh ghi `0x07` để truy xuất nhiệt độ đối tượng (T_OBJ1) hoặc thanh ghi `0x06` để truy xuất nhiệt độ môi trường (T_A).
+  * **Kiểm tra Toàn vẹn Dữ liệu (PEC - Packet Error Code):** Cảm biến sẽ trả về 3 byte liên tiếp gồm: Byte Thấp (LSB), Byte Cao (MSB) và Byte Mã Lỗi (PEC). MCU cần thực hiện thuật toán CRC-8 (sử dụng đa thức X^8+X^2+X^1+1) quét qua toàn bộ 5 byte của khung truyền (bao gồm cả địa chỉ Slave và mã thanh ghi) để so khớp với byte PEC. Nếu sai lệch, gói tin bị loại bỏ để chống nhiễu tín hiệu.
+  * **Quy đổi Nhiệt độ:** Dữ liệu thô (16-bit) thu được từ RAM đại diện cho nhiệt độ tuyệt đối với độ phân giải siêu nhỏ là 0.02°K/LSB. Áp dụng công thức tuyến tính đơn giản sau để có kết quả cuối cùng:
+    `T[°C] = (RAM_Value * 0.02) - 273.15`
 
 ### 6. Module Định vị Toàn cầu (NEO-M8N) - Giao tiếp UART & Parsing NMEA
 NEO-M8N là module GNSS đồng thời, có khả năng bắt sóng vệ tinh GPS, GLONASS và BeiDou cùng lúc để đạt độ chính xác cao. Module tự động phát luồng dữ liệu (streaming) theo chuẩn ASCII NMEA 0183 ngay khi được cấp nguồn.

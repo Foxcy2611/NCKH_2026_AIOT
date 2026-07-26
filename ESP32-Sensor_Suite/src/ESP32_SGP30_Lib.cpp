@@ -1,6 +1,8 @@
 #include <ESP32_SGP30_Lib.h>
 
 // Thuật toán kiểm tra checksum CRC-8
+// x8 + x5 + x4 + 1 = 0x31 
+// I2C nên khởi tạo = 0xFF
 static uint8_t SGP30_Caculate_CRC(uint8_t data[2]){
     uint8_t crc = 0xFF;
     for(int i = 0 ; i < 2 ; i++){

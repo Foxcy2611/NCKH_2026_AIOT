@@ -1,0 +1,4 @@
+Lưu ý: 
++ Asthma_Model_2 khi được tạo ra từ script Python vẫn có tên là Asthma_Model.h
++ Đổi tên thủ công thành Asthma_Model_2 để không cần xóa model cũ mà vẫn dùng model mới
++ Chú ý 2 model trên ở Folder Training để thấy sự khác biệt

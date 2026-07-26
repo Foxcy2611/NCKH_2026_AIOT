@@ -1,0 +1,27 @@
+=========================================================
+KẾT LUẬN KIỂM THỬ MÔ HÌNH PHASE - 2
+=> Tinh chỉnh hệ số mix, int32_t, HTK Slaney và Data Class 0
+=========================================================
+
+1. Khắc phục triệt để lỗi tiền xử lý tín hiệu (DSP)
+- Sự chênh lệch kết quả giữa Python và C++ đã được giải quyết hoàn toàn thông qua ba điều chỉnh cốt lõi trong pipeline DSP:
+    + Đồng bộ hóa ma trận đặc trưng Mel-Spectrogram về đúng chiều [64][129].
+    + Cập nhật công thức quy đổi tần số Mel Scale sang hệ Slaney để khớp chuẩn với cấu hình mặc định của thư viện huấn luyện.
+    + Mở rộng kiểu dữ liệu lên 32-bit trong khâu chuẩn hóa biên độ, loại bỏ triệt để hiện tượng tràn số (wrap-around) gây nhiễu mảng tính toán.
+- ĐẶC BIỆT: Đã làm mới hoàn toàn tập dữ liệu lớp 0 (Asthma) bằng cách tinh chỉnh hệ số mix nhiễu, giúp mô hình bóc tách đặc trưng vệt rít mạnh mẽ hơn.
+
+2. Đánh giá độ chính xác phân loại trên C++
+- Kết quả kiểm thử thực tế trên 8 mẫu thử nghiệm (Checkpoints) với mô hình mới cho thấy sự lột xác về độ tự tin:  
+    + Độ nhạy với tiếng rít Hen suyễn (True Positive): 
+        -> Với các mẫu Asthma (Limited), nhiễu quạt máy (Quạt + Asthma), và khoảng lặng (Silent + Asthma), hệ thống chốt hạ xuất sắc với độ tự tin cực đại 100.00% (Output Int8: -128). 
+        -> Đối với mẫu nhiễu trắng khó nhằn (White Noise + Asthma), mô hình vẫn phát hiện thành công ở mức 92.97%.
+    + Khả năng loại trừ nhiễu và bệnh lý khác (True Negative): 
+        -> Hệ thống từ chối dứt khoát các bệnh lý khác như COPD 1 và các tạp âm môi trường (Podcast) với độ tự tin tuyệt đối 99.61% (Output Int8: 127). 
+        -> Khoảng lặng thuần túy (Silent) và Viêm phổi (Pneumonia) cũng được nhận diện chính xác là bình thường với tỷ lệ lần lượt 98.05% và 87.50%.
+
+3. Kết LUẬN
+- Các thuật toán convert từ Python qua C++ đã đồng bộ hoàn hảo, kết hợp với tập data class 0 mới đã tạo ra độ chính xác áp đảo.
+
+4. Hướng đi cuối cùng
+- Cần kiểm định lại bằng cách test tương tự ở Phase 3 nhưng số lượng mẫu test sẽ lớn hơn rất nhiều (> 8 mẫu ở Phase 2) nhằm bao quát hết các biến dạng âm thanh.
+- Phòng trừ kết quả đo bị nhiễu do môi trường thực tế, cần bổ sung thuật toán Voting đa lớp và cơ chế VAD.

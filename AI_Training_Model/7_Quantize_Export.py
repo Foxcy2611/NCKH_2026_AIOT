@@ -12,9 +12,10 @@ import numpy as np
 import tensorflow as tf
 
 # === Link dẫn file ===
-Dir_Features  = "5_Output_Features"
-Dir_Out_Model = "6_Output_Model"
-Dir_TFLite    = "7_Output_TFLite"
+Dir_Features  = "Training_Model_Phase_2/5_Output_Features"
+Dir_Out_Model = "Training_Model_Phase_2/6_Output_Model"
+
+Dir_TFLite    = "Training_Model_Phase_2/7_Output_TFLite"
 
 os.makedirs(Dir_TFLite, exist_ok=True)
 
@@ -57,7 +58,8 @@ def main():
 
     # Load dữ liệu tập chia để làm thước đo
     X_train = np.load(os.path.join(Dir_Features, "X_data_mel.npy"))
-    
+    Y_labels = np.load(os.path.join(Dir_Features, "Y_labels_mel.npy")) # Ms thêm
+
     # Normalize về [0 1] vì các giá trị dB đều -80 < đvi <= 0
     X_min = np.min(X_train)
     X_max = np.max(X_train)
@@ -66,9 +68,21 @@ def main():
     # Đưa về dtype float32 để TFLite đọc được
     X_train = X_train.astype(np.float32)
 
+    # ==== SỬA: Lấy đều cả 2 lớp, xáo trộn ngẫu nhiên ====
+    np.random.seed(42)
+    idx_class0 = np.where(Y_labels == 0)[0]   # tất cả index của Asthma
+    idx_class1 = np.where(Y_labels == 1)[0]   # tất cả index của Non-Asthma
+
+    # Lấy 50 mẫu ngẫu nhiên từ mỗi lớp, tổng 100 mẫu cân bằng
+    sample_idx = np.concatenate([
+        np.random.choice(idx_class0, 50, replace=False),
+        np.random.choice(idx_class1, 50, replace=False)
+    ])
+    np.random.shuffle(sample_idx)   # xáo trộn để tránh thứ tự theo khối
+
     # Hàm tạo gen làm thước đo
     def Rep_Data_Gen():
-        for i in range(100):
+        for i in sample_idx:
             yield [X_train[i:i+1]]
             
     print("\n2. CẤU HÌNH CONVERTER (INT8)...")

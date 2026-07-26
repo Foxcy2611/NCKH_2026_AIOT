@@ -42,13 +42,19 @@ N_FFT = 1024
 # Link thư mục (Gộp chung output)
 Dir_Asthma     = "Dataset/0_Asthma"
 Dir_Non_Asthma = "Dataset/1_Non_Asthma"
-Dir_Output     = "5_Output_Features"
+Dir_Output     = "Training_Model_Phase_2/5_Output_Features"
 
 # Chỉ cần tạo 1 thư mục gốc
 os.makedirs(Dir_Output, exist_ok=True)
 
 # === Hàm bộ lọc ===
 # Butterworth
+# Mặc định sẽ là 'btype=ba' dạng 
+# y[n] = b0.x[n] + b1.x[n-1] + ... bM.x[n-M] - a1.y[n-1] - ... - aN.y[n-N]
+# b, a = butter
+# Có thể đổi dạng 'btype=sos' dạng sau (Về cơ bản chúng tương tự nhau)
+# y[n] = b0.x[n] + b1.x[n-1] + b2.x[n-2] - a1.y[n-1] - a2.y[n-2]
+# sos = butter
 def Butter_Bandpass(lowcut, highcut, fs, order):
     nyq = 0.5 * fs
     low = lowcut / nyq
@@ -114,10 +120,18 @@ def Process_Audio_File(file_path):
             hop_length=Hop_Length,
             n_mels=N_Mels,
             fmin=Low_Cut,
-            fmax=High_Cut
+            fmax=High_Cut,
+            center=True,
+            htk=False, # Dùng theo Slaney 
+            # Giải thích kĩ hơn ở Mel_Scale.cpp Prj 3
+            window='hann', # Trước khi FFT, tín hiệu phải nhân với cửa sổ Hanning
+            pad_mode='constant', # Khi center=True, đệm bằng số 0 
+            power=2.0, # Dùng Power Spectrogram (Bình phương biên độ STFT)
+            norm='slaney' # Chuẩn hóa diện tích các bộ lọc tam giác
         )
 
         # 6. Chuyển sang thang đo Logarit
+        # Lưu ý ở tham số ref=np.max
         mel_spec_dB = librosa.power_to_db(mel_spec, ref=np.max)
 
         return mel_spec_dB

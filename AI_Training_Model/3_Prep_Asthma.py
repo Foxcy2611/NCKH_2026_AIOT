@@ -29,7 +29,7 @@ os.makedirs(Dir_Out_Asthma, exist_ok=True)
 # ===== List Def Mix Dataset =====
 # === Mix asthma + noise có tỉ lệ SNR ===
 # Tạp âm sẽ nhân vs hệ số 0.2 -> 0.7 => lúc vù vù, lúc be bé
-def mix_with_noise(audio, noise_audio, min_gain=0.2, max_gain=0.7):
+def mix_with_noise(audio, noise_audio, min_gain=0.02, max_gain=0.1):
     coef = random.uniform(min_gain, max_gain)
     
     # Đảm bảo đủ độ dài 5s
@@ -56,19 +56,18 @@ def time_shift_on_silence(audio, silence_audio):
     # Quy đổi sang chỉ số mẫu
     center_idx = librosa.frames_to_samples(max_energy_frame)
 
-    # 2. Cắt lõi lấy 2.5s
-    # Cắt 2.5s từ vị trí trung tâm file asthma
-    core_length = int(2.5 * Target_Sr) # 40000 mẫu
+    # 2. Cắt lõi lấy 4s (đã tăng từ 2.5s để giữ trọn phần lõi wheeze)
+    core_length = int(4 * Target_Sr) # 64000 mẫu
     haft_core = core_length // 2 # Dùng tâm đối xứng để cắt
 
     # Tính điểm đầu và kết thúc cắt
     start_cut = max(0, center_idx - haft_core)
     end_cut   = min(len(audio), center_idx + haft_core) 
 
-    # 2.5s đặc trưng
+    # 4s đặc trưng
     core_audio = audio[start_cut:end_cut]
 
-    # Nếu ngắn hơn 2.5s thì thêm lặng
+    # Nếu ngắn hơn 4s thì thêm lặng
     core_audio = librosa.util.fix_length(core_audio, size=core_length)
 
     # 3. Chèn vào file im lặng
@@ -84,7 +83,7 @@ def time_shift_on_silence(audio, silence_audio):
 # === Thêm nhiễu trắng ===
 # White Gaussian Noise từ randn
 # Mô phỏng chút tạp âm từ phần cứng khi thu từ INMP441
-def add_white_noise(audio, noise_level=0.005):
+def add_white_noise(audio, noise_level=0.001):
     noise = np.random.randn(len(audio))
     agumented_audio = audio + noise_level * noise
     
@@ -106,7 +105,7 @@ def time_stretch(audio):
 # Kéo toàn bộ dải âm thanh lên cao/xuống khoảng bé +- 1.5 semitones
 # Giả lập phổi người lớn vs trẻ nhỏ về kích thước thanh quản và ống thở
 def pitch_shift(audio):
-    n_steps = random.uniform(-1.5, 1.5)
+    n_steps = random.uniform(-0.5, 0.5)
     shifted = librosa.effects.pitch_shift(y=audio, sr=Target_Sr, n_steps=n_steps)
 
     # fix độ dài
@@ -179,13 +178,13 @@ def main():
             if method == 'podcast' and podcast_files:
                 noise_path = random.choice(podcast_files)
                 noise_audio, _ = librosa.load(noise_path, sr=Target_Sr)
-                final_audio = mix_with_noise(base_audio, noise_audio, min_gain=0.2, max_gain=0.6)
+                final_audio = mix_with_noise(base_audio, noise_audio)
                 prefix = "Aug_Pod_"
                 
             elif method == 'fan_key' and fan_key_files:
                 noise_path = random.choice(fan_key_files)
                 noise_audio, _ = librosa.load(noise_path, sr=Target_Sr)
-                final_audio = mix_with_noise(base_audio, noise_audio, min_gain=0.3, max_gain=0.7)
+                final_audio = mix_with_noise(base_audio, noise_audio)
                 prefix = "Aug_Fan_Key_"
                 
             elif method == 'silence' and silence_files:

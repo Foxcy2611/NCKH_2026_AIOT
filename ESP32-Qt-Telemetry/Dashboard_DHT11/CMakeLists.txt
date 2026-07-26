@@ -4,7 +4,8 @@ project(Dashboard_DHT11 VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick)
+# Thêm chữ Mqtt vào cuối danh sách các components cần tìm
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick Mqtt)
 
 qt_standard_project_setup(REQUIRES 6.10)
 
@@ -16,6 +17,14 @@ qt_add_qml_module(appDashboard_DHT11
     URI Dashboard_DHT11
     QML_FILES
         Main.qml
+        SOURCES mqtthandler.h mqtthandler.cpp
+)
+
+target_link_libraries(appDashboard_DHT11 PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Qml
+    Qt6::Mqtt
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -30,7 +39,7 @@ set_target_properties(appDashboard_DHT11 PROPERTIES
 )
 
 target_link_libraries(appDashboard_DHT11
-    PRIVATE Qt6::Quick
+    PRIVATE Qt6::Quick Qt6::Mqtt
 )
 
 install(TARGETS appDashboard_DHT11

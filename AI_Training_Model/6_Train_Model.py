@@ -24,10 +24,15 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from keras import models, layers
 from sklearn.model_selection import train_test_split
+from sklearn.utils.class_weight import compute_class_weight
+from sklearn.metrics import confusion_matrix, classification_report
 
-Dir_Features  = "5_Output_Features"
-Dir_Out_Model = "6_Output_Model"
+Dir_Features  = "Training_Model_Phase_2/5_Output_Features"
+Dir_Out_Model = "Training_Model_Phase_2/6_Output_Model"
 
+tf.random.set_seed(42)
+np.random.seed(42)
+ 
 Epochs     = 100
 Batch_Size = 32
 
@@ -137,14 +142,21 @@ def Build_and_Compile_Model(input_shape):
     return model
 
 # Callbacks cho Fit
+# ==<>== Đổi EarlyStopping + ModelCheckpoint sang theo dõi val_accuracy:
+# vì quyết định phân loại cuối cùng trên ESP32-S3 dùng ngưỡng cứng 0.5,
+# nên accuracy phản ánh đúng chất lượng model hơn val_loss (val_loss dễ 
+# bị vài mẫu khó phạt nặng dù model đã phân loại đúng hướng).
+# ReduceLROnPlateau vẫn giữ theo val_loss vì mục đích khác (giảm LR khi 
+# quá trình học chững lại, ít rủi ro hơn so với việc "khoá" trọng số).
 callbacks_list = [
-    # 1. Dừng sớm nếu val_loss ko giảm sau 10 vòng
+    # 1. Dừng sớm nếu val_accuracy ko cải thiện sau 10 vòng
     tf.keras.callbacks.EarlyStopping(
-        monitor='val_loss',
+        monitor='val_accuracy',
+        mode='max',
         patience=10,
         restore_best_weights=True
     ),
-    # 2. Giảm tốc độ học LR đi 1 nửa sau 10 vòng nếu bị chững
+    # 2. Giảm tốc độ học LR đi 1 nửa sau 10 vòng nếu val_loss bị chững
     tf.keras.callbacks.ReduceLROnPlateau(
         monitor='val_loss',
         factor=0.5,
@@ -152,10 +164,11 @@ callbacks_list = [
         patience=10,
         verbose=1
     ),
-    # 3. Lưu lại bộ não xuất sắc ra từng vòng ra file cứng
+    # 3. Lưu lại bộ não có val_accuracy cao nhất ra file cứng
     tf.keras.callbacks.ModelCheckpoint(
         filepath=os.path.join(Dir_Out_Model, 'Bin_Asthma.keras'),
-        monitor='val_loss',
+        monitor='val_accuracy',
+        mode='max',
         save_best_only=True,
         verbose=1
     ),
@@ -183,6 +196,12 @@ def main():
     Y_labels = np.load(y_path)
     print(f"Đã tải xong! Kích thước X: {X_data.shape} | Kích thước Y: {Y_labels.shape}")
 
+    print("Check NaN trong X_data:", np.isnan(X_data).any())
+    print("Check Inf trong X_data:", np.isinf(X_data).any())
+    print("Số lớp 0 (Asthma):", np.sum(Y_labels == 0))
+    print("Số lớp 1 (Non-Asthma):", np.sum(Y_labels == 1))
+    print("Min/Max toàn bộ X_data:", np.min(X_data), np.max(X_data))
+
     print("\n2. CHIA TẬP TRAIN & TEST...")
     X_train_np, X_temp, Y_train_np, Y_temp = train_test_split(
         X_data,
@@ -204,10 +223,15 @@ def main():
     print(f"Tập Train (Học):        {len(X_train_np)} mẫu")
     print(f"Tập Validation (Chỉnh): {len(X_valid_np)} mẫu")
     print(f"Tập Test (Thi):         {len(X_test_np)} mẫu")
+
+    print("Check NaN trong X_valid sau chuẩn hóa:", np.isnan(X_valid_np).any())
+    print("Phân bố nhãn Y_valid:", np.unique(Y_valid_np, return_counts=True))
     
     print("\n3. CHUẨN HÓA DỮ LIỆU VỀ [0, 1]...")
     min_val = np.min(X_train_np)
     max_val = np.max(X_train_np)
+    # Thêm ngay sau dòng tính min_val, max_val trong 6_Train_Model.py
+    print(f"[QUAN TRỌNG - GHI LẠI 2 SỐ NÀY] min_val={min_val}, max_val={max_val}")
 
     X_train_np = (X_train_np - min_val) / (max_val - min_val)
     X_valid_np = (X_valid_np - min_val) / (max_val - min_val)
@@ -236,6 +260,14 @@ def main():
     print("\n--- BẢNG TÓM TẮT KIẾN TRÚC MÔ HÌNH ---")
     model.summary()
 
+    class_weights = compute_class_weight(
+        class_weight='balanced',
+        classes=np.unique(Y_train_np),
+        y=Y_train_np
+    )
+    class_weight_dict = dict(enumerate(class_weights))
+    print("Class weights:", class_weight_dict)
+
     print(f"\n6. BẮT ĐẦU TRAINING...")
     history = model.fit(
         X_train,
@@ -244,6 +276,7 @@ def main():
         batch_size=Batch_Size,
         validation_data=(X_valid, Y_valid),
         callbacks=callbacks_list,
+        class_weight=class_weight_dict,
         verbose=1
     )
 
@@ -257,7 +290,21 @@ def main():
     )
     print(f"Test Loss    : {loss:.4f}")
     print(f"Test Accuracy: {acc:.4f} ({acc*100:.2f}%)")
-    Plot_Training_History(history)
 
+    print("\n--- CHI TIẾT MA TRẬN NHẦM LẪN (CONFUSION MATRIX) ---")
+    # Dự đoán trên tập Test
+    Y_pred = (model.predict(X_test) > 0.5).astype(int)
+    
+    # In ma trận nhầm lẫn
+    print(confusion_matrix(Y_test_np, Y_pred))
+    
+    print("\n--- BÁO CÁO PHÂN LOẠI (CLASSIFICATION REPORT) ---")
+    # In các chỉ số Precision, Recall, F1-Score
+    print(classification_report(Y_test_np, Y_pred, target_names=['Asthma', 'Non-Asthma']))
+    # =====================================================
+
+    Plot_Training_History(history)
+    
 if __name__ == "__main__":
     main()
+    

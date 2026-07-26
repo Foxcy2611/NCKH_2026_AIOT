@@ -1,50 +1,62 @@
 import QtQuick
-import QtQuick.Window
 import QtQuick.Controls
+import QtQuick.Layouts
 
 Window {
-    width: 400
-    height: 300
+    width: 600
+    height: 400
     visible: true
-    title: qsTr("Dashboard DHT11 - NgocChien Trùm VT01")
-    color: "#2c3e50" // Màu nền tối cho ngầu
+    title: qsTr("Dashboard NCKH - DHT11")
+    color: "#F5F5F5"
 
-    // Khai báo một biến để lưu nhiệt độ giả lập
-    property int currentTemp: 25
-
-    Column {
+    ColumnLayout {
         anchors.centerIn: parent
-        spacing: 20
+        spacing: 30
 
         Text {
-            text: "Nhiệt độ hiện tại:"
-            color: "white"
-            font.pixelSize: 20
-            anchors.horizontalCenter: parent.horizontalCenter
+            text: "GIÁM SÁT MÔI TRƯỜNG"
+            font.pixelSize: 28
+            font.bold: true
+            color: "#333333"
+            Layout.alignment: Qt.AlignHCenter
         }
 
-        Text {
-            id: tempDisplay
-            text: currentTemp + " °C"
-            color: "#e74c3c" // Màu đỏ nổi bật
-            font.pixelSize: 60
-            font.bold: true
-            anchors.horizontalCenter: parent.horizontalCenter
+        RowLayout {
+            spacing: 60
+            Layout.alignment: Qt.AlignHCenter
 
-            // Thêm chút animation khi nhiệt độ thay đổi cho mượt
-            Behavior on text {
-                NumberAnimation { duration: 300 }
+            ColumnLayout {
+                spacing: 10
+                Text { text: "Nhiệt độ"; font.pixelSize: 20; Layout.alignment: Qt.AlignHCenter }
+                Text {
+                    text: mqttHandler.temperature + " °C"
+                    font.pixelSize: 48
+                    font.bold: true
+                    color: "#D32F2F"
+                    Layout.alignment: Qt.AlignHCenter
+                }
+            }
+
+            ColumnLayout {
+                spacing: 10
+                Text { text: "Độ ẩm"; font.pixelSize: 20; Layout.alignment: Qt.AlignHCenter }
+                Text {
+                    text: mqttHandler.humidity + " %"
+                    font.pixelSize: 48
+                    font.bold: true
+                    color: "#1976D2"
+                    Layout.alignment: Qt.AlignHCenter
+                }
             }
         }
 
         Button {
-            text: "Cập nhật dữ liệu"
+            text: "Kết nối HiveMQ Cloud"
             font.pixelSize: 16
-            anchors.horizontalCenter: parent.horizontalCenter
-
-            // Sự kiện khi bấm nút: Random nhiệt độ từ 20 đến 35
+            Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: 20
             onClicked: {
-                currentTemp = Math.floor(Math.random() * 16) + 20
+                mqttHandler.connectToBroker()
             }
         }
     }
