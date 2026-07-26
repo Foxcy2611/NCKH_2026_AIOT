@@ -1,10 +1,10 @@
-# I2S_Mic — Thu âm, Điều phối Pipeline và Ra Quyết Định
+# 🎙️ I2S_Mic — Thu âm, Điều phối Pipeline và Ra Quyết Định
 
 Thư viện này là "nhạc trưởng" của toàn hệ thống: thu âm qua I2S từ INMP441, điều phối máy trạng thái (state machine) qua các bước DSP → AI, và tổng hợp kết quả qua cơ chế voting nhiều lần đo. Không có tương ứng Python trực tiếp 1-1 như 3 thư viện kia — đây là phần logic điều khiển runtime thuần túy trên firmware.
 
 ---
 
-## 1. Máy trạng thái tổng quan (State Machine)
+## 1️⃣ Máy trạng thái tổng quan (State Machine) 🔄
 
 STATE_LISTENING → STATE_RECORDING → STATE_PROCESSING → STATE_INTERFACE → (quay lại STATE_LISTENING)
 
@@ -19,7 +19,7 @@ Hàm `Process_Audio_Stream()` được gọi liên tục trong `loop()` — mỗ
 
 ---
 
-## 2. `STATE_LISTENING` — Voice Activity Detection (VAD) đơn giản
+## 2️⃣ `STATE_LISTENING` — Voice Activity Detection (VAD) đơn giản 👂
 
 ```cpp
 uint32_t sum_energy = 0;
@@ -35,11 +35,11 @@ if(avg_energy > Val_Threshold){
 
 Đây là thuật toán **MAV (Mean Absolute Value)** — tính trung bình biên độ tuyệt đối của 256 mẫu (~16ms audio), so với ngưỡng cố định `Val_Threshold = 5000`. Đơn giản, không cần FFT hay xử lý phức tạp, phù hợp chạy real-time trên MCU.
 
-**Không mất mẫu đầu:** ngay khi phát hiện tiếng động, khối 256 mẫu vừa đo (đã vượt ngưỡng) được nhét luôn vào `audio_buffer` thay vì bỏ đi — tránh mất phần đầu của tiếng ho/thở do độ trễ phát hiện.
+✅ **Không mất mẫu đầu:** ngay khi phát hiện tiếng động, khối 256 mẫu vừa đo (đã vượt ngưỡng) được nhét luôn vào `audio_buffer` thay vì bỏ đi — tránh mất phần đầu của tiếng ho/thở do độ trễ phát hiện.
 
 ---
 
-## 3. `STATE_RECORDING` — Gom đủ 5 giây
+## 3️⃣ `STATE_RECORDING` — Gom đủ 5 giây ⏺️
 
 ```cpp
 for(int i = 0; i < samples_read; i++){
@@ -54,7 +54,7 @@ Copy từng mẫu vào đúng vị trí `sample_cnt` trong `audio_buffer` (đã 
 
 ---
 
-## 4. `STATE_PROCESSING` — Chuỗi 5 bước DSP, đúng thứ tự Python
+## 4️⃣ `STATE_PROCESSING` — Chuỗi 5 bước DSP, đúng thứ tự Python ⚙️
 
 ```cpp
 // 1. int16 -> float [-1,1]
@@ -70,15 +70,15 @@ Compute_Mel_Power_Spectrogram(...)
 Power_To_dB_RefMax(...)              
 ```
 
-**Thứ tự này bắt buộc khớp chính xác với `5_Extract_Features.py`** (`Process_Audio_File()`): chuẩn hóa → Butterworth → Pre-emphasis → Mel-Spectrogram → dB. Đảo thứ tự bất kỳ 2 bước nào (ví dụ lọc trước rồi mới chuẩn hóa) sẽ khiến hệ số chuẩn hóa tính trên tín hiệu sai, làm lệch toàn bộ pipeline phía sau — đây từng là nguồn gốc 1 bug đã fix.
+⚠️ **Thứ tự này bắt buộc khớp chính xác với `5_Extract_Features.py`** (`Process_Audio_File()`): chuẩn hóa → Butterworth → Pre-emphasis → Mel-Spectrogram → dB. Đảo thứ tự bất kỳ 2 bước nào (ví dụ lọc trước rồi mới chuẩn hóa) sẽ khiến hệ số chuẩn hóa tính trên tín hiệu sai, làm lệch toàn bộ pipeline phía sau — đây từng là nguồn gốc 1 bug đã fix.
 
-**`Butterworth_Reset()` bắt buộc gọi trước mỗi lần lọc** — xóa trạng thái trễ còn sót từ lần đo trước, tránh nhiễu chéo giữa các lần đo độc lập.
+⚠️ **`Butterworth_Reset()` bắt buộc gọi trước mỗi lần lọc** — xóa trạng thái trễ còn sót từ lần đo trước, tránh nhiễu chéo giữa các lần đo độc lập.
 
 ---
 
-## 5. `STATE_INTERFACE` — Voting 3 lần đo + Thống kê
+## 5️⃣ `STATE_INTERFACE` — Voting 3 lần đo + Thống kê 🗳️
 
-### Cơ chế Voting
+### 🗳️ Cơ chế Voting
 
 ```cpp
 if (result.Predicted_Class == 0) vote_asthma_count++;
@@ -94,11 +94,11 @@ if (current_vote_round >= Vote_Round) {
 }
 ```
 
-**Mục đích:** 1 lần đo đơn lẻ dễ bị nhiễu bởi môi trường (tiếng động bất chợt, vị trí mic thay đổi). Yêu cầu **quá bán trong 3 lần đo liên tiếp** mới đưa ra kết luận cuối cùng, giúp giảm đáng kể tỷ lệ báo động giả từ 1 lần đo lệch.
+💡 **Mục đích:** 1 lần đo đơn lẻ dễ bị nhiễu bởi môi trường (tiếng động bất chợt, vị trí mic thay đổi). Yêu cầu **quá bán trong 3 lần đo liên tiếp** mới đưa ra kết luận cuối cùng, giúp giảm đáng kể tỷ lệ báo động giả từ 1 lần đo lệch.
 
-**Trường hợp hòa (`vote_asthma_count == vote_normal_count`)** — ví dụ 1 Asthma, 1 Normal, 1 Unsure — kết luận là "không chắc chắn, đề nghị đo lại" thay vì ép buộc chọn 1 phía.
+⚖️ **Trường hợp hòa (`vote_asthma_count == vote_normal_count`)** — ví dụ 1 Asthma, 1 Normal, 1 Unsure — kết luận là "không chắc chắn, đề nghị đo lại" thay vì ép buộc chọn 1 phía.
 
-### Thống kê dài hạn
+### 📊 Thống kê dài hạn
 
 ```cpp
 static uint32_t total_tests = 0;
@@ -109,16 +109,16 @@ Khác với biến vote (reset mỗi 3 lần đo), 2 biến này **cộng dồn 
 
 ---
 
-## 6. `I2S_Mic_Init()` — Cấu hình phần cứng
+## 6️⃣ `I2S_Mic_Init()` — Cấu hình phần cứng 🔧
 
-**Cấp phát bộ nhớ trên PSRAM** (không dùng SRAM nội bộ vì `audio_buffer` + `audio_float_buff` tổng cộng chiếm ~470KB — vượt xa khả năng SRAM nội bộ còn trống của ESP32-S3):
+💾 **Cấp phát bộ nhớ trên PSRAM** (không dùng SRAM nội bộ vì `audio_buffer` + `audio_float_buff` tổng cộng chiếm ~470KB — vượt xa khả năng SRAM nội bộ còn trống của ESP32-S3):
 ```cpp
 audio_buffer = (int16_t*)heap_caps_malloc(Total_Samples * sizeof(int16_t), MALLOC_CAP_SPIRAM);
 audio_float_buff = (float*)heap_caps_malloc(Total_Samples * sizeof(float), MALLOC_CAP_SPIRAM);
 ```
 Có kiểm tra `nullptr` và treo máy có chủ đích (`while(1)`) nếu cấp phát thất bại — tránh chạy tiếp với con trỏ null gây crash khó chẩn đoán.
 
-**Cấu hình I2S cho INMP441:**
+🔌 **Cấu hình I2S cho INMP441:**
 | Tham số | Giá trị | Ý nghĩa |
 |---|---|---|
 | `mode` | `I2S_MODE_MASTER \| I2S_MODE_RX` | ESP32 làm master, chỉ nhận (không phát) |
@@ -126,7 +126,7 @@ Có kiểm tra `nullptr` và treo máy có chủ đích (`while(1)`) nếu cấp
 | `channel_format` | `I2S_CHANNEL_FMT_ONLY_RIGHT` | Đọc kênh phải — khớp với việc nối chân `L/R` của mic lên `3.3V` |
 | `dma_buf_count = 8`, `dma_buf_len = Buffer_Samples (256)` | Cấu hình double-buffering DMA để đọc dữ liệu I2S liên tục không ngắt quãng |
 
-**Amplify_Factor và Clamp chống tràn số** (thực hiện ở `Process_Audio_Stream()`, không phải ở đây):
+⚠️ **Amplify_Factor và Clamp chống tràn số** (thực hiện ở `Process_Audio_Stream()`, không phải ở đây):
 ```cpp
 int32_t amplified = (raw_samples[i] >> 16) * Amplify_Factor;
 if(amplified > 32767) amplified = 32767;

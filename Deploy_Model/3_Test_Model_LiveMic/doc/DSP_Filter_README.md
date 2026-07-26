@@ -1,4 +1,4 @@
-# DSP_Filter — Bộ lọc tiền xử lý âm thanh (Butterworth + Pre-emphasis)
+# 🎚️ DSP_Filter — Bộ lọc tiền xử lý âm thanh (Butterworth + Pre-emphasis)
 
 Thư viện thực hiện 2 bước lọc số trước khi đưa tín hiệu vào STFT: lọc thông dải Butterworth và lọc pre-emphasis, tương ứng `scipy.signal.lfilter` + hàm tự viết trong Python.
 
@@ -13,13 +13,13 @@ Thư viện thực hiện 2 bước lọc số trước khi đưa tín hiệu v�
 
 ---
 
-## 1. Vì sao dùng dạng SOS (cascade biquad) thay vì Direct Form
+## 1️⃣ Vì sao dùng dạng SOS (cascade biquad) thay vì Direct Form
 
 Bộ lọc Butterworth bandpass bậc 5 khi biến đổi sang miền số (digital) trở thành bậc 10, cần 11 hệ số `b` và 11 hệ số `a`.
 
-**Vấn đề với Direct Form (11 hệ số 1 khối):** hệ số dao động rất lớn (từ `~68` xuống `~0.08`) — khi tính tổng-nhân trên `float`, sai số làm tròn tích lũy theo cấp số nhân qua hàng chục nghìn sample liên tiếp, dẫn tới **NaN** giữa file dài (đã từng gặp và fix).
+⚠️ **Vấn đề với Direct Form (11 hệ số 1 khối):** hệ số dao động rất lớn (từ `~68` xuống `~0.08`) — khi tính tổng-nhân trên `float`, sai số làm tròn tích lũy theo cấp số nhân qua hàng chục nghìn sample liên tiếp, dẫn tới **NaN** giữa file dài (đã từng gặp và fix).
 
-**Giải pháp — SOS (Second-Order Sections):** chia bộ lọc bậc 10 thành **5 bộ lọc bậc 2 (biquad) nối tiếp nhau**, mỗi biquad chỉ có 5 hệ số nhỏ (`b0, b1, b2, a1, a2`), không có hệ số nào vượt quá vài đơn vị → ổn định số học tốt hơn nhiều dù vẫn dùng `float`.
+✅ **Giải pháp — SOS (Second-Order Sections):** chia bộ lọc bậc 10 thành **5 bộ lọc bậc 2 (biquad) nối tiếp nhau**, mỗi biquad chỉ có 5 hệ số nhỏ (`b0, b1, b2, a1, a2`), không có hệ số nào vượt quá vài đơn vị → ổn định số học tốt hơn nhiều dù vẫn dùng `float`.
 
 Hệ số được tính sẵn 1 lần bằng Python:
 ```python
@@ -29,7 +29,7 @@ rồi hardcode trực tiếp vào C++ — không tính toán thiết kế filter
 
 ---
 
-## 2. `Butterworth_Process_Sample()` — Lọc từng sample qua 5 tầng nối tiếp
+## 2️⃣ `Butterworth_Process_Sample()` — Lọc từng sample qua 5 tầng nối tiếp
 
 Mỗi biquad tính theo công thức Direct Form I:
 ```
@@ -59,7 +59,7 @@ float Butterworth_Process_Sample(float x_new) {
 
 ---
 
-## 3. `Apply_Pre_Emphasis()` — Bù suy hao tần số cao
+## 3️⃣ `Apply_Pre_Emphasis()` — Bù suy hao tần số cao
 
 Công thức: `y[n] = x[n] - 0.97 × x[n-1]`, khớp Python:
 ```python
@@ -76,11 +76,11 @@ void Apply_Pre_Emphasis(float* signal, int length){
 }
 ```
 
-**Lưu ý quan trọng về thứ tự vòng lặp:** phải chạy **từ cuối về đầu** (`i--`, không phải `i++`). Vì phép tính `signal[i]` cần dùng giá trị **gốc chưa bị sửa** của `signal[i-1]`. Nếu chạy từ đầu ra cuối (thuận), `signal[i-1]` đã bị ghi đè bởi phép tính trước đó, làm sai toàn bộ kết quả (đây là bug đã từng gặp và fix).
+⚠️ **Lưu ý quan trọng về thứ tự vòng lặp:** phải chạy **từ cuối về đầu** (`i--`, không phải `i++`). Vì phép tính `signal[i]` cần dùng giá trị **gốc chưa bị sửa** của `signal[i-1]`. Nếu chạy từ đầu ra cuối (thuận), `signal[i-1]` đã bị ghi đè bởi phép tính trước đó, làm sai toàn bộ kết quả (đây là bug đã từng gặp và fix).
 
 ---
 
-## 4. `Normalize_To_Float()` — Chuẩn hóa biên độ về [-1, 1]
+## 4️⃣ `Normalize_To_Float()` — Chuẩn hóa biên độ về [-1, 1]
 
 Khớp `librosa.util.normalize(y)` — chia toàn bộ tín hiệu cho giá trị tuyệt đối lớn nhất tìm được:
 
@@ -99,4 +99,4 @@ void Normalize_To_Float(int16_t* input, float* output, int length){
 }
 ```
 
-**Vì sao dùng `int32_t` thay vì `int16_t` cho biến đếm:** giá trị `int16_t` nhỏ nhất có thể là `-32768`, nhưng `abs(-32768)` về mặt toán học bằng `32768` — con số này **vượt quá** giới hạn `int16_t` (`max 32767`). Nếu dùng `int16_t` để lưu kết quả `abs()`, sẽ xảy ra tràn số (overflow) khi mẫu chạm đúng đáy tuyệt đối, gây tính sai `max_val` trong trường hợp hiếm. Dùng `int32_t` loại bỏ hoàn toàn rủi ro này.
+💡 **Vì sao dùng `int32_t` thay vì `int16_t` cho biến đếm:** giá trị `int16_t` nhỏ nhất có thể là `-32768`, nhưng `abs(-32768)` về mặt toán học bằng `32768` — con số này **vượt quá** giới hạn `int16_t` (`max 32767`). Nếu dùng `int16_t` để lưu kết quả `abs()`, sẽ xảy ra tràn số (overflow) khi mẫu chạm đúng đáy tuyệt đối, gây tính sai `max_val` trong trường hợp hiếm. Dùng `int32_t` loại bỏ hoàn toàn rủi ro này.

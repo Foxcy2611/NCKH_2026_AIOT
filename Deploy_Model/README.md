@@ -47,7 +47,7 @@
     *   **Voting 3 vòng:** Hệ thống sử dụng VAD (Voice Activity Detection) để bắt âm thanh, yêu cầu đo đủ 3 lần liên tiếp mới đưa ra kết luận cuối cùng nhằm loại bỏ hoàn toàn các khung thời gian bị nhiễu.
     *   **Log thống kê dài hạn:** Tích hợp bộ đếm theo dõi tổng số lần test và số lần cảnh báo để đánh giá tỷ lệ sai số.
 
-**Lưu ý:** Bạn hoàn toàn có thể đọc qua về cách thức xây dựng các hàm tiền xử lý khi Convert từ Python qua C++ tại đây [README HÀM TIỀN XỬ LÝ](doc/)
+**Lưu ý:** Bạn hoàn toàn có thể đọc qua về cách thức xây dựng các hàm tiền xử lý khi Convert từ Python qua C++ tại đây [README HÀM TIỀN XỬ LÝ](./Deploy_Model/3_Test_Model_LiveMic/doc/))
 
 ---
 

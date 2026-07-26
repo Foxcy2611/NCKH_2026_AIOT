@@ -1,4 +1,4 @@
-# Mel_Scale — Cơ chế trích xuất Mel-Spectrogram
+# 🎵 Mel_Scale — Cơ chế trích xuất Mel-Spectrogram
 
 Thư viện này thực hiện lại (re-implement) chính xác quy trình `librosa.feature.melspectrogram()` bằng C++, để đảm bảo kết quả khớp với dữ liệu đã dùng lúc train model bằng Python.
 
@@ -15,9 +15,9 @@ Thư viện này thực hiện lại (re-implement) chính xác quy trình `libr
 
 ---
 
-## 1. `Hz_to_Mel()` / `Mel_to_Hz()` — Công thức Slaney
+## 1️⃣ `Hz_to_Mel()` / `Mel_to_Hz()` — Công thức Slaney 📐
 
-**Quan trọng:** `librosa.feature.melspectrogram()` mặc định dùng `htk=False`, nghĩa là dùng **thang Slaney**, KHÔNG PHẢI thang HTK (`2595*log10(1+f/700)`). Đây là điểm dễ nhầm lẫn nhất khi tự viết lại bằng tay.
+⚠️ **Quan trọng:** `librosa.feature.melspectrogram()` mặc định dùng `htk=False`, nghĩa là dùng **thang Slaney**, KHÔNG PHẢI thang HTK (`2595*log10(1+f/700)`). Đây là điểm dễ nhầm lẫn nhất khi tự viết lại bằng tay.
 
 Công thức Slaney có 2 đoạn:
 - **Tuyến tính** với `f < 1000 Hz`: `mel = f / f_sp`, với `f_sp = 200/3 ≈ 66.667`
@@ -37,11 +37,11 @@ float Hz_to_Mel(float hz){
 
 `Mel_to_Hz()` là hàm nghịch đảo, dùng `expf()` thay cho `logf()` ở nhánh logarit.
 
-**Tại sao quan trọng:** dải tần quan tâm của dự án (`100–2000 Hz`) nằm ngay quanh điểm gãy `1000 Hz` — nếu dùng nhầm công thức HTK, vị trí các tam giác Mel sẽ lệch đáng kể, khiến model nhận input sai lệch dù DSP các bước khác đều đúng.
+💡 **Tại sao quan trọng:** dải tần quan tâm của dự án (`100–2000 Hz`) nằm ngay quanh điểm gãy `1000 Hz` — nếu dùng nhầm công thức HTK, vị trí các tam giác Mel sẽ lệch đáng kể, khiến model nhận input sai lệch dù DSP các bước khác đều đúng.
 
 ---
 
-## 2. `Get_Centered_Frame()` — Mô phỏng `center=True`
+## 2️⃣ `Get_Centered_Frame()` — Mô phỏng `center=True` 🎯
 
 `librosa.stft()` mặc định `center=True`: trước khi cắt frame, tín hiệu được **đệm thêm `N_FFT/2` mẫu 0 vào cả 2 đầu**, giúp frame đầu tiên "căn giữa" đúng tại mốc thời gian t=0.
 
@@ -63,16 +63,16 @@ void Get_Centered_Frame(const float* input, int Input_length, int frame_idx, flo
 
 ---
 
-## 3. `Init_Mel_Filterbank()` — Dựng 64 bộ lọc tam giác + Slaney-norm
+## 3️⃣ `Init_Mel_Filterbank()` — Dựng 64 bộ lọc tam giác + Slaney-norm 🔺
 
-**Bước 1 — chia đều 66 điểm theo thang Mel** (64 tam giác chồng lấn cần 66 điểm biên: trái, đỉnh, phải mỗi cặp tam giác kề nhau dùng chung điểm).
+**Bước 1️⃣ — chia đều 66 điểm theo thang Mel** (64 tam giác chồng lấn cần 66 điểm biên: trái, đỉnh, phải mỗi cặp tam giác kề nhau dùng chung điểm).
 
-**Bước 2 — quy đổi các điểm Mel về lại Hz và chỉ số bin FFT:**
+**Bước 2️⃣ — quy đổi các điểm Mel về lại Hz và chỉ số bin FFT:**
 ```cpp
 bin_points[i] = (int)floorf((N_FFT + 1) * hz / SAMPLE_RATE);
 ```
 
-**Bước 3 — dựng tam giác 0→1→0** cho mỗi dải Mel:
+**Bước 3️⃣ — dựng tam giác 0→1→0** cho mỗi dải Mel:
 ```cpp
 // Sườn trái: tăng dần 0 -> 1
 mel_filterbank[m-1][f] = 
@@ -82,7 +82,7 @@ mel_filterbank[m-1][f] =
 (float)(f_right - f) / (f_right - f_center);
 ```
 
-**Bước 4 — Slaney-norm (khớp `norm='slaney'` mặc định của librosa):**
+**Bước 4️⃣ — Slaney-norm (khớp `norm='slaney'` mặc định của librosa):**
 ```cpp
 float enorm = 2.0f / (hz_points[m + 1] - hz_points[m - 1]);
 mel_filterbank[m - 1][f] *= enorm;
@@ -91,7 +91,7 @@ Mục đích: chuẩn hóa mỗi tam giác theo **độ rộng băng thông Hz**
 
 ---
 
-## 4. `Compute_Mel_Power_Spectrogram()` — STFT + Áp filterbank
+## 4️⃣ `Compute_Mel_Power_Spectrogram()` — STFT + Áp filterbank 🌊
 
 Với mỗi trong 129 frame:
 1. **Cắt frame** bằng `Get_Centered_Frame()`.
@@ -102,7 +102,7 @@ Với mỗi trong 129 frame:
 
 ---
 
-## 5. `Power_To_dB_RefMax()` — Chuyển sang thang dB
+## 5️⃣ `Power_To_dB_RefMax()` — Chuyển sang thang dB 🔊
 
 Khớp `librosa.power_to_db(mel_spec, ref=np.max)` (mặc định `top_db=80`):
 
@@ -115,4 +115,4 @@ float floor_db = max_db - top_db;
 if(mel_db_out[f][m] < floor_db) mel_db_out[f][m] = floor_db;
 ```
 
-**Lưu ý:** đây là `dB = 10*log10(...)`, không phải `20*log10(...)` — vì đầu vào là **power** (năng lượng), không phải amplitude.
+💡 **Lưu ý:** đây là `dB = 10*log10(...)`, không phải `20*log10(...)` — vì đầu vào là **power** (năng lượng), không phải amplitude.
