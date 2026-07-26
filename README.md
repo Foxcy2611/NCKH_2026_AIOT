@@ -5,6 +5,7 @@
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![AI](https://img.shields.io/badge/AI-TensorFlow%20Lite%20Micro-orange.svg)
 ![C](https://img.shields.io/badge/C-00599C?style=for-the-badge&logo=c&logoColor=white)
+![C++](https://img.shields.io/badge/C++-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white)
 ![Qt](https://img.shields.io/badge/Qt-6-41CD52?style=for-the-badge&logo=qt&logoColor=white)
 ![Network](https://img.shields.io/badge/Network-ESP--NOW%20%7C%204G%20LTE%20%7C%20MQTT-brightgreen.svg)
 
@@ -127,10 +128,16 @@ Thư mục `ESP32-Qt-Telemetry/` chứa bản thử nghiệm đầu tiên của 
 
 ---
 
-## 🔧 Driver Cảm biến
+## 🔧 Driver Cảm biến (Sensor Suite)
 
-Thư mục `ESP32-Sensor_Suite/` chứa toàn bộ driver C++ tự viết cho các module cảm biến của dự án (DHT11, MAX30102, MLX90614, A7680C, BMP280, SGP30, NEO-M8N, SSD1306). 
-Chi tiết kiến trúc từng driver, xem `ESP32-Sensor_Suite/README.md`.
+Thay vì sử dụng các thư viện rác/chắp vá trên mạng, thư mục `ESP32-Sensor_Suite/` chứa toàn bộ driver C++ **tự viết và tối ưu hóa riêng** cho hệ sinh thái của dự án (DHT11, MAX30102, MLX90614, A7680C, BMP280, SGP30, NEO-M8N, SSD1306). 
+
+Đặc điểm kiến trúc của bộ thư viện này:
+- **Thiết kế hướng đối tượng (OOP):** Mỗi loại cảm biến được đóng gói thành một C++ Class riêng biệt (VD: `class Max30102_Sensor`), giúp mã nguồn module hóa, dễ bảo trì và dễ khởi tạo nhiều object nếu dùng nhiều cảm biến cùng loại.
+- **Quản lý Bus chia sẻ (Mutex/Semaphore):** Tích hợp an toàn cơ chế khóa của FreeRTOS để nhiều task có thể đọc dữ liệu đồng thời qua chung 1 chuẩn giao tiếp (I2C/SPI) mà không bị xung đột tài nguyên.
+- **Giao diện chuẩn hóa (Unified API):** Cung cấp các hàm gọi nhất quán như `init()`, `read()`, `calibrate()` giúp lớp Application (chương trình chính) gọi dữ liệu mượt mà, ẩn đi hoàn toàn sự phức tạp của thanh ghi (Registers) bên dưới.
+
+Chi tiết kiến trúc từng driver, xem ở đây [ESP32 Module Link](./ESP32-Sensor_Suite/README.md).
 
 ---
 
