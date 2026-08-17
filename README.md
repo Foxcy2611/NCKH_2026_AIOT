@@ -38,7 +38,7 @@ Trí tuệ nhân tạo (**TinyML**) được huấn luyện bằng Python (Tenso
 
 ## ⭐ Sơ đồ hệ thống
 
-<img width="967" height="821" alt="Screenshot 2026-07-22 000827" src="https://github.com/user-attachments/assets/452edd4e-4338-4e8b-9083-b12c9295a58d" />
+<img width="1728" height="853" alt="Screenshot 2026-08-17 170838" src="https://github.com/user-attachments/assets/61fa1283-fbe9-4c55-9625-feb57a5b9e8a" />
 
 ---
 
