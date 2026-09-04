@@ -72,26 +72,26 @@ Hệ thống gồm hai thiết bị embedded chính và một ứng dụng giám
 ```text
                     ┌─────────────────────────┐
                     │     PATIENT NODE        │
-                    │       ESP32-S3           │
-                    │                          │
+                    │       ESP32-S3          │
+                    │                         │
                     │ INMP441 ──► DSP ──► AI  │
-                    │ MAX30102 ──► HR / SpO2   │
-                    │ OLED + 3 Buttons          │
-                    │ Battery                   │
+                    │ MAX30102 ──► HR / SpO2  │
+                    │ OLED + 3 Buttons        │
+                    │ Battery                 │
                     └────────────┬────────────┘
                                  │
                               ESP-NOW
                                  │
                                  ▼
                     ┌─────────────────────────┐
-                    │        GATEWAY           │
-                    │          ESP32            │
-                    │                          │
+                    │        GATEWAY          │
+                    │          ESP32          │
+                    │                         │
                     │ DHT22 / BMP280 / SGP30  │
                     │ NEO-M8N / A7680C        │
-                    │ ESP-NOW RX               │
-                    │ Aggregation               │
-                    │ FreeRTOS                 │
+                    │ ESP-NOW RX              │
+                    │ Aggregation             │
+                    │ FreeRTOS                │
                     └────────────┬────────────┘
                                  │
                          Wi-Fi / LTE
@@ -100,11 +100,11 @@ Hệ thống gồm hai thiết bị embedded chính và một ứng dụng giám
                                  │
                                  ▼
                     ┌─────────────────────────┐
-                    │      Qt6 / QML           │
-                    │       Dashboard           │
-                    │                          │
-                    │ History / Charts / Alert │
-                    │ Environment / Status     │
+                    │      Qt6 / QML          │
+                    │       Dashboard         │
+                    │                         │
+                    │ History / Charts / Alert│
+                    │ Environment / Status    │
                     └─────────────────────────┘
 ```
 
@@ -1828,7 +1828,7 @@ Final Project chỉ được xem là hoàn thành khi:
                                      ▼
                          ┌───────────────────────┐
                          │       GATEWAY         │
-                         │        ESP32           │
+                         │        ESP32          │
                          │                       │
                          │ DHT22 / BMP280        │
                          │ SGP30                 │
@@ -1853,7 +1853,7 @@ Final Project chỉ được xem là hoàn thành khi:
                          │                       │
                          │ Sessions              │
                          │ Respiratory Events    │
-                         │ HR / SpO₂              │
+                         │ HR / SpO₂             │
                          │ Environment           │
                          │ Alerts                │
                          │ History / Charts      │
