@@ -1,0 +1,168 @@
+1. TẬP ASTHMA
+
+- Về tăng cường dữ liệu có 5 nhóm thao tác
++ trộn tạp âm (nguồn podcast hoặc quạt/phím);
++ chuyển vị trí tiếng hen trên nền yên lặng;
++ thêm nhiễu trắng;
++ co giãn thời gian;
++ đổi cao độ.
+
+- 288 mẫu chia theo tỉ lệ mục tiêu 80/10/10
++ Tỷ lệ lý tưởng gần đúng: 230 - 29 - 29
++ Đây không phải kết quả bắt buộc của lần chia hiện tại
++ Số lượng thực tế có thể lệch nhẹ vì phải chia trọn vẹn theo bệnh nhân
++ Ưu tiên không trùng bệnh nhân giữa các tập hơn là ép đúng tuyệt đối số lượng file
+
+- Kết quả cố định của lần chia hiện tại (SEED = 42)
++ Học:      228 mẫu gốc  ---> 833 mẫu (thêm 605 mẫu biến đổi)
++ Chỉnh:    30 mẫu gốc  ---> 30 mẫu gốc
++ Thi:      30 mẫu gốc  ---> 30 mẫu gốc
+
+- Quy tắc: Chia theo bệnh nhân
++ Mỗi bệnh nhân có số lượng mẫu khác nhau
++ Được phân biệt bằng số thứ tự: P1, P2, P3
++ Tất cả các mẫu của 1 bệnh nhân phải nằm trong cùng một tập (Học/Chỉnh/Thi)
++ Ví dụ: Nếu P1 thuộc tập Học thì toàn bộ file P1 và mọi bản tăng cường từ P1 chỉ được nằm trong tập Học
+
+- Quy tắc tăng cường tập học hen
++ Không cần áp dụng cả 5 cách cho từng file học
++ Chỉ dùng tệp cha thuộc 228 tệp Asthma Học và chỉ dùng nhiễu thuộc Học
+=> 228 hen thật + 605 hen biến đổi = 833 mẫu Asthma Học
++ Tên mẫu hiện tại: Aug_<số thứ tự>_<phương pháp>_<tên tệp cha>.wav
++ File tang_cuong.csv phải lưu tên mẫu mới, tệp cha, mã bệnh nhân và phương pháp
++ Seed của mẫu thứ i là 42 + i; có thể tái tạo lại tham số ngẫu nhiên từ seed và số thứ tự trong tên file
+
+=> Tổng:
+train: 833 file
+val: 30 file
+test: 30 file
+
+2. TẬP KHÔNG HEN 
+
+- Dữ liệu:
++ Có 820 mẫu từ Kaggle, nhưng phát hiện 6 file trùng hoàn toàn
++ Có 180 file từ môi trường (Vs 60 mẫu đc cắt từ 1 file dài 5p)
+
+- Phương án chia
++ Giữ nguyên 820 file nguồn; chỉ bỏ qua 6 bản sao khi tạo tập dữ liệu mới
++ Số file Kaggle dùng để học/đánh giá là 814 file không trùng hoàn toàn
++ Phải chia theo bệnh nhân, không chia ngẫu nhiên từng file
++ Cần giữ tỷ lệ hợp lý của COPD, Healthy, Bronchial và Pneumonia trong cả 3 tập
++ Khóa nhóm nên có dạng: Nguồn dữ liệu + Loại bệnh + Mã bệnh nhân
++ Ví dụ: Kaggle_COPD_P1; không chỉ dùng P1 vì P1 trong thư mục bệnh khác có thể không phải cùng một người
+
+- Quy tắc cho 180 file môi trường hiện tại
++ Gồm 3 nhóm: im lặng, podcast/nói chuyện, quạt/phím; mỗi nhóm 60 đoạn
++ Nếu 60 đoạn của một nhóm được cắt từ cùng một file dài 5 phút thì 60 đoạn đó chỉ là một phiên thu
++ Không chia ngẫu nhiên các đoạn liền nhau của cùng phiên sang Học/Chỉnh/Thi
++ Phương án hiện tại: đưa toàn bộ 180 file môi trường này vào tập Học
++ 180 file được dùng vừa làm mẫu Không hen của tập Học, vừa làm nguồn nhiễu để tăng cường mẫu hen của tập Học
++ Việc dùng chung này không gây rò rỉ vì cả hai đều chỉ phục vụ tập Học
++ Tuyệt đối không dùng 180 file này để tạo mẫu cho tập Chỉnh hoặc tập Thi
++ Sau này nên thu thêm các phiên mới, khác ngày/phòng/vị trí micro để bổ sung môi trường cho tập Chỉnh và tập Thi
+
+- Kết quả dự kiến với dữ liệu và SEED hiện tại
++ Học:   653 Kaggle + 180 môi trường = 833
++ Chỉnh: 78 Kaggle
++ Thi:   83 Kaggle
++ Không ép các số này thành 656 / 82 / 82 vì sẽ làm vỡ nhóm bệnh nhân
++ Sáu file bỏ qua được ghi trong file_trung.csv; file nguồn vẫn giữ nguyên, không bị xóa
+
+3. QUY TẮC CÂN BẰNG TẬP HỌC
+
+- Với lần chạy hiện tại
++ Non_Asthma Học = 833 mẫu
++ Asthma Học = 833 mẫu
++ Hai nhãn của tập Học đang cân bằng đúng 833 / 833
+
+- Khi thay đổi dữ liệu nguồn hoặc thay đổi cách chia trong tương lai
++ Phải chạy xong Non_Asthma trước, rồi đặt Target_Asthma_Train gần bằng số Non_Asthma thực tế trong tập Học
++ Không được dùng cố định một con số cũ nếu kết quả chia mới đã thay đổi
+
+- Không cân bằng bằng cách tăng cường tập Chỉnh hoặc tập Thi
++ Asthma Chỉnh giữ nguyên 30 file thật của lần chia hiện tại
++ Asthma Thi giữ nguyên 30 file thật của lần chia hiện tại
++ Không hen Chỉnh/Thi có thể nhiều hơn hen; đây không phải lỗi
++ Khi đánh giá phải báo riêng độ nhạy hen, độ loại trừ không hen, số báo nhầm, số bỏ sót và số không chắc chắn
+
+4. THỨ TỰ XỬ LÝ BẮT BUỘC
+
+Bước 1: Lập danh sách toàn bộ dữ liệu GỐC
+- Mỗi dòng cần có ít nhất:
++ file_id
++ đường dẫn file
++ nhãn Asthma/Non_Asthma
++ nhãn con: Asthma/COPD/Healthy/Bronchial/Pneumonia/Noise
++ nguồn: Kaggle hay INMP441
++ patient_id hoặc session_id
++ sample_rate gốc
++ thời lượng gốc
++ mã băm SHA-256
+
+Bước 2: Loại file trùng hoàn toàn và đánh dấu file gần trùng
+- Thực hiện trước khi chia tập
+- Không để hai bản sao của cùng âm thanh xuất hiện ở hai tập khác nhau
+- Với Non_Asthma hiện tại: 820 file nguồn, 6 bản sao bị loại khỏi tập tạo mới, còn 814 file Kaggle dùng được
+
+Bước 3: Chia dữ liệu GỐC thành Học/Chỉnh/Thi
+- Asthma và các bệnh Kaggle: chia theo bệnh nhân
+- Môi trường: chia theo phiên thu gốc, không chia theo đoạn 5 giây
+- Lưu kết quả chia cố định vào một file danh sách; không chia ngẫu nhiên lại mỗi lần chạy
+
+Bước 4: Chuẩn hóa âm thanh
+- Đổi tần số lấy mẫu về 16 kHz
+- Cắt hoặc bù 0 về đúng 5 giây
+- Việc chuẩn hóa phải giữ nguyên nhãn tập đã được gán ở Bước 3
+
+Bước 5: Chỉ tăng cường Asthma của tập Học
+- Chỉ chọn tệp cha thuộc Asthma Học
+- Chỉ dùng nguồn nhiễu thuộc tập Học
+- Sinh đến số mục tiêu đã chốt sau khi chia; lần hiện tại là 833 Asthma và 833 Non_Asthma
+- Không tăng cường Asthma Chỉnh và Asthma Thi
+
+Bước 6: Trích xuất Mel-Spectrogram riêng cho từng tập
+- Xuất riêng:
++ X_train.npy, Y_train.npy
++ X_valid.npy, Y_valid.npy
++ X_test.npy, Y_test.npy
+- File train model chỉ nạp ba tập đã chia sẵn
+- Không gọi train_test_split trên mảng 2.000 mẫu sau tăng cường nữa
+
+5. KIỂM TRA RÒ RỈ TRƯỚC KHI TRAIN
+
+- Giao của patient_id giữa Học và Chỉnh phải rỗng
+- Giao của patient_id giữa Học và Thi phải rỗng
+- Giao của patient_id giữa Chỉnh và Thi phải rỗng
+- Không có parent_id của mẫu tăng cường nằm ngoài tập Học
+- Tập Chỉnh và tập Thi không được có file bắt đầu bằng Aug_
+- Không có mã băm SHA-256 trùng nhau giữa ba tập
+- Không có session_id môi trường xuất hiện ở nhiều hơn một tập
+- Tổng số file trong danh sách phải khớp tổng số file thực tế
+- Sau khi tạo đặc trưng, thứ tự X, Y và file_id phải khớp từng dòng
+
+6. GHI CHÚ VỀ 180 FILE MÔI TRƯỜNG
+
+- Đa dạng loại tiếng động là tốt cho khả năng chịu nhiễu
+- Tuy nhiên, đa dạng loại tiếng động không đồng nghĩa với độc lập về phiên thu
+- 60 đoạn cắt từ một file dài vẫn chỉ đại diện cho một phòng, một vị trí micro, một mức âm lượng và một thời điểm thu
+- Vì vậy 180 file hiện tại đủ hữu ích làm kho nhiễu cho tập Học
+- Muốn đánh giá khả năng áp dụng cho môi trường mới, cần thêm phiên thu mới dành riêng cho tập Chỉnh/Thi hoặc kiểm tra phần cứng độc lập
+
+7. KẾT QUẢ SỐ LƯỢNG HIỆN TẠI
+
+Tập Học:
+- Asthma: 228 gốc + 605 tăng cường = 833
+- Non_Asthma: 653 Kaggle không trùng + 180 môi trường = 833
+
+Tập Chỉnh:
+- Asthma: 30 file gốc, không tăng cường
+- Non_Asthma: 78 file Kaggle không trùng
+
+Tập Thi:
+- Asthma: 30 file gốc, không tăng cường
+- Non_Asthma: 83 file Kaggle không trùng
+
+Lưu ý cuối:
+- Các con số trên khớp với dữ liệu nguồn và SEED = 42 hiện tại; khi dữ liệu thay đổi phải tạo lại danh sách và ghi lại số mới
+- Ràng buộc bắt buộc là không trùng bệnh nhân, tệp cha, bản ghi gốc và phiên thu giữa ba tập
+- Tập Thi phải được khóa và chỉ dùng một lần sau khi đã chốt mô hình, tiền xử lý và ngưỡng quyết định

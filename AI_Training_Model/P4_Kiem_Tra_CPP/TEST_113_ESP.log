@@ -1,0 +1,679 @@
+[TEST_RESULT] index=1,file=P11WheezingIU_54.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000
+
+[TEST_113] Mẫu 3/113: P11WheezingRL_51.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+120 54 46 58 42 66 63 73 98 64 
+[DIRECT_TENSOR] raw=-121 | p_non=0.027343750 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=2,file=P11WheezingRL_51.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-121,raw_diff=7,py_prob=0.000000000,esp_prob=0.027343750,prob_diff=0.027343750
+
+[TEST_113] Mẫu 4/113: P11WheezingRL_55.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+41 8 -26 20 4 -11 -1 -10 38 36 
+[DIRECT_TENSOR] raw=-128 | p_non=0.000000000 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=3,file=P11WheezingRL_55.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000
+
+[TEST_113] Mẫu 5/113: P11WheezingRS_52.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+61 102 61 61 31 77 70 102 76 72 
+[DIRECT_TENSOR] raw=-128 | p_non=0.000000000 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=4,file=P11WheezingRS_52.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000
+
+[TEST_113] Mẫu 6/113: P17WheezingIE_81.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+121 44 60 34 44 14 46 38 50 52 
+[DIRECT_TENSOR] raw=-128 | p_non=0.000000000 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=5,file=P17WheezingIE_81.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000
+
+[TEST_113] Mẫu 7/113: P17WheezingIE_85.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+58 43 5 49 15 49 77 34 42 44 
+[DIRECT_TENSOR] raw=-128 | p_non=0.000000000 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=6,file=P17WheezingIE_85.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000
+
+[TEST_113] Mẫu 8/113: P17WheezingIU_82.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+119 61 49 20 36 12 19 -5 10 33 
+[DIRECT_TENSOR] raw=-127 | p_non=0.003906250 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=7,file=P17WheezingIU_82.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-127,raw_diff=1,py_prob=0.000000000,esp_prob=0.003906250,prob_diff=0.003906250
+
+[TEST_113] Mẫu 9/113: P17WheezingRL_83.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+10 41 48 39 29 76 126 83 86 82 
+[DIRECT_TENSOR] raw=-126 | p_non=0.007812500 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=8,file=P17WheezingRL_83.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-126,raw_diff=2,py_prob=0.000000000,esp_prob=0.007812500,prob_diff=0.007812500
+
+[TEST_113] Mẫu 10/113: P17WheezingRS_84.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+74 44 52 69 45 65 57 56 59 49 
+[DIRECT_TENSOR] raw=-128 | p_non=0.000000000 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=9,file=P17WheezingRS_84.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000
+
+[TEST_113] Mẫu 11/113: P24WheezingIE_117.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+15 -18 -13 -43 -30 6 -2 -42 -35 -33 
+[DIRECT_TENSOR] raw=-128 | p_non=0.000000000 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=10,file=P24WheezingIE_117.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000
+
+[TEST_113] Mẫu 12/113: P24WheezingIU_118.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+35 30 40 75 60 52 50 43 38 15 
+[DIRECT_TENSOR] raw=-128 | p_non=0.000000000 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=11,file=P24WheezingIU_118.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000
+
+[TEST_113] Mẫu 13/113: P24WheezingRL_119.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+41 -3 -5 -4 10 -16 -2 8 -15 7 
+[DIRECT_TENSOR] raw=-128 | p_non=0.000000000 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=12,file=P24WheezingRL_119.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000
+
+[TEST_113] Mẫu 14/113: P24WheezingRS_116.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+36 5 24 26 8 2 29 12 10 32 
+[DIRECT_TENSOR] raw=-128 | p_non=0.000000000 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=13,file=P24WheezingRS_116.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000
+
+[TEST_113] Mẫu 15/113: P24WheezingRS_120.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+-72 0 -21 -106 -87 -30 -25 6 -26 -32 
+[DIRECT_TENSOR] raw=-128 | p_non=0.000000000 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=14,file=P24WheezingRS_120.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000
+
+[TEST_113] Mẫu 16/113: P26WheezingIE_129.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+13 68 66 3 17 -9 12 16 55 87 
+[DIRECT_TENSOR] raw=-128 | p_non=0.000000000 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=15,file=P26WheezingIE_129.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000
+
+[TEST_113] Mẫu 17/113: P26WheezingIU_126.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+17 30 17 62 63 43 -15 -40 -31 -24 
+[DIRECT_TENSOR] raw=-128 | p_non=0.000000000 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=16,file=P26WheezingIU_126.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000
+
+[TEST_113] Mẫu 18/113: P26WheezingIU_130.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+43 42 30 23 25 12 18 35 30 34 
+[DIRECT_TENSOR] raw=-128 | p_non=0.000000000 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=17,file=P26WheezingIU_130.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000
+
+[TEST_113] Mẫu 19/113: P26WheezingRL_127.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+-98 -67 -73 -53 -67 -53 -21 30 -8 -3 
+[DIRECT_TENSOR] raw=-128 | p_non=0.000000000 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=18,file=P26WheezingRL_127.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000
+
+[TEST_113] Mẫu 20/113: P26WheezingRS_128.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+46 10 16 2 8 21 -1 -19 -29 2 
+[DIRECT_TENSOR] raw=-86 | p_non=0.164062500 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=19,file=P26WheezingRS_128.wav,true=0,py_pred=0,esp_pred=0,py_raw=-121,esp_raw=-86,raw_diff=35,py_prob=0.027343750,esp_prob=0.164062500,prob_diff=0.136718750
+
+[TEST_113] Mẫu 21/113: P47WheezingIE_233.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+70 50 22 5 16 -8 35 8 21 25 
+[DIRECT_TENSOR] raw=-126 | p_non=0.007812500 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=20,file=P47WheezingIE_233.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-126,raw_diff=2,py_prob=0.000000000,esp_prob=0.007812500,prob_diff=0.007812500
+
+[TEST_113] Mẫu 22/113: P47WheezingIU_234.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+46 55 35 62 17 33 30 39 57 13 
+[DIRECT_TENSOR] raw=-128 | p_non=0.000000000 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=21,file=P47WheezingIU_234.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000
+
+[TEST_113] Mẫu 23/113: P47WheezingRL_231.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+2 -27 -60 -18 -34 -53 -40 -44 2 1 
+[DIRECT_TENSOR] raw=0 | p_non=0.500000000 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=22,file=P47WheezingRL_231.wav,true=0,py_pred=1,esp_pred=1,py_raw=76,esp_raw=0,raw_diff=76,py_prob=0.796875000,esp_prob=0.500000000,prob_diff=0.296875000
+
+[TEST_113] Mẫu 24/113: P47WheezingRL_235.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+82 20 45 47 41 30 27 28 42 6 
+[DIRECT_TENSOR] raw=-126 | p_non=0.007812500 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=23,file=P47WheezingRL_235.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-126,raw_diff=2,py_prob=0.000000000,esp_prob=0.007812500,prob_diff=0.007812500
+
+[TEST_113] Mẫu 25/113: P47WheezingRS_232.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+44 21 47 62 51 55 55 30 52 36 
+[DIRECT_TENSOR] raw=-128 | p_non=0.000000000 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=24,file=P47WheezingRS_232.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000
+
+[TEST_113] Mẫu 26/113: P53WheezingIE_261.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+96 127 122 127 119 108 116 82 104 74 
+[DIRECT_TENSOR] raw=-118 | p_non=0.039062500 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=25,file=P53WheezingIE_261.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-118,raw_diff=10,py_prob=0.000000000,esp_prob=0.039062500,prob_diff=0.039062500
+
+[TEST_113] Mẫu 27/113: P53WheezingIE_265.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+90 48 28 59 55 74 60 77 27 60 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=26,file=P53WheezingIE_265.wav,true=0,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 28/113: P53WheezingIU_262.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+104 55 57 28 26 83 43 42 45 21 
+[DIRECT_TENSOR] raw=-127 | p_non=0.003906250 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=27,file=P53WheezingIU_262.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-127,raw_diff=1,py_prob=0.000000000,esp_prob=0.003906250,prob_diff=0.003906250
+
+[TEST_113] Mẫu 29/113: P53WheezingRL_263.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+80 68 83 54 46 43 59 92 99 57 
+[DIRECT_TENSOR] raw=112 | p_non=0.937500000 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=28,file=P53WheezingRL_263.wav,true=0,py_pred=1,esp_pred=1,py_raw=127,esp_raw=112,raw_diff=15,py_prob=0.996093750,esp_prob=0.937500000,prob_diff=0.058593750
+
+[TEST_113] Mẫu 30/113: P53WheezingRS_264.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+81 74 38 83 43 47 73 26 80 68 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=29,file=P53WheezingRS_264.wav,true=0,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 31/113: P12BronchialSc_56.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+118 64 94 59 45 46 41 67 83 61 
+[DIRECT_TENSOR] raw=-102 | p_non=0.101562500 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=30,file=P12BronchialSc_56.wav,true=1,py_pred=0,esp_pred=0,py_raw=-127,esp_raw=-102,raw_diff=25,py_prob=0.003906250,esp_prob=0.101562500,prob_diff=0.097656250
+
+[TEST_113] Mẫu 32/113: P12BronchialSc_58.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+-76 -50 32 55 52 53 18 14 19 -3 
+[DIRECT_TENSOR] raw=112 | p_non=0.937500000 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=31,file=P12BronchialSc_58.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=112,raw_diff=15,py_prob=0.996093750,esp_prob=0.937500000,prob_diff=0.058593750
+
+[TEST_113] Mẫu 33/113: P12BronchialSc_60.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+14 35 33 49 20 17 22 31 41 38 
+[DIRECT_TENSOR] raw=-121 | p_non=0.027343750 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=32,file=P12BronchialSc_60.wav,true=1,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-121,raw_diff=7,py_prob=0.000000000,esp_prob=0.027343750,prob_diff=0.027343750
+
+[TEST_113] Mẫu 34/113: P12BronchialTc_57.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+108 57 47 32 20 70 42 35 29 115 
+[DIRECT_TENSOR] raw=-125 | p_non=0.011718750 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=33,file=P12BronchialTc_57.wav,true=1,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-125,raw_diff=3,py_prob=0.000000000,esp_prob=0.011718750,prob_diff=0.011718750
+
+[TEST_113] Mẫu 35/113: P12BronchialTc_59.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+120 34 34 9 2 17 25 26 21 57 
+[DIRECT_TENSOR] raw=-124 | p_non=0.015625000 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=34,file=P12BronchialTc_59.wav,true=1,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-124,raw_diff=4,py_prob=0.000000000,esp_prob=0.015625000,prob_diff=0.015625000
+
+[TEST_113] Mẫu 36/113: P14Healthy28S.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+16 15 -1 3 20 24 25 21 27 33 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=35,file=P14Healthy28S.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 37/113: P14Healthy47S.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+39 32 40 5 14 27 14 12 17 13 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=36,file=P14Healthy47S.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 38/113: P14Healthy53S.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+45 -7 30 -27 10 7 -25 5 -4 38 
+[DIRECT_TENSOR] raw=-95 | p_non=0.128906250 | threshold=0.500000000 | class=0
+[TEST_RESULT] index=37,file=P14Healthy53S.wav,true=1,py_pred=0,esp_pred=0,py_raw=-126,esp_raw=-95,raw_diff=31,py_prob=0.007812500,esp_prob=0.128906250,prob_diff=0.121093750
+
+[TEST_113] Mẫu 39/113: P14Healthy54S.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+92 55 67 63 20 104 59 50 64 56 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=38,file=P14Healthy54S.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 40/113: P14Healthy89S.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+51 57 62 74 100 69 55 72 66 98 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=39,file=P14Healthy89S.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 41/113: P15Pneumonia12I.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+67 55 64 59 51 44 41 34 39 62 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=40,file=P15Pneumonia12I.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 42/113: P15Pneumonia16R.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+83 52 46 68 50 45 74 84 79 78 
+[DIRECT_TENSOR] raw=125 | p_non=0.988281250 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=41,file=P15Pneumonia16R.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=125,raw_diff=2,py_prob=0.996093750,esp_prob=0.988281250,prob_diff=0.007812500
+
+[TEST_113] Mẫu 43/113: P15Pneumonia39Y.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+125 58 54 70 39 48 47 28 70 75 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=42,file=P15Pneumonia39Y.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 44/113: P15Pneumonia56Z.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+90 95 78 74 34 32 66 58 56 42 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=43,file=P15Pneumonia56Z.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 45/113: P15Pneumonia58S.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+77 84 56 32 43 39 35 52 69 28 
+[DIRECT_TENSOR] raw=116 | p_non=0.953125000 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=44,file=P15Pneumonia58S.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=116,raw_diff=11,py_prob=0.996093750,esp_prob=0.953125000,prob_diff=0.042968750
+
+[TEST_113] Mẫu 46/113: P15Pneumonia81V.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+73 85 66 82 47 40 55 72 66 98 
+[DIRECT_TENSOR] raw=126 | p_non=0.992187500 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=45,file=P15Pneumonia81V.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=126,raw_diff=1,py_prob=0.996093750,esp_prob=0.992187500,prob_diff=0.003906250
+
+[TEST_113] Mẫu 47/113: P20COPDMc_154.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+89 88 57 88 70 95 56 78 60 61 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=46,file=P20COPDMc_154.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 48/113: P20COPDMc_156.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+64 73 114 83 91 82 89 74 94 104 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=47,file=P20COPDMc_156.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 49/113: P20COPDMc_158.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+-128 -128 84 90 57 76 82 66 58 61 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=48,file=P20COPDMc_158.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 50/113: P20COPDMc_160.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+79 48 87 66 76 80 52 69 38 59 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=49,file=P20COPDMc_160.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 51/113: P20COPDPr_153.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+74 89 87 97 77 80 63 101 82 102 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=50,file=P20COPDPr_153.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 52/113: P20COPDPr_155.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+-128 -128 50 96 117 109 80 90 82 73 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=51,file=P20COPDPr_155.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 53/113: P20COPDPr_157.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+74 103 95 81 106 80 108 70 92 72 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=52,file=P20COPDPr_157.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 54/113: P20COPDPr_159.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+44 29 102 119 61 72 66 57 56 64 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=53,file=P20COPDPr_159.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 55/113: P26Pneumonia12X.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+10 21 43 39 84 89 96 79 119 72 
+[DIRECT_TENSOR] raw=63 | p_non=0.746093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=54,file=P26Pneumonia12X.wav,true=1,py_pred=1,esp_pred=1,py_raw=86,esp_raw=63,raw_diff=23,py_prob=0.835937500,esp_prob=0.746093750,prob_diff=0.089843750
+
+[TEST_113] Mẫu 56/113: P26Pneumonia66S.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+39 29 46 59 112 81 43 41 32 45 
+[DIRECT_TENSOR] raw=86 | p_non=0.835937500 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=55,file=P26Pneumonia66S.wav,true=1,py_pred=1,esp_pred=1,py_raw=125,esp_raw=86,raw_diff=39,py_prob=0.988281250,esp_prob=0.835937500,prob_diff=0.152343750
+
+[TEST_113] Mẫu 57/113: P26Pneumonia72P.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+39 13 43 61 25 35 -29 -8 13 88 
+[DIRECT_TENSOR] raw=0 | p_non=0.500000000 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=56,file=P26Pneumonia72P.wav,true=1,py_pred=1,esp_pred=1,py_raw=86,esp_raw=0,raw_diff=86,py_prob=0.835937500,esp_prob=0.500000000,prob_diff=0.335937500
+
+[TEST_113] Mẫu 58/113: P26Pneumonia83Z.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+42 18 -10 -12 18 -45 -29 -20 -51 -19 
+[DIRECT_TENSOR] raw=116 | p_non=0.953125000 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=57,file=P26Pneumonia83Z.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=116,raw_diff=11,py_prob=0.996093750,esp_prob=0.953125000,prob_diff=0.042968750
+
+[TEST_113] Mẫu 59/113: P26Pneumonia84P.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+97 57 66 49 44 41 39 38 41 33 
+[DIRECT_TENSOR] raw=112 | p_non=0.937500000 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=58,file=P26Pneumonia84P.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=112,raw_diff=15,py_prob=0.996093750,esp_prob=0.937500000,prob_diff=0.058593750
+
+[TEST_113] Mẫu 60/113: P26Pneumonia89E.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+-1 41 52 47 45 16 29 19 24 13 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=59,file=P26Pneumonia89E.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 61/113: P2Healthy30S.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+113 101 59 27 55 77 59 127 61 69 
+[DIRECT_TENSOR] raw=118 | p_non=0.960937500 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=60,file=P2Healthy30S.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=118,raw_diff=9,py_prob=0.996093750,esp_prob=0.960937500,prob_diff=0.035156250
+
+[TEST_113] Mẫu 62/113: P2Healthy43S.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+41 44 17 20 59 54 51 92 39 63 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=61,file=P2Healthy43S.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 63/113: P2Healthy54S.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+61 57 70 77 50 5 38 38 58 113 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=62,file=P2Healthy54S.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 64/113: P2Healthy72S.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+81 50 68 44 49 57 83 73 71 56 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=63,file=P2Healthy72S.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 65/113: P2Healthy89S.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+53 64 60 39 58 45 43 42 102 84 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=64,file=P2Healthy89S.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 66/113: P3Healthy44S.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+4 7 38 63 39 41 30 62 50 56 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=65,file=P3Healthy44S.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 67/113: P3Healthy49S.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+91 18 79 83 30 47 10 26 66 115 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=66,file=P3Healthy49S.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 68/113: P3Healthy57S.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+48 96 72 40 45 26 25 70 110 23 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=67,file=P3Healthy57S.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 69/113: P3Healthy60S.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+108 56 18 42 56 77 78 53 28 45 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=68,file=P3Healthy60S.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 70/113: P3Healthy84S.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+94 32 8 23 56 86 80 33 44 45 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=69,file=P3Healthy84S.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 71/113: P41COPDMc_322.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+92 58 44 55 67 54 20 40 44 48 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=70,file=P41COPDMc_322.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 72/113: P41COPDMc_324.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+94 58 53 59 127 111 113 102 38 86 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=71,file=P41COPDMc_324.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 73/113: P41COPDMc_326.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+26 45 55 99 85 41 82 75 69 52 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=72,file=P41COPDMc_326.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 74/113: P41COPDMc_328.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+98 -2 64 13 -13 74 42 63 51 63 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=73,file=P41COPDMc_328.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 75/113: P41COPDPr_321.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+49 40 40 50 36 41 57 41 53 58 
+[DIRECT_TENSOR] raw=125 | p_non=0.988281250 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=74,file=P41COPDPr_321.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=125,raw_diff=2,py_prob=0.996093750,esp_prob=0.988281250,prob_diff=0.007812500
+
+[TEST_113] Mẫu 76/113: P41COPDPr_323.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+85 60 62 77 96 103 87 66 77 77 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=75,file=P41COPDPr_323.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 77/113: P41COPDPr_325.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+57 60 72 73 83 49 41 49 67 39 
+[DIRECT_TENSOR] raw=125 | p_non=0.988281250 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=76,file=P41COPDPr_325.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=125,raw_diff=2,py_prob=0.996093750,esp_prob=0.988281250,prob_diff=0.007812500
+
+[TEST_113] Mẫu 78/113: P41COPDPr_327.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+105 75 65 73 50 40 83 83 81 57 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=77,file=P41COPDPr_327.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 79/113: P47COPDMc_370.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+44 103 107 100 98 85 95 92 85 94 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=78,file=P47COPDMc_370.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 80/113: P47COPDMc_372.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+30 -6 -1 -6 6 -10 -13 7 0 -3 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=79,file=P47COPDMc_372.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 81/113: P47COPDMc_374.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+81 26 45 62 10 37 31 37 27 49 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=80,file=P47COPDMc_374.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 82/113: P47COPDMc_376.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+23 6 24 3 2 -6 -7 -23 9 -26 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=81,file=P47COPDMc_376.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 83/113: P47COPDPr_369.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+48 67 38 52 40 39 44 77 39 41 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=82,file=P47COPDPr_369.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 84/113: P47COPDPr_371.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+111 60 73 68 81 60 75 68 75 66 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=83,file=P47COPDPr_371.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 85/113: P47COPDPr_373.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+36 -49 -73 -50 -68 -42 -59 -46 -31 -63 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=84,file=P47COPDPr_373.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 86/113: P47COPDPr_375.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+59 35 52 95 47 40 33 48 60 31 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=85,file=P47COPDPr_375.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 87/113: P50COPDMc_394.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+106 88 114 13 75 87 -64 -89 63 107 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=86,file=P50COPDMc_394.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 88/113: P50COPDMc_396.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+118 49 89 52 36 51 61 79 72 45 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=87,file=P50COPDMc_396.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 89/113: P50COPDMc_398.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+106 86 90 58 42 73 43 76 57 84 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=88,file=P50COPDMc_398.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 90/113: P50COPDMc_400.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+116 61 74 45 40 69 62 5 58 69 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=89,file=P50COPDMc_400.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 91/113: P50COPDPr_393.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+44 81 53 30 60 43 74 41 62 44 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=90,file=P50COPDPr_393.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 92/113: P50COPDPr_395.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+94 67 51 36 79 75 73 71 53 59 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=91,file=P50COPDPr_395.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 93/113: P50COPDPr_397.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+87 113 125 111 110 67 105 102 109 109 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=92,file=P50COPDPr_397.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 94/113: P50COPDPr_399.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+67 33 43 44 37 64 27 19 23 28 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=93,file=P50COPDPr_399.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 95/113: P5COPDMc_34.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+69 71 58 71 81 57 87 74 53 65 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=94,file=P5COPDMc_34.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 96/113: P5COPDMc_36.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+121 59 69 82 64 63 64 42 58 32 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=95,file=P5COPDMc_36.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 97/113: P5COPDMc_38.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+94 45 47 56 46 32 52 35 51 32 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=96,file=P5COPDMc_38.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 98/113: P5COPDMc_40.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+105 23 1 6 29 46 18 13 14 25 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=97,file=P5COPDMc_40.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 99/113: P5COPDPr_33.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+64 33 53 56 72 82 90 93 68 94 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=98,file=P5COPDPr_33.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 100/113: P5COPDPr_35.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+69 12 -14 30 19 34 16 34 13 8 
+[DIRECT_TENSOR] raw=86 | p_non=0.835937500 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=99,file=P5COPDPr_35.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=86,raw_diff=41,py_prob=0.996093750,esp_prob=0.835937500,prob_diff=0.160156250
+
+[TEST_113] Mẫu 101/113: P5COPDPr_37.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+121 103 84 47 49 59 44 61 71 75 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=100,file=P5COPDPr_37.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 102/113: P5COPDPr_39.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+109 82 71 97 81 73 76 69 100 70 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=101,file=P5COPDPr_39.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 103/113: P8Pneumonia11O.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+66 45 53 26 69 86 47 58 33 26 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=102,file=P8Pneumonia11O.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 104/113: P8Pneumonia14Z.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+107 50 70 44 50 44 38 23 111 66 
+[DIRECT_TENSOR] raw=124 | p_non=0.984375000 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=103,file=P8Pneumonia14Z.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=124,raw_diff=3,py_prob=0.996093750,esp_prob=0.984375000,prob_diff=0.011718750
+
+[TEST_113] Mẫu 105/113: P8Pneumonia16Z.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+40 61 50 55 77 90 53 64 45 33 
+[DIRECT_TENSOR] raw=121 | p_non=0.972656250 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=104,file=P8Pneumonia16Z.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=121,raw_diff=6,py_prob=0.996093750,esp_prob=0.972656250,prob_diff=0.023437500
+
+[TEST_113] Mẫu 106/113: P8Pneumonia20O.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+77 36 29 40 30 41 14 45 52 28 
+[DIRECT_TENSOR] raw=118 | p_non=0.960937500 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=105,file=P8Pneumonia20O.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=118,raw_diff=9,py_prob=0.996093750,esp_prob=0.960937500,prob_diff=0.035156250
+
+[TEST_113] Mẫu 107/113: P8Pneumonia23N.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+50 45 42 70 58 44 55 68 58 104 
+[DIRECT_TENSOR] raw=126 | p_non=0.992187500 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=106,file=P8Pneumonia23N.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=126,raw_diff=1,py_prob=0.996093750,esp_prob=0.992187500,prob_diff=0.003906250
+
+[TEST_113] Mẫu 108/113: P8Pneumonia28V.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+72 68 104 80 61 74 50 57 65 55 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=107,file=P8Pneumonia28V.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 109/113: P9BronchialSc_42.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+69 70 68 55 51 67 46 32 49 54 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=108,file=P9BronchialSc_42.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 110/113: P9BronchialSc_44.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+41 67 73 45 42 66 45 41 68 90 
+[DIRECT_TENSOR] raw=127 | p_non=0.996093750 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=109,file=P9BronchialSc_44.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000
+
+[TEST_113] Mẫu 111/113: P9BronchialTc_41.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+18 70 55 104 44 61 78 29 47 61 
+[DIRECT_TENSOR] raw=122 | p_non=0.976562500 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=110,file=P9BronchialTc_41.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=122,raw_diff=5,py_prob=0.996093750,esp_prob=0.976562500,prob_diff=0.019531250
+
+[TEST_113] Mẫu 112/113: P9BronchialTc_43.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+53 52 35 106 101 74 45 69 97 80 
+[DIRECT_TENSOR] raw=112 | p_non=0.937500000 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=111,file=P9BronchialTc_43.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=112,raw_diff=15,py_prob=0.996093750,esp_prob=0.937500000,prob_diff=0.058593750
+
+[TEST_113] Mẫu 113/113: P9BronchialTc_45.wav
+[DIRECT_TENSOR] 10 giá trị INT8 đầu:
+121 93 57 63 83 55 33 61 56 78 
+[DIRECT_TENSOR] raw=118 | p_non=0.960937500 | threshold=0.500000000 | class=1
+[TEST_RESULT] index=112,file=P9BronchialTc_45.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=118,raw_diff=9,py_prob=0.996093750,esp_prob=0.960937500,prob_diff=0.035156250
+
+============= TỔNG KẾT TEST 113 =============
+Cùng lớp Python - ESP32: 113/113
+ESP32 đúng nhãn thật: 104/113
+Asthma đúng: 26/30
+Non-Asthma đúng: 78/83
+Độ chính xác cân bằng ESP32: 0.903213
+Output INT8 trùng tuyệt đối: 78/113
+Raw lệch lớn nhất: 86
+Điểm lệch lớn nhất: 0.335937500
+Ngưỡng test đã khóa: 0.500000000
+=============================================

@@ -1,187 +1,1206 @@
-# 🫁 Edge AI & IoT: Hệ Thống Giám Sát, Dự Báo Và Cảnh Báo Sớm Hen Suyễn Đa Yếu Tố
+# 🫁 Edge AI & IoT: Hệ thống TinyML hỗ trợ theo dõi và cảnh báo sớm cho bệnh nhân hen suyễn
 
-![ESP32](https://img.shields.io/badge/MCU-ESP32%20Dual--Core-red.svg)
-![OS](https://img.shields.io/badge/OS-FreeRTOS-blue.svg)
+![ESP32](https://img.shields.io/badge/MCU-ESP32%20%7C%20ESP32--S3-red.svg)
+![RTOS](https://img.shields.io/badge/Gateway-FreeRTOS-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![AI](https://img.shields.io/badge/AI-TensorFlow%20Lite%20Micro-orange.svg)
-![C](https://img.shields.io/badge/C-00599C?style=for-the-badge&logo=c&logoColor=white)
 ![C++](https://img.shields.io/badge/C++-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white)
 ![Qt](https://img.shields.io/badge/Qt-6-41CD52?style=for-the-badge&logo=qt&logoColor=white)
-![Network](https://img.shields.io/badge/Network-ESP--NOW%20%7C%204G%20LTE%20%7C%20MQTT-brightgreen.svg)
+![Network](https://img.shields.io/badge/Network-ESP--NOW%20%7C%20WiFi%20%7C%204G%20LTE%20%7C%20MQTT-brightgreen.svg)
 
-> 🔬 **Tên đề tài Nghiên cứu:** Nghiên cứu, thiết kế và chế tạo hệ thống IoT ứng dụng TinyML hỗ trợ theo dõi và cảnh báo sớm cho bệnh nhân hen suyễn.
-
----
-
-## 📝 Giới thiệu
-
-Dự án phát triển một hệ thống nhúng phân tán (**Distributed Embedded System**) nhằm giám sát toàn diện bệnh nhân hen suyễn. Khác với các hệ thống truyền thống, thiết bị không chỉ đo chỉ số sinh tồn (Nhịp tim, SpO2, Nhiệt độ cơ thể, Âm thanh hô hấp) mà còn theo dõi liên tục các thông số môi trường xung quanh (CO2, VOC, Nhiệt độ, Độ ẩm) — vốn là các tác nhân chính gây khởi phát cơn hen.
-
-Trí tuệ nhân tạo (**TinyML**) được huấn luyện bằng Python (TensorFlow/Keras), lượng tử hóa INT8, và tích hợp trực tiếp trên Node Cảm biến (**Edge AI — ESP32-S3**) để phân tích âm thanh hô hấp theo thời gian thực, đưa ra mức độ cảnh báo trước khi gửi qua Gateway 4G/MQTT về trung tâm giám sát.
+> 🔬 **Tên đề tài NCKH:**  
+> **Nghiên cứu, thiết kế và chế tạo hệ thống IoT ứng dụng TinyML hỗ trợ theo dõi và cảnh báo sớm cho bệnh nhân hen suyễn.**
 
 ---
 
-## 🚀 Tính năng nổi bật
+# 📝 Giới thiệu
 
-- 🧠 **Edge AI (TinyML) trên ESP32-S3:** Mô hình DS-CNN (SeparableConv2D) nhận diện tiếng rít hen suyễn (wheezing) từ Mel-Spectrogram, chạy suy luận INT8 hoàn toàn on-device qua TensorFlow Lite Micro.
-- 🎛️ **Pipeline DSP tự viết bằng C++:** Butterworth Bandpass (dạng SOS/cascade biquad), Pre-emphasis, STFT + Mel Filterbank (thang Slaney, chuẩn hóa Slaney-norm) — mô phỏng chính xác 1-1 với pipeline tiền xử lý Python dùng để train model.
-- 🛡️ **Cơ chế quyết định chống nhiễu:** Ngưỡng 3 vùng (Asthma / Không chắc chắn / Bình thường) kết hợp Voting 3 lần đo liên tiếp, giảm đáng kể tỷ lệ báo động giả từ nhiễu môi trường thực tế.
-- 🔗 **Sensor Fusion đa kênh:** Driver tự viết cho các module cảm biến sinh tồn và môi trường, đo đồng thời nhịp tim/SpO2, nhiệt độ cơ thể không tiếp xúc, khí CO2/VOC, nhiệt độ/độ ẩm/áp suất, và định vị GPS.
-- 📡 **Mạng cục bộ ESP-NOW:** Truyền dữ liệu và trạng thái khẩn cấp giữa Sensor Node và Gateway, tốc độ cao và tiết kiệm năng lượng.
-- ⏱️ **FreeRTOS Task Scheduling:** Quản lý đồng thời nhiều tác vụ đọc cảm biến phức tạp qua cơ chế Queue.
-- 🚨 **Cảnh báo Đa phương thức:**
-  - 📍 *Tại chỗ:* Màn hình OLED & Còi Buzzer.
-  - 📱 *Từ xa:* SMS và gọi điện khẩn cấp qua module 4G A7680C kèm tọa độ GPS (NEO-M8N).
-- 🖥️ **Giám sát Trung tâm:** Dashboard Qt6/QML kéo dữ liệu qua MQTT, kết hợp Firebase lưu trữ lịch sử phục vụ tái huấn luyện AI.
+Dự án phát triển một hệ thống nhúng phân tán gồm **hai thiết bị vật lý chính**:
 
----
+1. **Patient Edge Node** — thiết bị cá nhân cầm tay chạy pin, thực hiện thu âm hô hấp, xử lý DSP, chạy TinyML trên ESP32-S3 và đo HR/SpO₂ theo phiên.
+2. **IoT Gateway / Home Station** — thu thập dữ liệu môi trường, nhận PatientEvent qua ESP-NOW, ghép dữ liệu, quản lý Wi-Fi/LTE/GPS và publish dữ liệu lên MQTT.
 
-## ⭐ Sơ đồ hệ thống
-
-<img width="967" height="821" alt="Screenshot 2026-07-22 000827" src="https://github.com/user-attachments/assets/452edd4e-4338-4e8b-9083-b12c9295a58d" />
-
----
-
-## 🛠️ Yêu cầu Phần cứng (Hardware Requirements)
-
-* ⚙️ **Vi điều khiển chính:** ESP32 (Node Gateway) & ESP32-S3-N16R8 (Node AI/Sensor — có PSRAM cho tensor arena)
-* 🎤 **Cảm biến Âm thanh:** Micro INMP441 (Giao tiếp I2S)
-* ❤️ **Cảm biến Sinh tồn:**
-  * MAX30102 — Nhịp tim (HR) & SpO2
-  * MLX90614 — Nhiệt độ cơ thể không tiếp xúc (Giao tiếp I2C)
-* 🌤️ **Cảm biến Môi trường:** DHT11, BMP280, SGP30 (CO2/VOC)
-* 🌍 **Định vị & Kết nối diện rộng:** NEO-M8N (GPS/GNSS), A7680C (4G LTE)
-* 🔔 **Module Cảnh báo:** Còi Buzzer, Màn hình OLED SSD1306
-
-> 📌 *Sơ đồ pinout chi tiết (ESP32 thường, ESP32-S3, và bảng bố trí SRAM/PSRAM) xem tại thư mục [ESP32 Pinout](./ESP32_Pinout/).*
----
-
-## 🏗 Kiến trúc Hệ thống
-
-Hệ thống được thiết kế theo kiến trúc 2 Node xử lý song song, giao tiếp qua giao thức ESP-NOW:
-
-### 1. Node Cảm biến & AI (ESP32-S3)
-Đảm nhiệm đọc dữ liệu môi trường/sinh tồn, thu âm thanh hô hấp, chạy mô hình AI on-device và cảnh báo tại chỗ.
-- 📡 **Lớp Cảm biến (FreeRTOS Tasks):**
-  - `MAX30102`: Nhịp tim (HR) và SpO2.
-  - `INMP441`: Microphone (I2S), thu âm thanh hô hấp 5 giây/lần.
-  - `SGP30`: Theo dõi CO2 và VOC.
-  - `DHT11 + BMP280`: Nhiệt độ, độ ẩm, áp suất khí quyển.
-  - `MLX90614`: Nhiệt độ cơ thể, đo không tiếp xúc qua I2C.
-- 🧠 **Lớp Xử lý AI (chi tiết xem mục "Pipeline Huấn luyện & Triển khai AI"):** Chuẩn hóa → Butterworth Bandpass → Pre-emphasis → STFT/Mel-Spectrogram → dB → Quantize INT8 → TFLite Micro Invoke → Ngưỡng 3 vùng + Voting 3 lần đo.
-- 📺 **Lớp Đầu ra:** Hiển thị OLED, kích hoạt Buzzer, gửi gói tin `{raw_data + alert_level}` qua ESP-NOW.
-
-### 2. Node Gateway (Xử lý Đám mây & Khẩn cấp)
-Đóng vai trò trạm trung chuyển dữ liệu diện rộng và cảnh báo khẩn cấp độc lập.
-- 📥 **Lớp Đầu vào:** Nhận dữ liệu qua ESP-NOW; đọc liên tục tọa độ từ GPS NEO-M8N (Multi-GNSS) qua UART.
-- ⚙️ **Lớp Xử lý (FreeRTOS Tasks):**
-  - *Task 1 (MQTT Publish):* Đóng gói `raw_data`, Publish lên Mosquitto Broker để UI/Dashboard kéo về.
-  - *Task 2 (SIM Alert):* Giám sát `alert_level`; nếu phát hiện cơn hen nguy kịch, kích hoạt module 4G A7680C gửi SMS + gọi cứu trợ (fallback: publish qua MQTT nếu có kết nối 4G).
-
-### 3. Server & Application UI
-- ☁️ **Mosquitto Broker:** Điều phối bản tin MQTT (Local/VPS).
-- 📊 **QML Dashboard (Qt6/C++):** Hiển thị Biểu đồ (Chart), Bản đồ vị trí (Map), Bảng cảnh báo (Alert panel).
-- 🔥 **Firebase:** Đồng bộ và lưu trữ chuỗi dữ liệu lịch sử (Cloud log) phục vụ tái huấn luyện AI.
-
----
-
-## 🧠 Pipeline Huấn luyện & Triển khai AI (TinyML)
-
-Đây là phần lõi công nghệ của dự án — quy trình đầy đủ từ dữ liệu thô đến firmware chạy trên ESP32-S3.
-
-### A. Huấn luyện mô hình (Python) — Thư mục `AI_Training_Model/`
-
-| Bước | Script | Vai trò |
-|:---:|---|---|
-| **1–2** | `1_Split_Audio.py`, `2_Prep_Non_Asthma.py` | Băm nhỏ audio tự thu, chuẩn hóa tập Non-Asthma |
-| **3** | `3_Prep_Asthma.py` | Data augmentation tập Asthma (mix nhiễu, time-shift, white noise, time-stretch, pitch-shift) để cân bằng 1000/1000 mẫu |
-| **4** | `4_Norma_&_Check_Spectrum.py` | Phân tích phổ, chốt dải tần Bandpass (100–2000 Hz) |
-| **5** | `5_Extract_Features.py` | Trích xuất Mel-Spectrogram (Slaney scale, `power=2.0`, `top_db=80`) → `.npy` |
-| **6** | `6_Train_Model.py` | Train DS-CNN (SeparableConv2D + BatchNorm), chuẩn hóa Min-Max toàn cục |
-| **7** | `7_Quantize_Export.py` | Lượng tử hóa INT8 (representative dataset cân bằng 2 lớp), xuất `Asthma_Model.h` |
-| **9** | `9_Coef_Butter.py` | Trích hệ số Butterworth dạng SOS cho C++ |
-| **10–14** | `10_Test_Asthma_Raw.py` → `14_Get_Random_Name.py` | Bộ công cụ kiểm thử: xuất mẫu raw sang C++, đối chiếu Mel-Spectrogram Python↔C++, kiểm tra model không suy biến, test số lượng lớn mẫu ngẫu nhiên |
-
-🏆 **Kết quả huấn luyện (bản mới nhất):** Test Accuracy ~93.5%, Precision/Recall cân bằng giữa 2 lớp Asthma/Non-Asthma.
-
-### B. Triển khai lên ESP32-S3 (C++) — Thư mục `Deploy_Model/`
-
-Quy trình kiểm thử đi qua 4 giai đoạn (chi tiết xem `Deploy_Model/README.md`):
-
-1. 🧪 **Test tĩnh (Static Inference):** Xác nhận TFLite Micro load model và suy luận đúng trên phần cứng.
-2. ⚡ **Ép xung & Đo lường (Profiling):** Đo latency, tối ưu `tensor_arena`, bật tối ưu vector hóa ESP-NN.
-3. 🎤 **Kiểm thử toàn diện & Xử lý nhiễu (Real-time Pipeline):** Nối thông Micro → DSP → AI, phát hiện và xử lý vấn đề nhiễu môi trường thực tế qua ngưỡng 3 vùng + Voting.
-4. 📦 **Đóng gói chính thức (Final Deployment):** Dọn dẹp mã nguồn, loại bỏ toàn bộ debug/test code, chỉ giữ vòng lặp sản xuất tinh gọn: `STATE_LISTENING → STATE_RECORDING → STATE_PROCESSING → STATE_INTERFACE`.
-
-> 💡 *Toàn bộ quá trình chuyển đổi thuật toán DSP từ Python sang C++ (Butterworth SOS, Mel Slaney-scale, quantize INT8) được ghi chú chi tiết tại [Deploy the model to ESP32](./Deploy_Model/3_Test_Model_LiveMic/doc/).*
-
----
-
-## 📊 Kết nối MQTT & Dashboard (Prototype)
-
-Thư mục `ESP32-Qt-Telemetry/` chứa bản thử nghiệm đầu tiên của luồng dữ liệu MQTT:
-- 🟢 `QtEnvDash-ESP32/`: Firmware ESP32 đọc DHT11, publish dữ liệu lên MQTT Broker.
-- 📈 `Dashboard_DHT11/`: Ứng dụng Qt6 subscribe MQTT, vẽ biểu đồ thời gian thực.
-
-*Đây là bản proof-of-concept cho luồng Gateway → MQTT → Dashboard, sẽ được mở rộng đầy đủ (thêm cảm biến, alert panel, bản đồ GPS) trong [Final Project](./Final_Project_NCKH/).*
-
----
-
-## 🔧 Driver Cảm biến (Sensor Suite)
-
-Thay vì sử dụng các thư viện rác/chắp vá trên mạng, thư mục `ESP32-Sensor_Suite/` chứa toàn bộ driver C++ **tự viết và tối ưu hóa riêng** cho hệ sinh thái của dự án (DHT11, MAX30102, MLX90614, A7680C, BMP280, SGP30, NEO-M8N, SSD1306). 
-
-Đặc điểm kiến trúc của bộ thư viện này:
-- **Thiết kế hướng đối tượng (OOP):** Mỗi loại cảm biến được đóng gói thành một C++ Class riêng biệt (VD: `class Max30102_Sensor`), giúp mã nguồn module hóa, dễ bảo trì và dễ khởi tạo nhiều object nếu dùng nhiều cảm biến cùng loại.
-- **Quản lý Bus chia sẻ (Mutex/Semaphore):** Tích hợp an toàn cơ chế khóa của FreeRTOS để nhiều task có thể đọc dữ liệu đồng thời qua chung 1 chuẩn giao tiếp (I2C/SPI) mà không bị xung đột tài nguyên.
-- **Giao diện chuẩn hóa (Unified API):** Cung cấp các hàm gọi nhất quán như `init()`, `read()`, `calibrate()` giúp lớp Application (chương trình chính) gọi dữ liệu mượt mà, ẩn đi hoàn toàn sự phức tạp của thanh ghi (Registers) bên dưới.
-
-Chi tiết kiến trúc từng driver, xem ở đây [ESP32 Module Link](./ESP32-Sensor_Suite/README.md).
-
----
-
-## 📂 Tổ chức Thư mục Dự án (Cấp cao nhất)
+Kiến trúc được xây dựng theo hướng **Edge-first**:
 
 ```text
-NCKH_2026_AIOT/
-│
-├── AI_Training_Model/          # Toàn bộ pipeline huấn luyện AI bằng Python (5→14, xem mục A)
-│
-├── Deploy_Model/               # Triển khai model lên ESP32-S3 qua 4 giai đoạn (xem mục B)
-│   ├── 1_Test_Model_Static/
-│   ├── 2_Test_Model_Profiling/
-│   ├── 3_Test_Model_LiveMic/
-│   └── 4_Test_Model_Official_Final/
-│
-├── ESP32_Pinout/               # Sơ đồ pinout ESP32/ESP32-S3, bảng bố trí SRAM/PSRAM
-│
-├── ESP32-Qt-Telemetry/         # Prototype luồng MQTT: firmware ESP32 + Dashboard Qt6
-│   ├── QtEnvDash-ESP32/
-│   └── Dashboard_DHT11/
-│
-├── ESP32-Sensor_Suite/         # Driver C++ cho các module cảm biến của dự án
-│
-└── Final_Project_NCKH/         # Tổng hợp toàn bộ firmware chính thức (đang cập nhật)
+Respiratory Audio
+      |
+      v
+Patient Edge Node
+DSP + TinyML
+      |
+  PatientEvent
+      |
+   ESP-NOW
+      |
+      v
+IoT Gateway
+Environment + Aggregation
+      |
+ Wi-Fi / LTE
+      |
+     MQTT
+      |
+      v
+Qt6/QML Dashboard
+```
+
+TinyML được chạy **trực tiếp tại Patient Node**, do đó chức năng phân tích cốt lõi vẫn hoạt động ngay cả khi Gateway hoặc Internet không khả dụng.
+
+> ⚠️ Hệ thống là nguyên mẫu nghiên cứu hỗ trợ theo dõi/cảnh báo kỹ thuật.  
+> Không được xem là thiết bị tự chẩn đoán bệnh, xác nhận chắc chắn cơn hen hoặc đánh giá mức độ nguy kịch lâm sàng.
+
+---
+
+# 🚀 Tính năng nổi bật
+
+- 🧠 **Edge AI trên ESP32-S3:**  
+  DS-CNN INT8 chạy hoàn toàn on-device bằng TensorFlow Lite Micro.
+
+- 🎤 **Respiratory Acoustic Pipeline:**  
+  Thu âm INMP441 ở 16 kHz, xử lý Butterworth Bandpass → Pre-emphasis → Mel-Spectrogram → INT8 inference.
+
+- 🛡️ **Audio Quality Gate:**  
+  Đánh giá chất lượng đoạn audio 5 giây trước khi cho phép inference, dựa trên các chỉ số như RMS, peak, clipping và active blocks.
+
+- 🧠 **Voting nhiều lần inference:**  
+  Kết hợp nhiều lần `Invoke()` để tăng độ ổn định quyết định ở deployment.
+
+- 🧠 **1 giây PSRAM Pre-trigger:**  
+  Trong Monitor Mode, PSRAM luôn giữ 1 giây audio gần nhất để tránh mất phần đầu respiratory event khi VAD trigger trễ.
+
+- ❤️ **HR / SpO₂ theo phiên:**  
+  MAX30102 chỉ được bật khi người dùng chủ động thực hiện Vital Check, không giả lập continuous vital monitoring.
+
+- 📡 **ESP-NOW Event Link:**  
+  Patient Node gửi `PatientEvent` đã xử lý sang Gateway, không stream raw WAV trong vận hành bình thường.
+
+- 🌤️ **Environmental Monitoring tại Gateway:**  
+  DHT22, BMP280, SGP30 cung cấp Temperature, Humidity, Pressure, TVOC và eCO₂.
+
+- 🌍 **Network linh hoạt:**  
+  Wi-Fi dùng ở Home Mode; A7680C LTE dùng làm fallback hoặc mobile uplink; NEO-M8N dùng khi cần vị trí.
+
+- ⏱️ **FreeRTOS trên Gateway:**  
+  Gateway xử lý concurrent ESP-NOW, sensor, aggregation, Wi-Fi/LTE, MQTT và optional UI qua Task/Queue.
+
+- 🖥️ **Qt6/QML Dashboard:**  
+  Hiển thị Patient Sessions, respiratory events, HR/SpO₂ theo phiên, environment history, device/network status và alert.
+
+---
+
+# 🧩 Định nghĩa sản phẩm cuối cùng
+
+## 1. Patient Edge Node
+
+Thiết bị cá nhân nhỏ gọn, chạy pin, có thể:
+
+- cầm tay;
+- bỏ túi;
+- để bàn;
+- đặt gần đầu giường;
+- mang theo khi ra ngoài.
+
+### Phần cứng chính
+
+- ESP32-S3-N16R8.
+- INMP441.
+- MAX30102.
+- SSD1306 OLED.
+- 3 nút:
+  - `CHECK`
+  - `MONITOR`
+  - `SLEEP / STOP`
+- Battery.
+- ESP-NOW.
+
+### Form factor
+
+Định hướng:
+
+> **Portable handheld respiratory monitor**
+
+Không định hướng:
+
+- smartwatch;
+- microphone áp cố định lên ngực;
+- far-field microphone nghe từ xa trong phòng.
+
+---
+
+## 2. IoT Gateway / Home Station
+
+Gateway đóng vai trò:
+
+- Environmental Node.
+- ESP-NOW Receiver.
+- Data Aggregator.
+- Network Manager.
+- MQTT Uplink.
+- Optional local display station.
+
+### Phần cứng chính
+
+- ESP32.
+- DHT22.
+- BMP280.
+- SGP30.
+- NEO-M8N.
+- A7680C.
+- Wi-Fi.
+- ESP-NOW.
+- Optional TFT.
+- Nguồn cấp liên tục; battery là tùy chọn cho mobile operation.
+
+---
+
+# 🏠 Các kịch bản vận hành
+
+| Scenario | Patient Node | Gateway | Uplink |
+|---|---|---|---|
+| **Home Monitoring** | Portable / bedside | Đặt tại nhà | Wi-Fi → MQTT |
+| **Portable Offline** | Mang theo | Ở nhà | Local result + sync later |
+| **Mobile Connected** | Mang theo | Mang theo | LTE + GPS → MQTT |
+
+---
+
+## Home Monitoring
+
+```text
+Patient Node
+     |
+  ESP-NOW
+     |
+     v
+Home Gateway
+     |
+    Wi-Fi
+     |
+    MQTT
+     |
+     v
+Qt Dashboard
+```
+
+Gateway thường:
+
+- always-on;
+- đọc environment định kỳ;
+- Wi-Fi primary;
+- LTE standby/fallback;
+- GPS thường OFF.
+
+Patient Node phần lớn ở Standby và chỉ chạy khi user chủ động Check hoặc Monitor.
+
+---
+
+## Portable Offline
+
+Khi Patient Node ra khỏi vùng Gateway:
+
+```text
+Patient Node
+     X
+   Gateway
+```
+
+Patient Node vẫn có thể:
+
+- thu respiratory audio;
+- Quality Check;
+- chạy TinyML;
+- đo HR/SpO₂;
+- hiển thị kết quả OLED;
+- lưu event chưa sync.
+
+Khi trở lại gần Gateway, các event pending có thể được đồng bộ lại.
+
+> Mất Gateway/Internet không làm mất chức năng Edge AI cốt lõi.
+
+---
+
+## Mobile Connected
+
+Nếu cần realtime connectivity ngoài nhà:
+
+```text
+Patient Node
+     |
+  ESP-NOW
+     |
+     v
+Gateway
+     |
+ A7680C LTE
+     |
+     v
+   MQTT
+```
+
+Trong scenario này:
+
+- LTE là primary uplink.
+- GPS có thể được bật.
+- Gateway có thể tiếp tục thu environment xung quanh.
+
+---
+
+# 🎛️ Patient Node Operating Modes
+
+Patient Node dùng 3 nút vật lý riêng để tránh long-press/double-click phức tạp.
+
+```text
+[ CHECK ]   [ MONITOR ]   [ SLEEP ]
 ```
 
 ---
 
-## 🛠 Cài đặt và Phát triển
+## 1. CHECK — Manual Respiratory Check
 
-- **Môi trường AI:** Python 3.x, TensorFlow/Keras, librosa, scipy hoặc cài thủ công theo import ở đầu mỗi script.
-- **Môi trường Firmware:** PlatformIO (VS Code), framework Arduino cho ESP32/ESP32-S3.
-- **Môi trường Dashboard:** Qt Creator (Qt6), MQTT client library (HiveMQ).
-- **Cấu hình phần cứng:** Kiểm tra kỹ sơ đồ đấu nối chân (I2C, SPI, UART, I2S) tại [ESP32 Pinout](./ESP32_Pinout/).
+Người dùng đưa thiết bị đến gần vùng miệng rồi nhấn `CHECK`.
+
+```text
+CHECK
+  |
+  v
+Record exact 5 s
+  |
+  v
+Audio Quality Gate
+  |
+  v
+DSP
+  |
+  v
+DS-CNN INT8
+  |
+  v
+3x Invoke / Voting
+  |
+  v
+Audio Result
+```
+
+Sau khi có Audio Result, OLED yêu cầu:
+
+```text
+PLACE FINGER
+PRESS CHECK
+```
+
+Nhấn `CHECK` lần thứ hai:
+
+```text
+MAX30102
+   |
+   v
+HR / SpO2
+```
+
+Vital Check là **optional**. Nếu user nhấn `SLEEP`, phiên đo vẫn hợp lệ với `vitals_valid = false`.
 
 ---
 
-## 📌 Trạng thái hiện tại
+## 2. MONITOR — Auto Acoustic Monitoring
 
-- ✅ Pipeline huấn luyện AI (Python) hoàn chỉnh, đã kiểm chứng qua nhiều vòng đối chiếu Python↔C++.
-- ✅ Firmware nhận diện Asthma trên ESP32-S3 (`Deploy_Model/4_Test_Model_Official_Final`) đã đạt bản ổn định, test qua mic thật cho kết quả nhất quán.
-- 🚧 Tích hợp toàn bộ cảm biến + AI + ESP-NOW + Gateway vào `Final_Project_NCKH/` — đang triển khai.
-- 🚧 Dashboard Qt6 đầy đủ (Chart, Map, Alert Panel) — đang mở rộng từ bản prototype MQTT hiện có.
+Pipeline:
+
+```text
+MONITOR
+   |
+   v
+Continuous I2S
+   |
+   v
+Rolling 1 s PSRAM
+   |
+   v
+VAD
+   |
+   v
+4 consecutive blocks > threshold
+   |
+   v
+TRIGGER
+   |
+   v
+1 s pre-trigger + 4 s post-trigger
+   |
+   v
+Final 5 s audio
+   |
+   v
+Quality Gate
+   |
+   v
+DSP + DS-CNN + Voting
+   |
+   v
+PatientEvent
+```
+
+MAX30102 mặc định **OFF** trong Monitor Mode vì không thể giả định user đang đặt ngón tay trên sensor.
 
 ---
 
-*Dự án NCKH thực hiện bởi: ARM LAB - PTIT.*
+## 3. SLEEP / STOP
+
+`SLEEP` có ưu tiên cao nhất.
+
+State machine sẽ:
+
+- abort acquisition nếu cần;
+- stop I2S;
+- stop MAX30102;
+- reset buffer/state;
+- tắt OLED;
+- tắt radio không cần thiết;
+- đưa Patient Node về low-power state.
+
+---
+
+# 🎤 Audio Quality Gate
+
+Quality Gate không phải classifier và không thay thế VAD.
+
+## VAD
+
+Trả lời:
+
+> Có event đủ điều kiện để Auto Monitor bắt đầu capture chưa?
+
+## Quality Gate
+
+Trả lời:
+
+> Final audio 5 giây vừa thu có đủ chất lượng kỹ thuật để model được phép inference không?
+
+Flow:
+
+```text
+Final 5 s audio
+      |
+      v
+Quality Gate
+  |   |   |
+  |   |   +--> INACTIVE
+  |   +------> TOO_LOUD
+  +----------> TOO_WEAK
+      |
+      v
+     OK
+      |
+      v
+DSP + TinyML
+```
+
+Các metric dự kiến:
+
+- RMS.
+- Peak.
+- Clipping count/ratio.
+- Active block count/ratio.
+
+Threshold final sẽ được calibration trên final enclosure.
+
+---
+
+# 🧠 TinyML Pipeline
+
+## Input
+
+```text
+Sample rate : 16 kHz
+Duration    : 5 s
+Samples     : 80,000
+```
+
+## Preprocessing
+
+```text
+Raw PCM
+  |
+  v
+Butterworth Bandpass 100–2000 Hz
+  |
+  v
+Pre-emphasis 0.97
+  |
+  v
+STFT / Mel Filterbank
+  |
+  v
+Mel 64 x 129
+  |
+  v
+dB [-80, 0]
+  |
+  v
+Normalize [0,1]
+  |
+  v
+INT8 Quantization
+  |
+  v
+DS-CNN
+```
+
+## Deployment
+
+- Model: DS-CNN.
+- Full INT8.
+- TensorFlow Lite Micro.
+- Target: ESP32-S3.
+
+Pipeline C++ được triển khai **tương đương về thuật toán** với pipeline Python và đã được kiểm chứng bằng đối chiếu kết quả phân lớp.
+
+Không claim bit-exact hoặc numerically identical giữa Python và ESP32.
+
+---
+
+# 🧪 Dataset & Training Methodology
+
+Phiên bản model hiện tại ưu tiên phương pháp đánh giá đúng hơn metric đẹp.
+
+- Chia dữ liệu theo bệnh nhân trước augmentation.
+- Augmentation chỉ áp dụng cho train.
+- Validation/Test giữ dữ liệu gốc.
+- Min/Max normalization chỉ được học từ train.
+- Hạn chế data leakage giữa các mẫu liên quan.
+
+> 📌 Accuracy chính thức phải lấy từ model freeze mới nhất.  
+> Phiên bản patient-wise split hiện tại cho kết quả khoảng **~87%**, thấp hơn phiên bản cũ nhưng đáng tin cậy hơn về phương pháp đánh giá.
+
+---
+
+# 🧠 Model output
+
+Model được xem là:
+
+> **Respiratory Acoustic Pattern Classifier**
+
+Application-level output:
+
+```text
+ASTHMA_LIKE
+NON_ASTHMA
+```
+
+Không sử dụng các nhãn kiểu:
+
+```text
+DIAGNOSED_ASTHMA
+SEVERE_ATTACK
+PATIENT_HAS_ASTHMA
+```
+
+Một tiếng ho hoặc âm thanh lớn có thể kích hoạt VAD nhưng không đồng nghĩa classifier sẽ trả `ASTHMA_LIKE`.
+
+---
+
+# 📦 PatientEvent
+
+Patient Node không gửi raw audio trong normal operation.
+
+Nó gửi **PatientEvent** đã được xử lý.
+
+Concept:
+
+```cpp
+struct PatientEventPacket
+{
+    uint32_t device_id;
+
+    uint32_t sequence;
+    uint32_t session_id;
+
+    uint64_t timestamp;
+
+    uint8_t event_type;
+
+    uint8_t classification;
+    float model_score;
+
+    uint8_t asthma_votes;
+    uint8_t non_asthma_votes;
+
+    uint8_t audio_quality;
+
+    bool vitals_valid;
+    uint16_t heart_rate;
+    uint8_t spo2;
+
+    uint8_t battery_percent;
+};
+```
+
+Event types dự kiến:
+
+```text
+MANUAL_CHECK
+MONITOR_EVENT
+STATUS
+```
+
+---
+
+# 📡 ESP-NOW Event Link
+
+ESP-NOW được dùng làm:
+
+> **Local event transport giữa Patient Node và Gateway**
+
+Không dùng để stream raw WAV.
+
+```text
+Patient Node
+     |
+ PatientEvent
+     |
+     v
+ ESP-NOW
+     |
+     v
+ Gateway
+```
+
+## Reliability
+
+```text
+Patient
+   |
+   | Event seq=N
+   v
+Gateway
+   |
+   | ACK seq=N
+   v
+Patient
+```
+
+Nếu ACK thất bại:
+
+```text
+synced = false
+store local
+```
+
+Khi Gateway xuất hiện lại:
+
+```text
+retry pending events
+```
+
+Gateway giữ sequence history để chống duplicate.
+
+---
+
+# 🌤️ Gateway Environmental Sensing
+
+## DHT22
+
+- Temperature.
+- Humidity.
+
+## BMP280
+
+- Pressure.
+- Temperature.
+
+## SGP30
+
+- TVOC.
+- eCO₂ / CO₂-equivalent.
+
+> SGP30 không được mô tả là direct CO₂ sensor.
+
+---
+
+# 🧠 Gateway Data Aggregation
+
+Gateway nhận:
+
+```text
+PatientEvent
+```
+
+và ghép với:
+
+```text
+EnvironmentSnapshot
++
+Gateway Status
++
+Optional GPS
+```
+
+thành:
+
+```text
+CompleteRecord
+```
+
+rồi publish MQTT.
+
+```text
+PatientEvent
+      |
+      v
+Nearest Environment Snapshot
+      |
+      v
+Gateway / Network Context
+      |
+      v
+CompleteRecord
+      |
+      v
+MQTT
+```
+
+Cloud không cần tự đoán hai stream độc lập nào thuộc cùng một patient session.
+
+---
+
+# ⏱️ Firmware Architecture
+
+## Patient Node
+
+Triết lý:
+
+> **State-machine centric**
+
+Application flow chính tuần tự:
+
+```text
+Standby
+  |
+Check / Monitor
+  |
+Acquire
+  |
+Quality
+  |
+Process
+  |
+Infer
+  |
+Display
+  |
+Send Event
+```
+
+Arduino ESP32 vẫn chạy trên FreeRTOS bên dưới, nhưng Patient Node không cần tự chia application thành nhiều task nếu không có lợi ích rõ ràng.
+
+---
+
+## Gateway
+
+Triết lý:
+
+> **FreeRTOS task centric**
+
+Gateway phải xử lý concurrent:
+
+- ESP-NOW.
+- Environment sensors.
+- Wi-Fi.
+- LTE.
+- MQTT.
+- GPS.
+- Storage.
+- Optional TFT.
+
+Task proposal:
+
+```text
+TaskEspNow
+TaskSensor
+TaskGatewayManager
+TaskNetwork
+TaskDisplay        optional
+```
+
+ESP-NOW callback chỉ enqueue packet và return; không làm heavy processing trực tiếp trong callback.
+
+---
+
+# 🛡️ Gateway Robustness
+
+FreeRTOS không tự động bảo đảm mọi subsystem cô lập hoàn toàn.
+
+Các driver/task cần:
+
+- timeout;
+- bounded retry;
+- Queue timeout;
+- Mutex timeout;
+- non-blocking network reconnect;
+- watchdog;
+- tránh `while(1)` blocking không kiểm soát.
+
+Mục tiêu:
+
+```text
+Sensor lỗi
+→ MQTT / ESP-NOW vẫn hoạt động
+
+Network lỗi
+→ environment sensing vẫn hoạt động
+```
+
+---
+
+# 🌐 Gateway Network Policy
+
+## Home Mode
+
+```text
+Wi-Fi
+  |
+  v
+MQTT
+```
+
+- Wi-Fi primary.
+- LTE standby/fallback.
+- GPS thường OFF.
+
+## Mobile / Wi-Fi unavailable
+
+```text
+A7680C LTE
+     |
+     v
+    MQTT
+```
+
+GPS bật khi cần location.
+
+Patient Node không cần biết Gateway đang dùng Wi-Fi hay LTE.
+
+---
+
+# 📊 MQTT & Dashboard
+
+## Prototype hiện có
+
+Thư mục `ESP32-Qt-Telemetry/` là proof-of-concept ban đầu:
+
+- `QtEnvDash-ESP32/`
+- `Dashboard_DHT11/`
+
+Prototype ban đầu có thể vẫn dùng DHT11, nhưng **Final Gateway sử dụng DHT22**.
+
+## Final Dashboard
+
+Qt6/QML Dashboard dự kiến hiển thị:
+
+- Overview.
+- Patient Sessions.
+- Respiratory Events.
+- HR / SpO₂ History.
+- Environment Charts.
+- Gateway Status.
+- Network Status.
+- Alerts.
+- Optional Location / Map.
+
+Dashboard phải phân biệt:
+
+```text
+Current Environment
+```
+
+với:
+
+```text
+Latest HR / SpO2 measurement
+```
+
+Không hiển thị một phép đo HR/SpO₂ cũ như realtime current value.
+
+---
+
+# 💾 Database / Persistent Storage
+
+Backend persistent storage hiện **chưa khóa hoàn toàn**.
+
+Firebase có thể tiếp tục được dùng nếu phù hợp với implementation cuối, nhưng MQTT schema và data model cần được chốt trước.
+
+---
+
+# 🔔 Alert Strategy
+
+Gateway có thể có Alert Engine dựa trên các rule đã cấu hình.
+
+Không claim TinyML trực tiếp xác định:
+
+```text
+"cơn hen nguy kịch"
+```
+
+hoặc tự động đưa ra kết luận lâm sàng.
+
+Nếu một điều kiện cảnh báo được thỏa mãn, Gateway có thể:
+
+- hiển thị local alert;
+- publish MQTT;
+- dùng LTE/SMS/call nếu chức năng này được hoàn thiện trong final scope;
+- đính kèm GPS khi phù hợp.
+
+---
+
+# 🛠️ Hardware Requirements
+
+## Patient Edge Node
+
+- ESP32-S3-N16R8.
+- INMP441.
+- MAX30102.
+- SSD1306 OLED.
+- 3 buttons.
+- Battery.
+- Optional buzzer/status LED.
+
+## IoT Gateway
+
+- ESP32.
+- DHT22.
+- BMP280.
+- SGP30.
+- NEO-M8N.
+- A7680C.
+- Wi-Fi.
+- ESP-NOW.
+- Optional TFT.
+- Power supply.
+
+## Deferred / Future
+
+- MLX90614 body-temperature measurement.
+
+---
+
+# 🔧 Driver Cảm biến
+
+Thư mục `ESP32-Sensor_Suite/` chứa các driver C++ đã phát triển cho các module của dự án.
+
+Các module lịch sử có thể bao gồm:
+
+- DHT11 / DHT22.
+- MAX30102.
+- MLX90614.
+- A7680C.
+- BMP280.
+- SGP30.
+- NEO-M8N.
+- SSD1306.
+
+Không phải mọi driver trong Sensor Suite đều bắt buộc xuất hiện trong final hardware.
+
+Mục tiêu của Sensor Suite:
+
+- module hóa;
+- API nhất quán;
+- dễ tái sử dụng;
+- có timeout;
+- có khả năng phối hợp với FreeRTOS/Mutex khi cần.
+
+---
+
+# 📂 Tổ chức thư mục dự án
+
+```text
+NCKH_2026_AIOT/
+│
+├── AI_Training_Model/
+│   └── Python training / preprocessing / evaluation
+│
+├── Deploy_Model/
+│   ├── 1_Test_Model_Static_Profiling/
+│   ├── 2_Test_Model_LiveMic/
+│   ├── 3_Model_Complete/
+│   └── 4_Test_Model_Official_Final/
+│
+├── ESP32_Pinout/
+│
+├── ESP32-Qt-Telemetry/
+│   ├── QtEnvDash-ESP32/
+│   └── Dashboard_DHT11/
+│
+├── ESP32-Sensor_Suite/
+│
+├── Final_Project_NCKH/
+│   ├── Patient_Node/
+│   ├── Gateway/
+│   └── Dashboard/
+│
+└── docs/
+    ├── NCKH_PRODUCT_DEFINITION_FINAL.md
+    ├── NCKH_SYSTEM_ARCHITECTURE_FINAL.md
+    └── NCKH_BUILD_IMPLEMENTATION_PLAN.md
+```
+
+---
+
+# 🛠️ Môi trường phát triển
+
+## AI
+
+- Python 3.x.
+- TensorFlow / Keras.
+- librosa.
+- scipy.
+- numpy.
+
+## Firmware
+
+- PlatformIO.
+- VS Code.
+- Arduino framework cho ESP32 / ESP32-S3.
+- TensorFlow Lite Micro.
+
+## Dashboard
+
+- Qt Creator.
+- Qt6 / QML.
+- MQTT client.
+
+---
+
+# 🔋 Power Strategy
+
+## Patient Node
+
+Ba mức tải chính:
+
+```text
+STANDBY
+= low power
+
+MANUAL CHECK
+= high load trong thời gian ngắn
+
+MONITOR
+= active acoustic subsystem
+```
+
+Các giá trị cần đo thực nghiệm:
+
+```text
+I_standby
+I_manual
+I_monitor
+```
+
+Dung lượng battery sẽ được chốt sau khi có current profile.
+
+## Gateway
+
+Primary use:
+
+```text
+always-on power / USB adapter
+```
+
+Battery là optional cho backup/mobile use.
+
+---
+
+# 🧪 Experimental Evaluation dự kiến
+
+## AI
+
+- Accuracy.
+- Precision.
+- Recall.
+- F1.
+- Confusion Matrix.
+
+## Deployment
+
+- Python ↔ ESP32 classification parity.
+- DSP latency.
+- Inference latency.
+- RAM / Flash / PSRAM.
+
+## Audio
+
+- VAD.
+- 1 s pre-trigger.
+- Quality Gate.
+- Near-field acquisition.
+- Noise scenarios.
+
+## Power
+
+- Standby current.
+- Manual Check current.
+- Monitor current.
+
+## Communication
+
+- ESP-NOW success rate.
+- ACK/retry.
+- Gateway loss/reconnect.
+- Wi-Fi.
+- LTE fallback.
+
+## End-to-end
+
+```text
+Patient Check
+   |
+   v
+TinyML
+   |
+   v
+ESP-NOW
+   |
+   v
+Gateway
+   |
+   v
+MQTT
+   |
+   v
+Dashboard
+```
+
+---
+
+# 📌 Trạng thái hiện tại
+
+## ✅ Hoàn thành / ổn định
+
+- Pipeline huấn luyện AI.
+- Patient-wise split / train-only augmentation methodology.
+- DS-CNN INT8.
+- Python ↔ ESP32 deployment validation.
+- Live microphone deployment trên ESP32-S3.
+- Voting.
+- VAD.
+- 1 s PSRAM rolling pre-trigger buffer.
+
+## 🚧 Đang triển khai
+
+### Patient Node Final Firmware
+
+- State Machine.
+- 3 Buttons.
+- Manual Check.
+- Audio Quality Gate.
+- MAX30102 session.
+- Auto Monitor integration.
+- PatientSession.
+- PatientEvent.
+- Low power.
+
+### ESP-NOW
+
+- PatientEvent packet.
+- ACK.
+- Sequence.
+- Pending event re-sync.
+
+### Gateway
+
+- FreeRTOS skeleton.
+- Environmental sensors.
+- Aggregation.
+- Wi-Fi / MQTT.
+- LTE fallback/mobile.
+- GPS policy.
+
+### Dashboard
+
+- Final MQTT schema.
+- Qt6/QML overview/history/alert UI.
+
+---
+
+# 🗺️ Build Roadmap
+
+```text
+AI Model Freeze
+      ✓
+      |
+      v
+Patient State Machine
+      |
+      v
+3 Buttons
+      |
+      v
+Manual Check
+      |
+      v
+Quality Gate
+      |
+      v
+DSP + TinyML
+      |
+      v
+MAX30102 Session
+      |
+      v
+Auto Monitor
+      |
+      v
+PatientEvent
+      |
+      v
+ESP-NOW + ACK
+      |
+      v
+Gateway FreeRTOS
+      |
+      v
+Environment + Aggregation
+      |
+      v
+Wi-Fi / MQTT
+      |
+      v
+LTE / GPS
+      |
+      v
+Qt Dashboard
+      |
+      v
+Enclosure + Battery
+      |
+      v
+Experimental Evaluation
+      |
+      v
+Final NCKH Demo
+```
+
+Chi tiết từng phase xem:
+
+[`NCKH_BUILD_IMPLEMENTATION_PLAN.md`](./Docs_NCKH/NCKH_BUILD_IMPLEMENTATION_PLAN.md)
+
+---
+
+# 📐 Design Principles
+
+1. **Edge-first:** TinyML chạy tại Patient Node.
+2. **Offline-capable:** Patient Node vẫn hoạt động khi Gateway/Internet mất.
+3. **Near-field acquisition:** không claim far-field respiratory sensing.
+4. **Quality-before-inference:** input quá yếu/không hợp lệ không bị ép model kết luận.
+5. **Event/session-based patient data:** không giả lập continuous HR/SpO₂.
+6. **Gateway aggregation:** patient + environment được ghép trước MQTT.
+7. **Separation of responsibility:** Patient = sensing/AI; Gateway = network/environment/aggregation.
+8. **No raw audio streaming by default.**
+9. **No medical overclaim.**
+10. **Prototype-first:** ưu tiên đúng phương pháp, ổn định, đo được và demo được.
+
+---
+
+# 👨‍🔬 NCKH
+
+Dự án được phát triển phục vụ nghiên cứu khoa học sinh viên tại **Học viện Công nghệ Bưu chính Viễn thông (PTIT)**.
+
+*Project workspace: ARM LAB - PTIT.*

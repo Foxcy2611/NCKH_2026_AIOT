@@ -8,30 +8,220 @@ Dự án Nghiên cứu khoa học (NCKH) tập trung vào việc tự nghiên c�
 
 ## 🏗 Kiến trúc Hệ thống & Quản lý Ngoại vi
 
-### 1. 🖥️ ESP32 #1: Sensor Node (Thu thập & Xử lý Cục bộ)
-* 🩸 **MAX30102:** Cấu hình thanh ghi điều khiển LED, chế độ lấy mẫu (SpO2/HR) và đọc mảng dữ liệu qua bộ đệm FIFO bằng giao tiếp **I2C**.
-* 🌫️ **SGP30:** Đo chỉ số eCO2, TVOC (qua tập lệnh I2C của SGP30) về chất lượng không khí.
-* 🌤️ **DHT11 & BMP280:** Đọc thông số vi khí hậu. Riêng với BMP280, tự viết hàm bóc tách các hệ số bù (Calibration Coefficients) từ bộ nhớ ROM của chip để tính toán nhiệt độ và áp suất chính xác.
-* 🤒 **MLX90614:** Đọc thông số nhiệt độ cơ thể con người từ đó theo dõi sát sao cơ thể
+### 1. 🖥️ ESP32-S3 #1: Sensor Node (Thu thập & Xử lý Cục bộ)
+* 🩸 **MAX30102:** Cấu hình thanh ghi điều khiển LED, chế độ lấy mẫu (SpO2/HR) và đọc mảng dữ liệu qua bộ đệm FIFO bằng giao tiếp **I2C**. Dòng LED chỉnh về ~7mA để tối ưu pin thiết bị đeo.
+* 🎤 **INMP441:** Thu âm hô hấp qua giao tiếp **I2S** kỹ thuật số 24-bit (SNR ~61dB), cung cấp dữ liệu âm thanh cho **Edge Impulse Audio Model** phân loại tiếng thở rít, tiếng ho.
+* 🌫️ **SGP30:** Đo chỉ số eCO2, TVOC (qua tập lệnh I2C của SGP30) về chất lượng không khí. Bắt buộc đo đều đặn mỗi 1 giây để thuật toán baseline compensation hoạt động chính xác.
+* 🌤️ **DHT22 & BMP280:** Đọc thông số vi khí hậu (DHT22 độ chính xác ±0.5°C, ±2% — cao hơn DHT11). Riêng với BMP280, tự viết hàm bóc tách các hệ số bù (Calibration Coefficients) từ bộ nhớ ROM của chip để tính toán nhiệt độ và áp suất chính xác.
+* 🤒 **MLX90614:** Đo nhiệt độ cơ thể không tiếp xúc qua hồng ngoại, factory calibrated, kèm kiểm tra toàn vẹn dữ liệu PEC (CRC-8 toàn khung).
+* 🛰️ **NEO-M8N:** Thu tín hiệu đa hệ vệ tinh (GPS + GLONASS + Galileo + BeiDou), hot fix ~1 giây nhờ backup battery, hỗ trợ **hardware geofencing** phát interrupt khi bệnh nhân rời khỏi vùng an toàn.
 * 🚨 **Xử lý cảnh báo tại chỗ:** Tự xây dựng bộ đệm hiển thị đồ họa trên màn hình **OLED (SSD1306)** qua I2C và điều khiển còi **Buzzer** báo động.
+* 📦 **ESP-NOW:** Gửi 2 loại packet sang Gateway — `DataPacket_t` (mỗi 1-2s, đầy đủ raw data) và `AlertPacket_t` (chỉ khi `moderate/severe`, trigger SMS).
 
-### 2. 📡 ESP32 #2: Gateway Node (Định vị & Cảnh báo Khẩn cấp)
-* 🛰️ **NEO-M8N:** Cấu hình cổng **UART**, tự viết bộ Parser xử lý chuỗi ký tự thô NMEA để lọc lấy tọa độ GPS (`$GPRMC`, `$GPGGA`).
-* 📶 **A7680C (4G LTE):** Đóng gói bộ thư viện gửi nhận tập lệnh **AT Commands** qua UART để điều khiển module di động thực hiện cuộc gọi khẩn cấp (Voice Call) và gửi tin nhắn SMS chứa tọa độ cứu trợ khi `alert_level` vượt ngưỡng an toàn.
+### 2. 📡 ESP32 #2: Gateway Node (Kết nối & Cảnh báo)
+* 📶 **A7670C (4G Cat-1):** Đóng gói bộ thư viện gửi nhận tập lệnh **AT Commands** qua UART để gửi tin nhắn SMS chứa `alert_level`, chỉ số nguy hiểm và link Google Maps (tọa độ từ NEO-M8N trên Node) khi nhận `AlertPacket_t`. Không tích hợp Voice Call — module phần cứng không có mic/loa nên cuộc gọi tự động chỉ tạo im lặng, không có giá trị thực tế.
+* 📡 **WiFi + MQTT:** Nhận `DataPacket_t` từ ESP-NOW → publish JSON lên **Mosquitto Broker** → **QML Dashboard** subscribe vẽ chart realtime và **Firebase** lưu lịch sử.
+* 🔀 **FreeRTOS 2 Task độc lập:** `vTaskMQTT_Publish` xử lý DataPacket cho UI; `vTaskSMS_Alert` xử lý AlertPacket cho A7670C — hai luồng không block nhau.
 
 ### 3. 📋 Danh sách và Chức năng các Module phần cứng
 
-| Module / Cảm biến | Chuẩn giao tiếp | Chức năng chính |
-| :--- | :---: | :--- |
-| 📶 **A7680C** | UART (115200) | Module viễn thông 4G LTE |
-| 🌡️ **BMP280** | I2C (`0x76`) | Đo áp suất khí quyển và nhiệt độ |
-| 💧 **DHT11** | 1-Wire (GPIO) | Đo nhiệt độ, độ ẩm môi trường |
-| 🎤 **INMP441** | I2S / ADC | Thu thập dữ liệu âm thanh ho / hô hấp / nói chuyện |
-| ❤️ **MAX30102** | I2C (`0x57`) | Đo nhịp tim và nồng độ oxy trong máu bệnh nhân |
-| 🤒 **MLX90614** | I2C (`0x5A`) | Đo nhiệt độ môi trường xung quanh và đối tượng nhìn thấy | 
-| 🛰️ **NEO-M8N** | UART (9600) | Module định vị vệ tinh GPS/GLONASS |
-| 🌫️ **SGP30** | I2C (`0x58`) | Cảm biến chất lượng không khí (CO2 và TVOC) |
-| 📺 **SSD1306** | I2C (`0x3C`) | Màn hình hiển thị OLED (128x64) |
+| Module / Cảm biến | Node / Gateway | Chuẩn giao tiếp | Chức năng chính |
+| :--- | :---: | :---: | :--- |
+| 📶 **A7670C** | Gateway | UART (115200) | Module viễn thông 4G Cat-1 — SMS cảnh báo |
+| 🌡️ **BMP280** | Node | I2C (`0x76`) | Đo áp suất khí quyển và nhiệt độ |
+| 💧 **DHT22** | Node | 1-Wire (GPIO) | Đo nhiệt độ (±0.5°C), độ ẩm (±2%) môi trường |
+| 🎤 **INMP441** | Node | I2S | Thu âm thanh hô hấp — input Edge Impulse Audio Model |
+| ❤️ **MAX30102** | Node | I2C (`0x57`) | Đo nhịp tim và nồng độ oxy trong máu bệnh nhân |
+| 🤒 **MLX90614** | Node | I2C (`0x5A`) | Đo nhiệt độ cơ thể không tiếp xúc (hồng ngoại) |
+| 🛰️ **NEO-M8N** | Node | UART (9600) | Định vị Multi-GNSS · Geofencing · Hot fix 1s |
+| 🌫️ **SGP30** | Node | I2C (`0x58`) | Cảm biến chất lượng không khí (CO2 và TVOC) |
+| 📺 **SSD1306** | Node | I2C (`0x3C`) | Màn hình OLED hiển thị alert_level tại chỗ (128x64) |
+
+---
+
+### 4. ✨ Tính Năng Nổi Bật Từng Module
+
+---
+
+#### ❤️ MAX30102 — SpO2 & Nhịp Tim
+
+**1. Hardware FIFO Buffer (32 mẫu)**
+- Chip tự lấy mẫu và đẩy dữ liệu vào **bộ đệm vòng 32 mẫu** nội bộ
+- MCU không cần polling liên tục — giải phóng hoàn toàn CPU cho các task khác
+- Các đời cảm biến cơ bản hơn (MAX30100) không có cơ chế FIFO rollover tự động
+
+**2. Hardware Interrupt — Không tốn CPU**
+- Chân `INT` kéo xuống LOW khi có mẫu mới → ESP32 chỉ xử lý khi được gọi
+- Kết hợp FreeRTOS: task MAX30102 ngủ (`ulTaskNotifyTake`) đến khi ngắt bắn → zero CPU waste
+- Bắt buộc đọc thanh ghi `0x00` để reset mạch ngắt — nếu bỏ qua chip không bao giờ ngắt lại
+
+**3. Cấu hình LED độc lập — Tối ưu pin**
+- Dòng LED Đỏ (`0x0C`) và LED IR (`0x0D`) cấu hình riêng biệt qua thanh ghi
+- Chỉnh xuống ~7mA thay vì mặc định 50mA → tiết kiệm đáng kể cho thiết bị đeo pin nhỏ
+- Độ rộng xung 411µs cho độ phân giải ADC **18-bit** — cao nhất có thể
+
+---
+
+#### 🎤 INMP441 — Thu Âm Hô Hấp
+
+**1. Giao tiếp I2S kỹ thuật số — Không nhiễu analog**
+- Tín hiệu truyền dạng **số nguyên 24-bit** qua bus I2S, không qua ADC analog
+- Loại bỏ hoàn toàn nhiễu đường dây, nhiễu nguồn — vấn đề phổ biến với mic analog
+- SNR ~61 dB — đủ để phân biệt tiếng thở rít (wheeze) yếu trong môi trường bình thường
+
+**2. Không tiếp xúc da — Phù hợp thiết bị y tế**
+- Đặt gần miệng/ngực, không cần dán lên người → vệ sinh, tiện dụng
+- Thu âm tiếng thở, tiếng rít, tiếng ho → input trực tiếp cho **Edge Impulse Audio Model**
+
+**3. Tích hợp clock nội bộ (WS + SCK)**
+- ESP32 làm Master cấp clock I2S → INMP441 chỉ cần cấp nguồn và DATA
+- Đồng bộ mẫu chính xác, không lệch pha — quan trọng khi lấy mẫu train Edge Impulse
+
+---
+
+#### 🌫️ SGP30 — Chất Lượng Không Khí
+
+**1. Baseline Compensation Algorithm — Tự hiệu chỉnh**
+- Thuật toán bù đường nền chạy **nội bộ trong chip**, không cần MCU tính toán
+- Bắt buộc gửi lệnh đo đều đặn mỗi **1 giây** để thuật toán hội tụ chính xác
+- Sau 15 giây warm-up, giá trị ổn định dần — cần tính vào logic khởi động hệ thống
+
+**2. CRC-8 trên mọi gói tin — Chống nhiễu dữ liệu**
+- Mỗi cụm 2 byte dữ liệu kèm **1 byte CRC** (đa thức `0x31`, init `0xFF`)
+- Nếu CRC sai → loại bỏ gói, tránh đưa giá trị sai vào feature vector Edge Impulse
+- Không module nào trong dự án này có cơ chế toàn vẹn dữ liệu mạnh như SGP30 + MLX90614
+
+**3. Đa pixel CMOSens — Đo song song 2 chỉ số**
+- Đo đồng thời **eCO2** (ppm) và **TVOC** (ppb) trong một lần lấy mẫu
+- Cả 2 đều là yếu tố kích phát cơn hen — SGP30 cung cấp 2 feature trong 1 sensor
+
+---
+
+#### 🤒 MLX90614 — Nhiệt Độ Cơ Thể Không Tiếp Xúc
+
+**1. Không tiếp xúc, hiệu chuẩn sẵn từ nhà máy**
+- Dải đo đối tượng **-70°C đến 380°C**, độ phân giải **0.02°K/LSB**
+- Factory calibrated → không cần warm-up, không cần tự hiệu chuẩn khi khởi động
+- Phát hiện sốt kèm cơn hen → feature bổ sung quan trọng trong Sensor Model
+
+**2. PEC (Packet Error Code) — CRC-8 toàn khung**
+- Mỗi gói trả về 3 byte: LSB + MSB + **PEC**
+- MCU phải tính CRC-8 qua toàn bộ **5 byte khung** (gồm cả địa chỉ slave + mã thanh ghi)
+- Nếu PEC sai → loại bỏ gói → bảo vệ dữ liệu nhiệt độ khỏi nhiễu I2C
+
+**3. Dual Channel — Đo cả đối tượng lẫn môi trường**
+- Thanh ghi `0x07`: nhiệt độ **đối tượng** (cơ thể người)
+- Thanh ghi `0x06`: nhiệt độ **môi trường** xung quanh
+- Chênh lệch 2 kênh → loại bỏ ảnh hưởng nhiệt độ phòng lên kết quả đo
+
+---
+
+#### 💧 DHT22 — Nhiệt Độ & Độ Ẩm Môi Trường
+
+**1. Giao tiếp 1-Wire vi giây — Bắt buộc disable interrupt**
+- Mỗi bit định nghĩa bằng **độ rộng xung**: ~26-28µs = bit 0, ~70µs = bit 1
+- Bắt buộc `portDISABLE_INTERRUPTS()` khi đọc — FreeRTOS làm sai lệch timing nếu không khóa
+- Kỹ thuật này quan trọng: thiếu disable interrupt → dữ liệu sai hoặc checksum fail liên tục
+
+**2. Checksum 8-bit — Xác thực dữ liệu**
+- Tổng 4 byte đầu phải bằng byte thứ 5 (Checksum)
+- Nếu sai → bỏ qua mẫu, dùng lại giá trị cũ → tránh đưa giá trị nhiễu vào Queue
+
+---
+
+#### 🌡️ BMP280 — Áp Suất Khí Quyển
+
+**1. Calibration Coefficients từ ROM nhà máy**
+- 24 bytes hệ số bù được Bosch nạp cứng vào ROM (`0x88` đến `0xA1`) từ nhà máy
+- Bắt buộc đọc và lưu 24 bytes này khi khởi động → dùng cho mọi phép tính về sau
+- Không có bước này → kết quả nhiệt độ và áp suất sai hoàn toàn
+
+**2. IIR Filter nội bộ — Lọc nhiễu phần cứng**
+- Bộ lọc IIR cấu hình qua thanh ghi `0xF5` — làm mượt tín hiệu áp suất bị nhiễu do gió, rung
+- Chạy hoàn toàn trong chip → MCU nhận dữ liệu đã lọc sẵn, không cần xử lý thêm
+- Quan trọng khi thiết bị đeo di chuyển — tránh spike áp suất giả kích hoạt alert nhầm
+
+**3. Burst Read 6 byte — Đồng bộ áp suất + nhiệt độ**
+- Đọc liên tục 6 bytes từ `0xF7`: 3 byte áp suất + 3 byte nhiệt độ trong **một transaction I2C**
+- Đảm bảo 2 giá trị được lấy tại cùng thời điểm → tính toán độ cao chính xác hơn
+
+---
+
+#### 🛰️ NEO-M8N — Định Vị GPS
+
+**1. Multi-GNSS — Bắt sóng trong nhà**
+- Thu đồng thời **GPS + GLONASS + Galileo + BeiDou** — chỉ có từ thế hệ M8 trở lên
+- NEO-6M/7M chỉ GPS → dễ mất sóng trong nhà, thang máy — nơi bệnh nhân hen thường ở
+- Số vệ tinh nhìn thấy nhiều hơn → fix nhanh hơn, tọa độ chính xác hơn (~1.5m vs ~2.5m)
+
+**2. Hot Fix với Backup Battery — Tin cậy khi cấp cứu**
+- Giữ **almanac + ephemeris** qua pin dự phòng → fix lại trong **~1 giây** dù mất nguồn
+- NEO-6M hot fix 1s chỉ khi **không tắt nguồn** → không đáng tin trong thiết bị đeo
+- SMS cấp cứu có tọa độ **sớm hơn ~25 giây** so với NEO-6M — quan trọng trong y tế khẩn
+
+**3. Power Save Mode (PSMOO) — Tối ưu pin thiết bị đeo**
+- **Backup mode**: 15µA — giữ almanac khi ngủ
+- **Power Save 1Hz**: ~8mA — tracking bình thường
+- **Continuous**: ~11mA — bật tự động khi `alert_level >= moderate`
+- Chuyển chế độ theo mức cảnh báo → tiết kiệm pin tối đa lúc bình thường
+
+**4. Hardware Geofencing — Độc quyền thế hệ M8**
+- NEO-6M/7M không có tính năng này — phải tự polling trong MCU → tốn CPU + pin
+- NEO-M8N tự phát **interrupt** khi bệnh nhân ra khỏi vùng an toàn (nhà, bệnh viện)
+- Ứng dụng: cảnh báo người thân khi bệnh nhân hen rời khu vực an toàn
+
+---
+
+#### 📶 A7670C — Viễn Thông 4G Cat-1
+
+**1. 4G Cat-1 — Hoạt động ổn định tại Việt Nam**
+- SIM800L dùng 2G (GSM) — **đã bị tắt sóng** bởi Viettel, Mobifone, Vinaphone tại VN
+- A7670C dùng **4G LTE Cat-1** → ổn định, phủ sóng rộng, không lo tắt mạng
+- AT Commands tương thích gần hoàn toàn với A7680C và SIM800L → code không cần sửa
+
+**2. Chỉ SMS — Đủ cho mô hình giám sát tại nhà**
+- `AT+CMGS` → SMS kèm `alert_level`, chỉ số nguy hiểm và link Google Maps (tọa độ NEO-M8N)
+- Không tích hợp Voice Call — module không có mic/loa → gọi tự động chỉ tạo im lặng
+- Mô hình tại nhà: OLED + Buzzer cảnh báo trực tiếp, SMS thông báo người thân đi vắng
+
+**3. Trigger từ AlertPacket_t — Không gửi thừa**
+- Chỉ kích hoạt khi nhận `AlertPacket_t` (`moderate` hoặc `severe`)
+- Trạng thái `normal` và `mild` không tốn băng thông SMS
+- Tiết kiệm chi phí vận hành, tránh nhiễu thông báo không cần thiết
+
+---
+
+#### 📺 SSD1306 — Màn Hình OLED
+
+**1. Frame Buffer 1024 bytes — Render ngoại tuyến**
+- Toàn bộ 128×64 pixel lưu trong **mảng RAM tĩnh** trên ESP32
+- Vẽ, tính toán tọa độ, ghi font đều thao tác trên RAM cục bộ — không động đến I2C
+- Chỉ gọi `OLED_UpdateScreen()` một lần duy nhất để đẩy 1024 bytes → không thắt cổ chai bus I2C
+
+**2. Word Wrap + OLED_Printf — Hiển thị linh hoạt**
+- Tự động ngắt dòng khi vượt 128 pixel hoặc gặp `\n`
+- Hàm `OLED_Printf` dùng `stdarg.h` → in trực tiếp `%d`, `%.2f`, `%s` như `printf` C chuẩn
+- Tránh dùng `String` class Arduino → **không bị memory fragmentation** trên heap FreeRTOS
+
+**3. Hoạt động hoàn toàn độc lập**
+- Hiển thị `alert_level`, SpO2, HR, nhiệt độ cơ thể ngay tại thiết bị
+- Không cần WiFi, không cần điện thoại → bệnh nhân và người xung quanh thấy cảnh báo ngay
+
+---
+
+### 5. 🔗 Tổng Hợp Phân Vai Module
+
+| Module | Node / Gateway | Vai trò trong hệ thống |
+|---|---|---|
+| MAX30102 | ESP32-S3 Node | Feature vector Sensor Model + Hardware FIFO interrupt |
+| INMP441 | ESP32-S3 Node | Input Audio Model Edge Impulse |
+| SGP30 | ESP32-S3 Node | Feature vector Sensor Model |
+| MLX90614 | ESP32-S3 Node | Feature vector Sensor Model |
+| **DHT22** | ESP32-S3 Node | Feature vector Sensor Model (±0.5°C, ±2%) |
+| BMP280 | ESP32-S3 Node | Feature vector Sensor Model |
+| NEO-M8N | ESP32-S3 Node | Định vị bệnh nhân + Geofencing cảnh báo rời nhà |
+| SSD1306 | ESP32-S3 Node | Hiển thị alert_level tại chỗ |
+| **A7670C** | ESP32 Gateway | SMS cảnh báo kèm GPS khi moderate/severe |
 
 ---
 
@@ -93,8 +283,8 @@ Giao tiếp qua bus I2C ở địa chỉ `0x76` (khi chân SDO nối GND). Quy t
   2. Cảm biến trả về lần lượt: Áp suất (MSB, LSB, XLSB) và Nhiệt độ (MSB, LSB, XLSB).
   3. MCU ghép các byte thành dữ liệu thô (20-bit), sau đó đưa vào công thức Double Precision cùng với 24 bytes ROM ở bước 3 để tính ra giá trị thực (Độ C và hPa).
 
-### 3. 💧 Cảm biến Nhiệt ẩm (DHT11) - Giao tiếp 1-Wire vi giây
-Giao tiếp qua một dây tín hiệu duy nhất (Half-duplex) yêu cầu trở kéo lên (Pull-up). Mọi bit dữ liệu (0 hoặc 1) đều được định nghĩa bằng **độ rộng xung** tính bằng micro-giây.
+### 3. 💧 Cảm biến Nhiệt ẩm (DHT22) - Giao tiếp 1-Wire vi giây
+Giao tiếp qua một dây tín hiệu duy nhất (Half-duplex) yêu cầu trở kéo lên (Pull-up). Mọi bit dữ liệu (0 hoặc 1) đều được định nghĩa bằng **độ rộng xung** tính bằng micro-giây. DHT22 có độ chính xác ±0.5°C và ±2% độ ẩm — cao hơn DHT11 (±2°C, ±5%), phù hợp hơn cho feature vector Edge Impulse.
 
 * **🤝 Quy trình Bắt tay (Handshake):**
   1. **MCU Start:** MCU đổi chân tín hiệu thành Output Open-Drain, kéo xuống mức LOW tối thiểu 18ms để đánh thức DHT11. Sau đó MCU nhả ra (mức HIGH) trong 20-40µs và chuyển chân sang Input.

@@ -1,0 +1,192 @@
+===============================================================================
+QUY TẮC ĐO VÀ CHỌN NGƯỠNG PHÁT HIỆN ÂM THANH
+===============================================================================
+
+1. MỤC ĐÍCH
+
+- Đo mức năng lượng của môi trường khi không có âm thanh cần nhận biết.
+- Đo mức năng lượng khi phát âm thanh cần nhận biết ở khoảng cách dự kiến.
+- Chọn ngưỡng đủ cao để không tự ghi vì nhiễu nền, nhưng đủ thấp để không bỏ
+  sót các mẫu âm thanh yếu.
+- Ngưỡng này chỉ quyết định khi nào bắt đầu thu. Nó không quyết định nhãn
+  Asthma hay Non-Asthma.
+
+
+2. CHẾ ĐỘ FIRMWARE DÙNG ĐỂ ĐO
+
+Trong file include/Audio_IO/I2S_Mic.h:
+
+    RUN_VAD_CALIBRATION_TEST = 1
+
+Các chế độ kiểm tra khác phải bằng 0.
+
+Khi chế độ này được bật:
+
+- ESP32 chỉ đọc năng lượng từ INMP441.
+- Không chạy Mel-Spectrogram.
+- Không chạy mô hình TFLite.
+- Không dùng ngưỡng để kích hoạt ghi 5 giây.
+- Vì vậy tín hiệu vẫn được đo dù năng lượng thấp hơn ngưỡng 1250.
+
+
+3. CHUẨN BỊ
+
+- Giữ nguyên micro, dây nối, nguồn cấp và vị trí đặt mạch.
+- Mở sẵn file WAV cần đo và bật chế độ lặp lại.
+- Đặt loa ở khoảng cách muốn kiểm tra thực tế, ví dụ 20 cm.
+- Cố định âm lượng loa trong suốt một lần đo.
+- Không cầm hoặc di chuyển micro khi đang đo.
+- Serial Monitor đặt ở 115200 baud.
+
+Mỗi điều kiện phải được lưu thành một file log riêng. Tên log phải thể hiện rõ
+file WAV hoặc điều kiện đã đo.
+
+Ví dụ:
+
+    VAD_CAL_P17.log
+    VAD_CAL_P17_RL83.log
+    VAD_CAL_MOI_TRUONG_QUAT.log
+    VAD_CAL_HO_NGUOI_KHOE.log
+
+
+4. TRÌNH TỰ MỘT LẦN ĐO
+
+Bước 1 - Khởi động:
+
+- Reset ESP32.
+- Firmware tự bỏ 100 khối đầu, tương đương khoảng 1,6 giây.
+- Không dùng dữ liệu này vì nguồn và I2S có thể phát sinh xung nhiễu lúc reset.
+
+Bước 2 - Đo môi trường trong 10 giây:
+
+- Khi thấy dòng "GIỮ YÊN LẶNG", không phát WAV và không nói gần micro.
+- Không chạm bàn, dây nối hoặc mạch.
+- Nếu muốn mô phỏng môi trường demo thực tế, vẫn để quạt hoặc điều hòa hoạt
+  động như bình thường. Không nên tạo một môi trường yên tĩnh giả tạo.
+
+Bước 3 - Chuẩn bị trong 3 giây:
+
+- Đưa trình phát âm thanh về đúng vị trí bắt đầu.
+- Chưa phát cho đến khi ESP32 in dòng yêu cầu phát âm thanh.
+
+Bước 4 - Đo tín hiệu trong 15 giây:
+
+- Phát WAV ngay khi thấy dòng "PHÁT ÂM THANH LIÊN TỤC".
+- Để WAV lặp liên tục trong đủ 15 giây.
+- Không thay đổi khoảng cách hoặc âm lượng giữa chừng.
+
+Bước 5 - Lưu kết quả:
+
+- Sao chép toàn bộ phần "KẾT QUẢ ĐO NĂNG LƯỢNG VAD" vào file log.
+- Muốn đo điều kiện khác phải reset ESP32 và thực hiện lại từ đầu.
+
+
+5. Ý NGHĨA CÁC GIÁ TRỊ
+
+- min: mức nhỏ nhất đã đo.
+- mean: mức trung bình.
+- max: mức lớn nhất đã đo.
+- p95 yên lặng: 95% khối yên lặng có năng lượng nhỏ hơn hoặc bằng giá trị này.
+- p99 yên lặng: 99% khối yên lặng có năng lượng nhỏ hơn hoặc bằng giá trị này.
+- p10 tín hiệu: 10% khối tín hiệu nhỏ hơn hoặc bằng giá trị này.
+- p25 tín hiệu: 25% khối tín hiệu nhỏ hơn hoặc bằng giá trị này.
+- p50 tín hiệu: trung vị; một nửa khối tín hiệu nằm dưới và một nửa nằm trên.
+
+File âm thanh có đoạn im lặng hoặc đoạn rất nhỏ có thể làm p10 và p25 thấp.
+Trong trường hợp đó phải xem thêm p50, max và kết quả kích hoạt thực tế; không
+được chỉ nhìn một giá trị duy nhất.
+
+
+6. QUY TẮC CHỌN NGƯỠNG
+
+Không được lấy máy móc dòng "Ngưỡng gợi ý ban đầu" do firmware in ra.
+
+Một ngưỡng chỉ được đem thử khi:
+
+- Cao hơn p99 của tất cả các lần đo môi trường.
+- Tốt nhất cao hơn cả max môi trường đã quan sát.
+- Thấp hơn vùng hoạt động chính của mẫu tín hiệu yếu nhất.
+- Sau này phải kết hợp điều kiện nhiều khối liên tiếp vượt ngưỡng, không được
+  kích hoạt chỉ từ một khối 16 ms.
+
+Nếu p25 tín hiệu gần bằng p99 yên lặng thì hai vùng chưa tách rõ. Khi đó giá trị
+gợi ý tự động không có ý nghĩa. Cần xem p50 và thử kích hoạt thực tế.
+
+
+7. KẾT QUẢ HAI LẦN ĐO HIỆN TẠI
+
+Lần 1 - P17WheezingIE_85.wav:
+
+    Yên lặng: p99 = 9, max = 14
+    Có âm thanh: p10 = 145, p25 = 230, p50 = 357, max = 5481
+
+Kết luận:
+
+- Tín hiệu tách rất rõ khỏi môi trường yên lặng.
+- Ngưỡng 1250 chỉ bắt được các đỉnh lớn, vì vậy dễ bỏ phần đầu và phần nhỏ.
+- Ngưỡng 75 do firmware gợi ý phù hợp để đem thử, chưa phải ngưỡng cuối.
+
+Lần 2 - P17WheezingRL_83.wav:
+
+    Yên lặng: p99 = 45, max = 56
+    Có âm thanh: p10 = 8, p25 = 48, p50 = 78, max = 748
+
+Kết luận:
+
+- Đây là mẫu yếu và có nhiều đoạn rất nhỏ.
+- Ngưỡng 1250 cao hơn cả đỉnh 748, nên mẫu này không thể tự kích hoạt VAD.
+- Ngưỡng gợi ý 45 không được dùng vì bằng p99 môi trường và thấp hơn max 56.
+- Khoảng còn có thể thử nằm trên 56 và không vượt quá vùng p50 = 78.
+
+
+8. NGƯỠNG ĐEM THỬ TIẾP
+
+Từ hai log hiện tại, khoảng thử hợp lý là:
+
+    60 đến 75
+
+Ưu tiên thử trước:
+
+    Val_Threshold = 75
+
+Lý do:
+
+- 75 cao hơn mức nền lớn nhất đã thấy là 56.
+- 75 thấp hơn p10 = 145 của mẫu P17 mạnh.
+- 75 gần p50 = 78 của mẫu P17_RL83 yếu, nên vẫn có khả năng bắt được các đoạn
+  hoạt động rõ của mẫu này.
+
+Giá trị 75 chỉ là ngưỡng thử nghiệm, chưa phải giá trị cuối của sản phẩm.
+
+
+9. ĐIỀU KIỆN ĐỂ CHỐT NGƯỠNG
+
+Sau khi áp dụng ngưỡng thử, firmware phải có thêm:
+
+- Bỏ 100 khối đầu sau reset.
+- Yêu cầu ít nhất 4 khối liên tiếp vượt ngưỡng, tương đương khoảng 64 ms.
+- Hủy điều kiện kích hoạt nếu chuỗi bị ngắt trước khi đủ 4 khối.
+
+Sau đó kiểm tra:
+
+- Reset mạch ít nhất 10 lần: không được tự ghi sau reset.
+- Để trong môi trường demo ít nhất 5 phút: không được tự ghi liên tục vì nhiễu.
+- Phát lại mẫu P17WheezingRL_83.wav ít nhất 10 lần ở khoảng cách cố định.
+- Chạy lại đủ 20 mẫu trong P5 mà không dùng tiếng động bên ngoài để kích hoạt.
+- Ghi riêng lỗi "không kích hoạt VAD" và lỗi "mô hình dự đoán sai".
+
+Nếu ngưỡng 75 tự kích hoạt bởi môi trường, tăng từng bước nhỏ: 85, 100, 125.
+Nếu ngưỡng 75 vẫn bỏ sót mẫu yếu nhưng môi trường không kích nhầm, thử giảm về
+65 hoặc 60. Không thay đổi nhiều yếu tố cùng lúc.
+
+
+10. SAU KHI ĐO XONG
+
+Để quay lại pipeline AI hoàn chỉnh:
+
+    RUN_VAD_CALIBRATION_TEST = 0
+
+Không được quên tắt chế độ đo, nếu không ESP32 sẽ chỉ thống kê năng lượng và
+không chạy mô hình.
+
+===============================================================================

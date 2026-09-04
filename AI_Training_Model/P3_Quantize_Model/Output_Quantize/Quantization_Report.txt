@@ -1,0 +1,40 @@
+KẾT QUẢ LƯỢNG TỬ INT8
+
+Dữ liệu đại diện: 100 mẫu từ tập train
+TRAIN_MIN: -80.0
+TRAIN_MAX: 0.0
+Ngưỡng quyết định: 0.5
+
+Keras size: 6402662 bytes
+TFLite int8 size: 543976 bytes
+Giảm dung lượng: 91.50%
+
+Input shape: [1, 64, 129, 1]
+Input scale: 0.003921568859368563
+Input zero point: -128
+Output shape: [1, 1]
+Output scale: 0.00390625
+Output zero point: -128
+
+Keras test accuracy: 0.867257
+INT8 test accuracy: 0.920354
+Số mẫu đổi kết quả sau lượng tử: 8/113
+
+Keras confusion matrix [Asthma, Non_Asthma]:
+[[27  3]
+ [12 71]]
+
+INT8 confusion matrix [Asthma, Non_Asthma]:
+[[26  4]
+ [ 5 78]]
+
+INT8 classification report:
+              precision    recall  f1-score   support
+
+      Asthma     0.8387    0.8667    0.8525        30
+  Non_Asthma     0.9512    0.9398    0.9455        83
+
+    accuracy                         0.9204       113
+   macro avg     0.8950    0.9032    0.8990       113
+weighted avg     0.9213    0.9204    0.9208       113
+

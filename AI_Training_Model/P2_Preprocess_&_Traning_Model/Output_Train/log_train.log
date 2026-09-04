@@ -1,0 +1,76 @@
+1. ĐỌC BA TẬP DỮ LIỆU ĐÃ CHIA SẴN
+train: X=(1666, 64, 129, 1), Y=(1666,), Asthma=833, Non_Asthma=833
+val: X=(108, 64, 129, 1), Y=(108,), Asthma=30, Non_Asthma=78
+test: X=(113, 64, 129, 1), Y=(113,), Asthma=30, Non_Asthma=83
+
+2. CHUẨN HÓA VỀ [0, 1]
+TRAIN_MIN=-80.0, TRAIN_MAX=0.0
+
+3. KHỞI TẠO MÔ HÌNH
+WARNING:tensorflow:TensorFlow GPU support is not available on native Windows for TensorFlow >= 2.11. Even if CUDA/cuDNN are installed, GPU will not be used. Please use WSL2 or the TensorFlow-DirectML plugin.
+Model: "sequential"
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┓
+┃ Layer (type)                 ┃ Output Shape          ┃      Param # ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━┩
+│ separable_conv2d             │ (None, 64, 129, 16)   │           41 │
+│ (SeparableConv2D)            │                       │              │
+├──────────────────────────────┼───────────────────────┼──────────────┤
+│ batch_normalization          │ (None, 64, 129, 16)   │           64 │
+│ (BatchNormalization)         │                       │              │
+├──────────────────────────────┼───────────────────────┼──────────────┤
+│ max_pooling2d (MaxPooling2D) │ (None, 32, 64, 16)    │            0 │
+├──────────────────────────────┼───────────────────────┼──────────────┤
+│ separable_conv2d_1           │ (None, 32, 64, 32)    │          688 │
+│ (SeparableConv2D)            │                       │              │
+├──────────────────────────────┼───────────────────────┼──────────────┤
+│ batch_normalization_1        │ (None, 32, 64, 32)    │          128 │
+│ (BatchNormalization)         │                       │              │
+├──────────────────────────────┼───────────────────────┼──────────────┤
+│ max_pooling2d_1              │ (None, 16, 32, 32)    │            0 │
+│ (MaxPooling2D)               │                       │              │
+├──────────────────────────────┼───────────────────────┼──────────────┤
+│ separable_conv2d_2           │ (None, 16, 32, 64)    │        2,400 │
+│ (SeparableConv2D)            │                       │              │
+├──────────────────────────────┼───────────────────────┼──────────────┤
+│ batch_normalization_2        │ (None, 16, 32, 64)    │          256 │
+│ (BatchNormalization)         │                       │              │
+├──────────────────────────────┼───────────────────────┼──────────────┤
+│ max_pooling2d_2              │ (None, 8, 16, 64)     │            0 │
+│ (MaxPooling2D)               │                       │              │
+├──────────────────────────────┼───────────────────────┼──────────────┤
+│ flatten (Flatten)            │ (None, 8192)          │            0 │
+├──────────────────────────────┼───────────────────────┼──────────────┤
+│ dense (Dense)                │ (None, 64)            │      524,352 │
+├──────────────────────────────┼───────────────────────┼──────────────┤
+│ dropout (Dropout)            │ (None, 64)            │            0 │
+├──────────────────────────────┼───────────────────────┼──────────────┤
+│ dense_1 (Dense)              │ (None, 1)             │           65 │
+└──────────────────────────────┴───────────────────────┴──────────────┘
+ Total params: 527,994 (2.01 MB)
+ Trainable params: 527,770 (2.01 MB)
+ Non-trainable params: 224 (896.00 B)
+Class weights: {np.int64(0): np.float64(1.0), np.int64(1): np.float64(1.0)}
+
+4. BẮT ĐẦU HUẤN LUYỆN
+
+5. ĐÁNH GIÁ TẬP TEST
+4/4 ━━━━━━━━━━━━━━━━━━━━ 0s 18ms/step - accuracy: 0.8673 - loss: 0.8257 
+Test Loss: 0.8257
+Test Accuracy: 0.8673 (86.73%)
+
+Ma trận nhầm lẫn [Asthma, Non_Asthma]:
+[[27  3]
+ [12 71]]
+
+Báo cáo phân loại:
+              precision    recall  f1-score   support
+
+      Asthma     0.6923    0.9000    0.7826        30
+  Non_Asthma     0.9595    0.8554    0.9045        83
+
+    accuracy                         0.8673       113
+   macro avg     0.8259    0.8777    0.8435       113
+weighted avg     0.8885    0.8673    0.8721       113
+
+
+Hoàn thành. Model và báo cáo hiện nằm tại: AI_Training_Model\P2_Preprocess_&_Traning_Model\Output_Train

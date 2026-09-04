@@ -1,0 +1,466 @@
+========================================
+   HỆ THỐNG AI CHẨN ĐOÁN HEN SUYỄN
+========================================
+
+[CÀI ĐẶT] Đang khởi tạo Mel Filterbank...
+[MEL] Đã cấp phát 131328 byte Mel Filterbank trong PSRAM.
+[CÀI ĐẶT] Mel Filterbank sẵn sàng.
+[CÀI ĐẶT] Đang khởi tạo mô hình TFLite...
+[DEBUG] model_data_len = 543976 bytes
+[AI] Đã cấp phát thành công trên PSRAM !
+[DEBUG] Input scale=0.003922, zero_point=-128
+[DEBUG] Output scale=0.003906, zero_point=-128
+[AI] Khởi tạo mô hình Asthma TFLite THÀNH CÔNG!
+[AI] Input shape: [1, 64, 129, 1]
+[CÀI ĐẶT] Đang khởi tạo Microphone I2S...
+[PARITY] Chế độ 20 mẫu: không đọc micro INMP441.
+[CÀI ĐẶT] I2S sẵn sàng.
+
+[CÀI ĐẶT] HỆ THỐNG SẴN SÀNG! Đang lắng nghe...
+
+
+[PARITY] Mẫu 1/20: Aug_0051_shift_P25WheezingIE_125.wav | nhãn thật=0 | Python dự đoán=0
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-44.0232 -43.7580 -32.9892 -31.0951 -30.9087 -27.7229 -27.2646 -29.8869 -34.0718 -40.3701 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-28.8961 -28.1391 -31.1458 -25.7308 -24.8105 -28.1544 -30.6393 -32.6111 -38.6826 -35.0584 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+-13 28 29 9 24 6 35 10 12 25 
+[DEBUG] So gia tri = 127: 1 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: -49, scale=0.003906, zero_point=-128
+>> Kết quả sàng lọc: ASTHMA (69.14%)
+[PARITY_RESULT] index=0,file=Aug_0051_shift_P25WheezingIE_125.wav,true=0,py_pred=0,esp_pred=0,py_raw=-49,esp_raw=-49,raw_diff=0,py_prob=0.308593750,esp_prob=0.308593750,prob_diff=0.000000000,tensor_diff=2,tensor_max_diff=1,tensor_mean_diff=0.000242248
+
+[PARITY] Mẫu 2/20: Aug_0053_stretch_P25WheezingRL_123.wav | nhãn thật=0 | Python dự đoán=0
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-39.5535 -41.4392 -40.6096 -37.0592 -34.1899 -35.2611 -34.5820 -34.4641 -34.8473 -34.1264 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-15.2741 -16.9265 -2.4534 -1.3359 -4.5387 -5.7834 -4.5466 -9.9211 -17.3146 -22.9960 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+1 -23 41 -11 25 27 44 4 6 19 
+[DEBUG] So gia tri = 127: 1 / 8256 | = -128: 817 / 8256
+[DEBUG] Output raw int8: -128, scale=0.003906, zero_point=-128
+>> Kết quả sàng lọc: ASTHMA (100.00%)
+[PARITY_RESULT] index=1,file=Aug_0053_stretch_P25WheezingRL_123.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000,tensor_diff=7,tensor_max_diff=1,tensor_mean_diff=0.000847868
+
+[PARITY] Mẫu 3/20: Aug_0056_shift_P27WheezingIU_134.wav | nhãn thật=0 | Python dự đoán=0
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-38.5994 -37.6939 -35.2705 -36.8447 -40.7515 -39.8809 -39.2997 -38.3198 -37.8884 -39.5222 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-25.0781 -25.9941 -29.9270 -25.1575 -19.2475 -23.8766 -25.2451 -26.4605 -29.6186 -37.7558 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+4 27 31 35 -18 39 42 40 26 -10 
+[DEBUG] So gia tri = 127: 1 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: -128, scale=0.003906, zero_point=-128
+>> Kết quả sàng lọc: ASTHMA (100.00%)
+[PARITY_RESULT] index=2,file=Aug_0056_shift_P27WheezingIU_134.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000,tensor_diff=1,tensor_max_diff=1,tensor_mean_diff=0.000121124
+
+[PARITY] Mẫu 4/20: Aug_0121_shift_P39WheezingIU_194.wav | nhãn thật=0 | Python dự đoán=0
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-46.7679 -49.0428 -44.3816 -45.1862 -42.3379 -37.8969 -31.7478 -28.9212 -32.6055 -41.6180 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-49.0782 -43.6262 -35.9994 -37.5693 -38.0292 -30.9843 -35.6727 -41.7862 -38.6660 -35.8742 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+-22 1 -11 -11 -2 -19 -3 -8 -5 -13 
+[DEBUG] So gia tri = 127: 1 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: -121, scale=0.003906, zero_point=-128
+>> Kết quả sàng lọc: ASTHMA (97.27%)
+[PARITY_RESULT] index=3,file=Aug_0121_shift_P39WheezingIU_194.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-121,raw_diff=7,py_prob=0.000000000,esp_prob=0.027343750,prob_diff=0.027343750,tensor_diff=0,tensor_max_diff=0,tensor_mean_diff=0.000000000
+
+[PARITY] Mẫu 5/20: Aug_0259_pitch_P1AsthmaIE_5.wav | nhãn thật=0 | Python dự đoán=0
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-4.2084 -4.3361 -3.9119 -4.7598 -4.2624 -4.5998 -4.5140 -4.5182 -4.7813 -4.4412 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-26.9156 -32.2590 -34.7424 -25.5069 -23.9343 -32.7368 -44.8894 -44.1267 -47.9034 -54.8039 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+114 56 78 71 66 43 18 52 34 38 
+[DEBUG] So gia tri = 127: 1 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: -128, scale=0.003906, zero_point=-128
+>> Kết quả sàng lọc: ASTHMA (100.00%)
+[PARITY_RESULT] index=4,file=Aug_0259_pitch_P1AsthmaIE_5.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000,tensor_diff=4,tensor_max_diff=1,tensor_mean_diff=0.000484496
+
+[PARITY] Mẫu 6/20: Aug_0262_white_P1AsthmaRS_4.wav | nhãn thật=0 | Python dự đoán=1
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-21.9476 -24.8370 -19.3996 -18.2927 -19.7754 -24.8251 -23.4339 -24.2766 -28.2672 -34.9811 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-23.3511 -29.4109 -24.2829 -25.3653 -29.0280 -30.9549 -30.7957 -33.8534 -33.1710 -31.2432 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+57 69 67 52 74 73 83 72 94 76 
+[DEBUG] So gia tri = 127: 1 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: 118, scale=0.003906, zero_point=-128
+>> Kết quả sàng lọc: NON-ASTHMA (96.09%)
+[PARITY_RESULT] index=5,file=Aug_0262_white_P1AsthmaRS_4.wav,true=0,py_pred=1,esp_pred=1,py_raw=127,esp_raw=118,raw_diff=9,py_prob=0.996093750,esp_prob=0.960937500,prob_diff=0.035156250,tensor_diff=0,tensor_max_diff=0,tensor_mean_diff=0.000000000
+
+[PARITY] Mẫu 7/20: Aug_0391_shift_P48WheezingRS_236.wav | nhãn thật=0 | Python dự đoán=0
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-47.5556 -48.5459 -50.4381 -45.4887 -43.7233 -47.1379 -47.5427 -49.5228 -45.7501 -43.9311 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-35.7215 -36.0373 -37.4039 -40.2909 -40.2583 -39.6376 -43.1532 -37.0009 -36.0743 -41.8912 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+-25 13 7 1 -2 1 -2 -29 -14 12 
+[DEBUG] So gia tri = 127: 1 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: -95, scale=0.003906, zero_point=-128
+>> Kết quả sàng lọc: ASTHMA (87.11%)
+[PARITY_RESULT] index=6,file=Aug_0391_shift_P48WheezingRS_236.wav,true=0,py_pred=0,esp_pred=0,py_raw=-127,esp_raw=-95,raw_diff=32,py_prob=0.003906250,esp_prob=0.128906250,prob_diff=0.125000000,tensor_diff=0,tensor_max_diff=0,tensor_mean_diff=0.000000000
+
+[PARITY] Mẫu 8/20: Aug_0420_mix_P55WheezingRL_271.wav | nhãn thật=0 | Python dự đoán=0
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-18.6084 -17.4134 -14.6900 -18.2404 -16.9518 -15.8435 -17.4176 -17.9236 -17.0481 -17.0610 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-35.9816 -38.9013 -40.2075 -43.6801 -44.4511 -47.4593 -50.0603 -47.7696 -44.8413 -41.7320 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+68 50 53 25 8 12 55 9 10 18 
+[DEBUG] So gia tri = 127: 2 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: -34, scale=0.003906, zero_point=-128
+>> Kết quả sàng lọc: ASTHMA (63.28%)
+[PARITY_RESULT] index=7,file=Aug_0420_mix_P55WheezingRL_271.wav,true=0,py_pred=0,esp_pred=0,py_raw=-95,esp_raw=-34,raw_diff=61,py_prob=0.128906250,esp_prob=0.367187500,prob_diff=0.238281250,tensor_diff=1,tensor_max_diff=1,tensor_mean_diff=0.000121124
+
+[PARITY] Mẫu 9/20: Aug_0462_white_P12WheezingIU_58.wav | nhãn thật=0 | Python dự đoán=0
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-13.6447 -13.6581 -13.0435 -13.7485 -13.7320 -14.4813 -14.3977 -14.3156 -14.6011 -14.2117 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-42.1555 -43.5990 -42.7211 -38.5598 -39.6216 -43.8433 -45.6282 -56.7339 -59.7702 -60.5287 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+84 43 28 58 11 25 25 35 50 2 
+[DEBUG] So gia tri = 127: 1 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: -121, scale=0.003906, zero_point=-128
+>> Kết quả sàng lọc: ASTHMA (97.27%)
+[PARITY_RESULT] index=8,file=Aug_0462_white_P12WheezingIU_58.wav,true=0,py_pred=0,esp_pred=0,py_raw=-127,esp_raw=-121,raw_diff=6,py_prob=0.003906250,esp_prob=0.027343750,prob_diff=0.023437500,tensor_diff=0,tensor_max_diff=0,tensor_mean_diff=0.000000000
+
+[PARITY] Mẫu 10/20: Aug_0516_shift_P28WheezingIE_137.wav | nhãn thật=0 | Python dự đoán=0
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-46.3242 -46.2824 -48.4080 -47.2807 -43.2383 -40.0949 -34.9047 -33.8639 -37.0146 -41.9808 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-37.4072 -44.3283 -38.5077 -33.7176 -35.0175 -37.1326 -35.5673 -43.1426 -39.8375 -33.4090 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+-21 6 -14 -2 -9 -6 -3 17 -10 -34 
+[DEBUG] So gia tri = 127: 1 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: -128, scale=0.003906, zero_point=-128
+>> Kết quả sàng lọc: ASTHMA (100.00%)
+[PARITY_RESULT] index=9,file=Aug_0516_shift_P28WheezingIE_137.wav,true=0,py_pred=0,esp_pred=0,py_raw=-128,esp_raw=-128,raw_diff=0,py_prob=0.000000000,esp_prob=0.000000000,prob_diff=0.000000000,tensor_diff=0,tensor_max_diff=0,tensor_mean_diff=0.000000000
+
+[PARITY] Mẫu 11/20: Noise_im_lang_031.wav | nhãn thật=1 | Python dự đoán=1
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-19.1969 -15.3593 -14.6124 -16.1201 -17.0972 -17.9325 -18.7683 -23.7776 -20.1319 -16.2673 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-17.6344 -21.4625 -14.7148 -8.3681 -9.6610 -8.9201 -9.4741 -9.8016 -12.9780 -15.2684 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+66 83 86 85 89 74 68 68 91 80 
+[DEBUG] So gia tri = 127: 1 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: 127, scale=0.003906, zero_point=-128
+>> Kết quả sàng lọc: NON-ASTHMA (99.61%)
+[PARITY_RESULT] index=10,file=Noise_im_lang_031.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000,tensor_diff=0,tensor_max_diff=0,tensor_mean_diff=0.000000000
+
+[PARITY] Mẫu 12/20: Noise_postcard_004.wav | nhãn thật=1 | Python dự đoán=1
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-40.1679 -45.3592 -40.8076 -39.8039 -36.7411 -38.4324 -34.8214 -31.8610 -33.2406 -31.7865 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-37.1222 -32.4898 -32.2652 -36.2099 -42.4674 -43.5193 -44.0903 -35.6660 -31.4801 -36.8210 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+-1 25 18 7 -6 -5 -13 22 23 17 
+[DEBUG] So gia tri = 127: 1 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: 127, scale=0.003906, zero_point=-128
+>> Kết quả sàng lọc: NON-ASTHMA (99.61%)
+[PARITY_RESULT] index=11,file=Noise_postcard_004.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000,tensor_diff=0,tensor_max_diff=0,tensor_mean_diff=0.000000000
+
+[PARITY] Mẫu 13/20: Noise_postcard_011.wav | nhãn thật=1 | Python dự đoán=1
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-43.1867 -46.6275 -44.1008 -40.1051 -37.5066 -39.6816 -47.3405 -50.2341 -42.9382 -41.7856 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-37.2744 -42.0276 -40.9041 -47.3542 -43.1670 -38.7556 -39.4912 -39.9752 -36.8687 -37.5602 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+-11 15 24 4 11 4 13 18 -15 16 
+[DEBUG] So gia tri = 127: 1 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: 127, scale=0.003906, zero_point=-128
+>> Kết quả sàng lọc: NON-ASTHMA (99.61%)
+[PARITY_RESULT] index=12,file=Noise_postcard_011.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000,tensor_diff=0,tensor_max_diff=0,tensor_mean_diff=0.000000000
+
+[PARITY] Mẫu 14/20: Noise_postcard_017.wav | nhãn thật=1 | Python dự đoán=1
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-39.3629 -43.6358 -42.8351 -43.4578 -46.4581 -41.5897 -41.9977 -42.9105 -43.9295 -49.9485 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-38.9495 -46.1745 -39.8604 -41.6044 -46.6633 -50.8475 -46.3719 -42.5494 -32.9966 -27.0174 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+2 23 13 11 10 19 23 26 21 18 
+[DEBUG] So gia tri = 127: 1 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: 127, scale=0.003906, zero_point=-128
+>> Kết quả sàng lọc: NON-ASTHMA (99.61%)
+[PARITY_RESULT] index=13,file=Noise_postcard_017.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000,tensor_diff=0,tensor_max_diff=0,tensor_mean_diff=0.000000000
+
+[PARITY] Mẫu 15/20: Noise_postcard_026.wav | nhãn thật=1 | Python dự đoán=1
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-51.6364 -50.2519 -41.5657 -39.8999 -41.3078 -39.9492 -43.0864 -43.3520 -38.8622 -38.1522 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-39.5032 -38.8625 -38.5039 -41.8361 -45.6044 -37.8876 -37.6214 -49.2189 -43.1707 -41.7332 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+-38 -20 -20 -1 -28 0 -16 -4 -2 1 
+[DEBUG] So gia tri = 127: 1 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: 127, scale=0.003906, zero_point=-128
+>> Kết quả sàng lọc: NON-ASTHMA (99.61%)
+[PARITY_RESULT] index=14,file=Noise_postcard_026.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000,tensor_diff=1,tensor_max_diff=1,tensor_mean_diff=0.000121124
+
+[PARITY] Mẫu 16/20: Noise_postcard_038.wav | nhãn thật=1 | Python dự đoán=1
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-28.6844 -31.7943 -32.1296 -32.7408 -34.6069 -32.8434 -34.7508 -36.2136 -37.9873 -34.6668 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-41.8164 -39.6692 -31.9796 -35.1697 -34.8567 -33.7908 -37.5210 -43.5394 -33.5405 -30.4090 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+36 64 60 58 61 67 55 25 42 48 
+[DEBUG] So gia tri = 127: 1 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: 127, scale=0.003906, zero_point=-128
+>> Kết quả sàng lọc: NON-ASTHMA (99.61%)
+[PARITY_RESULT] index=15,file=Noise_postcard_038.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000,tensor_diff=0,tensor_max_diff=0,tensor_mean_diff=0.000000000
+
+[PARITY] Mẫu 17/20: Noise_postcard_053.wav | nhãn thật=1 | Python dự đoán=1
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-37.8006 -34.7487 -34.8121 -35.2196 -36.1700 -36.0336 -34.8855 -39.5448 -37.5427 -34.7097 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-29.9452 -29.2111 -30.8898 -30.2337 -30.9064 -36.6782 -32.9513 -35.8891 -31.1187 -30.7797 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+7 29 29 40 7 35 17 21 28 34 
+[DEBUG] So gia tri = 127: 1 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: 127, scale=0.003906, zero_point=-128
+>> Kết quả sàng lọc: NON-ASTHMA (99.61%)
+[PARITY_RESULT] index=16,file=Noise_postcard_053.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000,tensor_diff=0,tensor_max_diff=0,tensor_mean_diff=0.000000000
+
+[PARITY] Mẫu 18/20: Noise_quat_phim_017.wav | nhãn thật=1 | Python dự đoán=1
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-40.2585 -35.3682 -33.2156 -35.8632 -38.7282 -32.6264 -31.0643 -35.7687 -41.8087 -32.7347 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-37.7350 -33.9594 -37.8615 -34.6213 -34.5075 -31.5697 -27.9242 -27.5044 -24.0083 -27.4894 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+-1 4 29 6 18 12 25 13 10 28 
+[DEBUG] So gia tri = 127: 3 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: 127, scale=0.003906, zero_point=-128
+>> Kết quả sàng lọc: NON-ASTHMA (99.61%)
+[PARITY_RESULT] index=17,file=Noise_quat_phim_017.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000,tensor_diff=0,tensor_max_diff=0,tensor_mean_diff=0.000000000
+
+[PARITY] Mẫu 19/20: Noise_quat_phim_027.wav | nhãn thật=1 | Python dự đoán=1
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-22.4384 -23.9089 -29.1665 -24.1759 -20.0294 -20.3974 -24.4753 -35.4239 -36.1216 -30.6309 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-34.2631 -27.3566 -24.3884 -35.5398 -38.3065 -35.0476 -42.7362 -44.2077 -33.3992 -30.9904 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+55 66 91 89 85 30 78 102 73 77 
+[DEBUG] So gia tri = 127: 1 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: 127, scale=0.003906, zero_point=-128
+>> Kết quả sàng lọc: NON-ASTHMA (99.61%)
+[PARITY_RESULT] index=18,file=Noise_quat_phim_027.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000,tensor_diff=0,tensor_max_diff=0,tensor_mean_diff=0.000000000
+
+[PARITY] Mẫu 20/20: Noise_quat_phim_042.wav | nhãn thật=1 | Python dự đoán=1
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Hoàn thành bộ lọc Pre-Emphasis.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-23.9498 -28.5411 -29.5472 -26.0239 -27.7787 -31.3597 -26.9540 -26.3205 -27.5186 -29.9267 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-30.4682 -24.8108 -24.5961 -34.9959 -35.5505 -29.7176 -34.6271 -38.8374 -37.7257 -33.3524 
+[DEBUG] 10 gia tri int8 dau cua input_tensor:
+51 60 65 31 35 41 10 28 20 19 
+[DEBUG] So gia tri = 127: 1 / 8256 | = -128: 0 / 8256
+[DEBUG] Output raw int8: 127, scale=0.003906, zero_point=-128
+>> Kết quả sàng lọc: NON-ASTHMA (99.61%)
+[PARITY_RESULT] index=19,file=Noise_quat_phim_042.wav,true=1,py_pred=1,esp_pred=1,py_raw=127,esp_raw=127,raw_diff=0,py_prob=0.996093750,esp_prob=0.996093750,prob_diff=0.000000000,tensor_diff=0,tensor_max_diff=0,tensor_mean_diff=0.000000000
+
+========== TỔNG KẾT PYTHON - ESP32 ==========
+Cùng lớp dự đoán: 20/20
+ESP32 đúng nhãn thật: 19/20
+Tensor INT8 trùng toàn bộ: 14/20
+==============================================

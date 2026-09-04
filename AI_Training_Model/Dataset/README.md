@@ -16,6 +16,16 @@ Trước khi bắt đầu, hãy tạo cấu trúc thư mục sau tại thư mụ
 * `Dataset/3_asthma/` : (Kho nguyên liệu 2) Chứa file Asthma gốc tải từ Kaggle.
 * `Dataset/4_Raw_Non_Asthma/` : (Kho nguyên liệu 3) Chứa các bệnh lý khác tải từ Kaggle.
 
+Số lượng mẫu đang có
+
+| Tập | Số lượng |
+|---|---|
+| 0_Asthma | 1000 |
+| 1_Non_Asthma | 1000 |
+| 2_TuThu | 180 |
+| 3_asthma | 288 |
+| 4_Raw_Non_Asthma | 820 |
+
 ---
 
 ## 📥 2. Hướng Dẫn Thu Thập Dữ Liệu Gốc

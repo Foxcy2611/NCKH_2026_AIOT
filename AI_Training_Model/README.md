@@ -1,148 +1,1210 @@
-# 🧠 AI Training Pipeline - Quy trình Huấn luyện AI Chuẩn Đoán Hen Suyễn (TinyML) 🚀🩺
+# 🧠 AI Training Model — Asthma Respiratory Audio TinyML
 
-Thư mục này chứa toàn bộ quy trình "từ A đến Z" 🅰️➡️🇿, bắt đầu từ thu thập, xử lý âm thanh thô 🎤, trích xuất đặc trưng (Mel-Spectrogram) 🎼, huấn luyện mô hình mạng nơ-ron (TensorFlow/Keras) 🤖, cho đến lượng tử hóa (Quantization) 🗜️ và xuất ra file C-header 📄 để sẵn sàng triển khai lên vi điều khiển ESP32-S3 🎛️.
+Thư mục `AI_Training_Model/` chứa toàn bộ pipeline AI của đề tài NCKH:
 
----
+> **Nghiên cứu, thiết kế và chế tạo hệ thống IoT ứng dụng TinyML hỗ trợ theo dõi và cảnh báo sớm cho bệnh nhân hen suyễn.**
 
-## 💻 1. Cài đặt Môi trường (Setup & Run) 🛠️🔥
-
-Để chạy mượt mà các script huấn luyện AI trong thư mục này, vui lòng cài đặt các thư viện Python sau nhé (Mở CMD hoặc PowerShell lên và gõ lệnh) 💻✨:
-
-    pip install numpy librosa scikit-learn tensorflow matplotlib
-
-⚠️ **LƯU Ý CỰC KỲ QUAN TRỌNG VỀ PHIÊN BẢN PYTHON:** ⚠️
-TensorFlow hiện tại hoạt động ổn định nhất trên **Python 3.11 trở về trước** 🐍. Hãy check nhanh phiên bản môi trường Python trên máy của bạn bằng lệnh:
-
-    python --version
-
-🚨 Nếu phiên bản Python của bạn cao hơn 3.11 (vd: 3.12, 3.13), bạn **bắt buộc** phải cài đặt thêm một môi trường Python tương thích nhé (Ưu tiên cài bản **3.11.9** 🌟).
-🔗 Tải xuống tại đây luôn: https://www.python.org/downloads/ 📥
-
----
-
-## ⚙️ 2. Quy Trình Huấn Luyện Cốt Lõi 🎯🧠
-
-Quy trình tạo ra "bộ" 🧠 siêu việt cho ESP32 được chia làm 4 giai đoạn chính:
-
-### 🥇 Giai đoạn 1: Chuẩn bị tập dữ liệu (Data Collection) 📊
-*   **Nguồn dữ liệu 🌐:** Dữ liệu âm thanh được tổng hợp công phu từ nhiều nguồn, bao gồm dữ liệu tự thu 🎙️ và tập dữ liệu chuẩn từ cộng đồng. Nguồn Kaggle xịn xò để tham khảo: [Asthma Detection Dataset Version 2](https://www.kaggle.com/datasets/mohammedtawfikmusaed/asthma-detection-dataset-version-2?resource=download) 🔗.
-*   **Phân loại 🗂️:** Dữ liệu thô được chia thành 2 nhãn chính: `Asthma` 🤧 (Có tiếng rít đặc trưng của Hen suyễn) và `Non_Asthma` 😌 (Bình thường, tiếng thở khò khè của bệnh khác như COPD, viêm phổi, hoặc tạp âm môi trường).
-*   **Lưu ý ❗:** Vui lòng đọc thêm `README.md` tại [Dataset README](Dataset/README.md) để hiểu rõ quy trình phân loại tập dữ liệu để training AI
-
-### 🥈 Giai đoạn 2: Tiền xử lý (Preprocessing & Feature Extraction) 🛠️
-*   **Mục đích 🎯:** Máy tính không hiểu âm thanh thô! Cần chuyển đổi sóng âm thanh miền thời gian (WAV) 🌊 sang ảnh phổ tần số (Mel-Spectrogram) 🖼️.
-*   **Cách làm (Pipeline DSP 7 bước chuẩn chỉ) 🪄:**
-    1.  **Đọc File 📂:** Dùng `librosa.load` ép tần số lấy mẫu về `16kHz`, cố định độ dài `5s` ⏱️.
-    2.  **Chuẩn hóa biên độ (Peak Normalization) 📏:** Ép dải biến thiên tín hiệu về khoảng `[-1.0, 1.0]`.
-    3.  **Lọc Butterworth Bandpass 🎛️:** Giữ lại dải tần `50Hz - 4000Hz`, gọt sạch rác và nhiễu ở hai đầu.
-    4.  **Lọc Pre-emphasis 🚀:** Khuếch đại các tần số cao để làm nổi bật tiếng rít đặc trưng của Hen suyễn.
-    5.  **Chia khung & Cửa sổ hóa (Framing & Hamming Window) 🪟:** Băm nhỏ tín hiệu âm thanh thành các khung `25ms` để chống hiện tượng rò rỉ phổ (spectral leakage).
-    6.  **STFT (Short-Time Fourier Transform) 🧮:** Biến đổi tín hiệu từ miền thời gian sang miền tần số.
-    7.  **Lọc thang Mel (Mel Filterbank) 🎹:** Chuyển đổi sang thang Mel, chuyển năng lượng sang thang đo Decibel (dB) 🔊 và tạo ra bức ảnh Mel-Spectrogram cuối cùng để đưa vào mạng DS-CNN 🕸️.
-
-### 🥉 Giai đoạn 3: Huấn luyện Mô hình (Training - File `6_Train_Model.py`) 🤖
-
-Trong bước này, ma trận đặc trưng sẽ được đưa vào mạng nơ-ron để tìm ra quy luật của tiếng rít Hen suyễn 🤧. Dưới đây là các kỹ thuật tối ưu cốt lõi được áp dụng trong script số 6:
-
-*   **Chuẩn hóa dữ liệu (Min-Max Scaling) 📏:** Do ảnh Mel-Spectrogram thường chứa các giá trị dB âm lớn, hệ thống sẽ tự động ép toàn bộ dữ liệu đầu vào về khoảng `[0, 1]` để mạng học ổn định và hội tụ nhanh hơn ⚡.
-*   **Kiến trúc mạng DS-CNN (Depthwise Separable CNN) 🧠:** Thay vì dùng CNN truyền thống khá nặng nề, mô hình sử dụng các lớp `SeparableConv2D`. Đây là kiến trúc siêu nhẹ (chân ái dành riêng cho TinyML 🪶), giúp giảm triệt để số lượng tham số nhưng vẫn thực hiện mượt mà 3 bước: trích xuất đặc trưng cơ bản, đào sâu đặc trưng bệnh lý, và phân tích chi tiết vệt rít 🔍.
-*   **Cân bằng trọng số (Class Weights) ⚖️:** Thuật toán tự động tính toán `class_weight='balanced'` để điều chỉnh trọng số học, giúp AI không bị "thiên vị" nếu số lượng sample giữa nhãn `Asthma` và `Non-Asthma` bị chênh lệch 📉📈.
-*   **Bộ Callbacks thông minh ⏱️:** Quá trình huấn luyện (Epochs) được giám sát gắt gao bởi các hàm callbacks xịn xò:
-    *   **EarlyStopping & ModelCheckpoint 🛑:** Giám sát độ suy hao (`val_loss`). Nếu sau 10 vòng mà AI không thông minh hơn, quá trình sẽ tự động ngắt và chỉ xuất ra file lưu trọng số của epoch tốt nhất (`Bin_Asthma.keras`) 💾.
-    *   **ReduceLROnPlateau 🐢:** Khi mô hình bị chững lại (plateau), tốc độ học (Learning Rate) sẽ tự động giảm đi một nửa để AI "nghiền ngẫm" dữ liệu chậm và sâu sắc hơn 🧘‍♂️.
-*   **Kết quả tối ưu (Phase 2) 🏆:** Nhờ những tinh chỉnh "tới bến" này, mô hình đã đạt độ chính xác (Test Accuracy) lên tới **94.50%**, với độ nhạy phát hiện Hen suyễn (Recall) đạt **98%** trên tập dữ liệu Test 🎯🔥.
-
-### 🏅 Giai đoạn 4: Lượng tử hóa (Quantization) 🗜️⚡
-*   Mô hình TensorFlow gốc dùng số thực dấu phẩy động 32-bit (Float32) 🐘, rất nặng và ngốn RAM.
-*   **Quantize 🪄:** Ép kiểu mô hình từ Float32 xuống số nguyên 8-bit (INT8) 🐜. Quá trình này giúp mô hình giảm 4 lần dung lượng 📉 và chạy cực nhanh trên vi điều khiển (ESP32-S3) 🚀 mà độ chính xác (Accuracy) gần như không suy suyển 🎯. Cuối cùng, mô hình được dịch sang mảng byte hex trong file C (`.h`) 📜.
-
----
-
-## 📂 3. Cấu Trúc Thư Mục & File (Workspace Tree) 🌳📁
-
-Toàn bộ project được tổ chức một cách khoa học để quá trình tiền xử lý, huấn luyện và test diễn ra trơn tru nhất. Dưới đây là bức tranh toàn cảnh:
+Pipeline đi từ:
 
 ```text
-📦 Asthma_TinyML_Workspace
- ┣ 📂 .vscode/                   # ⚙️ Cấu hình môi trường VS Code
- ┃
- ┣ 📂 Dataset/                   # 🎧 Dữ liệu âm thanh gốc (WAV)
- ┃ ┣ 📂 0_Asthma/                # 👑 [FINAL] Dữ liệu chuẩn Hen suyễn 
- ┃ ┣ 📂 1_Non_Asthma/            # 👑 [FINAL] Dữ liệu chuẩn Không Hen suyễn 
- ┃ ┣ 📂 2_TuThu/                 # 🧱 Nguồn thô: Dữ liệu tự thu từ Micro
- ┃ ┣ 📂 3_asthma/                # 🧱 Nguồn thô: Dữ liệu Hen suyễn ban đầu
- ┃ ┣ 📂 4_Raw_Non_Asthma/        # 🧱 Nguồn thô: Tạp âm môi trường
- ┃ ┗ 📜 README.md                # 📝 Ghi chú riêng cho bộ Dataset
- ┃
- ┣ 📂 Training_Model_Phase_1/    # 👶 Mô hình huấn luyện phiên bản đầu
- ┃ ┣ 📂 4_JPG_Check_Spectrum/    # 👁️ Ảnh phổ Mel để kiểm tra bằng mắt thường
- ┃ ┣ 📂 5_Output_Features/       # 🧪 Ma trận đặc trưng .npy (X_data, Y_labels)
- ┃ ┣ 📂 6_Output_Model/          # 🧠 Chứa model .keras, log CSV và biểu đồ
- ┃ ┗ 📂 7_Output_TFLite/         # 🗜️ Model đã lượng tử hóa (.tflite)
- ┃
- ┣ 📂 Training_Model_Phase_2/    # 🚀 Mô hình hoàn thiện cuối cùng (Chính thức)
- ┃ ┣ 📂 4_JPG_Check_Spectrum/    # (Tương tự Phase 1 nhưng tối ưu hơn)
- ┃ ┣ 📂 5_Output_Features/        
- ┃ ┣ 📂 6_Output_Model/           
- ┃ ┗ 📂 7_Output_TFLite/          
- ┃
- ┣ 📂 8_Exported_C_Headers/         # 🏁 Chứa 2 mẫu test ĐÃ QUA TIỀN XỬ LÝ bằng Python
- ┃ ┣ 📜 Sample_Asthma_1.h         # Mảng C của mẫu CÓ Hen suyễn 
- ┃ ┗ 📜 Sample_Non_Asthma_1.h     # Mảng C của mẫu KHÔNG Hen suyễn 
- ┃
- ┣ 📂 10_Input_Asthma_Raw/          # 🧪 Chứa dữ liệu mảng C âm thanh thô để test DSP ESP32
- ┃ ┣ 📂 Raw_Include_Phase_1/      # Dữ liệu test cơ bản ban đầu
- ┃ ┣ 📂 Raw_Include_Phase_2/      # Dữ liệu test nhiễu nâng cao đã qua tinh chỉnh
- ┃ ┗ 📂 Raw_Include_Phase_3/      # Dữ liệu test tổng hợp cuối cùng
- ┃
- ┣ 📜 1_Split_Audio.py              # ✂️ Cắt âm thanh
- ┣ 📜 2_Prep_Non_Asthma.py          # 🧹 Làm sạch & phân loại data Non-Asthma
- ┣ 📜 3_Prep_Asthma.py              # 🧬 Làm sạch & tăng cường data Asthma
- ┣ 📜 4_Norma_&_Check_Spectrum.py   # 👁️ Chuẩn hóa biên độ & vẽ ảnh phổ
- ┣ 📜 5_Extract_Features.py         # 🧪 Trích xuất Mel-Spectrogram ra file .npy
- ┣ 📜 6_Train_Model.py              # 🏗️ Huấn luyện AI với kiến trúc DS-CNN
- ┣ 📜 7_Quantize_Export.py          # 🗜️ Lượng tử hóa mô hình sang INT8 (.tflite)
- ┣ 📜 8_Exported_C_Headers.py       # 📠 Dịch mô hình .tflite sang mảng Hex (C/C++)
- ┣ 📜 9_Coef_Butter.py              # 🧮 Tính toán hệ số cho bộ lọc Butterworth
- ┣ 📜 10_Test_Asthma_Raw.py         # 🧱 Xuất mảng C từ file WAV để test chay
- ┣ 📜 11_Debug_Deploy.py            # 🕵️‍♂️ Kịch bản debug đối chiếu Python vs ESP32
- ┣ 📜 12_Test_TF_Int8.py            # 🩺 Test suy luận mô hình tĩnh trên Python
- ┣ 📜 13_Test_TF_Quantize.py        # ⚖️ Đánh giá sai số của mô hình sau lượng tử hóa
- ┗ 📜 14_Get_Random_Name.py         # 🎲 Đổi tên file ngẫu nhiên chống trùng lặp
+Dữ liệu WAV gốc
+      ↓
+Chia dữ liệu theo bệnh nhân
+      ↓
+Train-only augmentation
+      ↓
+Mel-Spectrogram
+      ↓
+DS-CNN Training
+      ↓
+INT8 Quantization
+      ↓
+Đối chiếu Python ↔ C++
+      ↓
+Kiểm thử qua microphone INMP441
+      ↓
+ESP32-S3 deployment
+```
+
+> ⚠️ Model trong project được xem là **bộ phân loại mẫu âm thanh hô hấp Asthma / Non-Asthma trong phạm vi dataset nghiên cứu**, không phải công cụ chẩn đoán y khoa độc lập.
+
+---
+
+# 📂 Cấu trúc thư mục
+
+```text
+AI_Training_Model/
+│
+├── Dataset/
+│
+├── Dataset_Chia/
+│
+├── P1_Chia_Du_Lieu/
+│   ├── 1_Chia_Non_Asthma.py
+│   ├── 2_Chia_va_Tang_Cuong_Asthma.py
+│   └── Argument_Oversampling.py
+│
+├── P2_Preprocess_&_Traning_Model/
+│   ├── Preprocess_Audio.py
+│   ├── Training_Model.py
+│   ├── Output_Preprocess/
+│   └── Output_Train/
+│
+├── P3_Quantize_Model/
+│
+├── P4_Kiem_Tra_CPP/
+│
+├── P5_Kiem_Tra_Raw_Qua_Micro/
+│
+├── Quy_tac_chia_du_lieu.txt
+│
+└── README.md
+```
+
+Các stage chính:
+
+```text
+P1 = chia dữ liệu + augmentation
+P2 = preprocessing + training + evaluation
+P3 = quantization
+P4 = đối chiếu Python/C++
+P5 = kiểm thử raw audio qua microphone
 ```
 
 ---
 
-## ⚠️ 4. Ghi chú: Sự khác biệt giữa Phase 1 và Phase 2 🚨🔍
+# 1. P1 — Chia dữ liệu
 
-Trong quá trình huấn luyện và "độ" mô hình, hệ thống đã đẻ ra 2 thư mục:
-*   📁 **`Training_Model_Phase_1/` 👶:** Là phiên bản huấn luyện đầu lòng. Dùng để tham khảo và đối chiếu sự tiến hóa của mô hình 📈.
-*   📁 **`Training_Model_Phase_2/` 👑:** **ĐÂY LÀ KẾT QUẢ CUỐI CÙNG (END).** Phiên bản này chứa mô hình đã được tinh chỉnh siêu tham số 🎛️, tối ưu hóa dữ liệu đầu vào và đạt độ chính xác đỉnh chóp 🏔️ để triển khai thực tế. Nhớ dùng các file xuất ra từ Phase 2 nhé! 😉
+## 1.1. Mục tiêu
+
+Phiên bản hiện tại không còn:
+
+```text
+augment toàn bộ dataset
+        ↓
+random train_test_split
+```
+
+Thay vào đó:
+
+```text
+RAW DATA
+   ↓
+chia theo bệnh nhân trước
+   ↓
+train / val / test
+   ↓
+augmentation chỉ trên TRAIN
+```
+
+Mục tiêu là giảm nguy cơ:
+
+```text
+file gốc ở train
++
+file augment họ hàng ở validation/test
+```
+
+làm metric đẹp giả tạo do data leakage.
 
 ---
 
-## 📜 5. Chức Năng Các File Script Python 🐍⚙️
+# 2. `1_Chia_Non_Asthma.py`
 
-Hãy chạy các file theo đúng thứ tự đánh số từ 1 đến 14 cho mượt nhé:
+Script xử lý dữ liệu `Non_Asthma`.
 
-**🛠️ Nhóm Xử Lý Dữ Liệu (Data Prep):**
-*   **`1_Split_Audio.py` ✂️:** Cắt các file âm thanh dài thành các đoạn tiêu chuẩn.
-*   **`2_Prep_Non_Asthma.py` 🧹:** Xử lý, lọc và phân loại tập dữ liệu âm thanh Bình thường/Tạp âm.
-*   **`3_Prep_Asthma.py` 🧬:** Xử lý tập dữ liệu Hen suyễn (có thể bao gồm thêm nhiễu, đổi cao độ để Data Augmentation - hack thêm data).
-*   **`14_Get_Random_Name.py` 🎲:** Đổi tên file ngẫu nhiên để tránh đụng hàng khi gom dữ liệu từ tứ phương tám hướng.
+## Nguồn dữ liệu
 
-**🎼 Nhóm Trích Xuất Đặc Trưng (Feature Extraction):**
-*   **`4_Norma_&_Check_Spectrum.py` 👁️:** Chuẩn hóa biên độ âm thanh và xuất ra ảnh phổ để soi lỗi dữ liệu bằng mắt thường.
-*   **`5_Extract_Features.py` 🧪:** Chạy STFT, Mel Filterbank và đóng gói ma trận đặc trưng thành file `.npy` để Training.
-*   **`9_Coef_Butter.py` 🧮:** Tính toán cấu hình hệ số (Coefficients) cho bộ lọc Butterworth Bandpass dùng cho C++.
+Dữ liệu Non-Asthma gồm:
 
-**🚀 Nhóm Huấn Luyện & Chuyển Đổi (Train & Export):**
-*   **`6_Train_Model.py` 🏗️:** Build mạng AI, nạp đồ ăn (`.npy`) vào huấn luyện và xuất ra file `.keras` xịn xò.
-*   **`7_Quantize_Export.py` 🗜️:** Chuyển đổi `.keras` sang chuẩn TinyML (`.tflite`) và ép mỡ (lượng tử hóa INT8).
-*   **`8_Exported_C_Headers.py` 📠:** Dịch file `.tflite` thành mảng Byte trong file `Asthma_Model.h`.
+- Kaggle.
+- Các nhóm bệnh:
+  - Bronchial
+  - COPD
+  - Healthy
+  - Pneumonia
+- Dữ liệu môi trường tự thu.
 
-**🐛 Nhóm Kiểm Thử & Debug (Testing & Debugging):**
-*   **`10_Test_Asthma_Raw.py` 🧱:** Chuyển file WAV thành mảng C thô phục vụ test độc lập phần cứng.
-*   **`11_Debug_Deploy.py` 🕵️‍♂️:** Kịch bản soi lỗi, so sánh đối chiếu sai số giữa luồng chạy Python và luồng chạy C++ trên ESP32.
-*   **`12_Test_TF_Int8.py` 🩺:** Chạy test mô hình tĩnh trên Python trước khi nạp để xem có ổn áp không.
-*   **`13_Test_TF_Quantize.py` ⚖️:** Test kiểm tra chéo mô hình sau khi đã bị lượng tử hóa INT8 để đánh giá độ suy giảm chính xác.
+## Cách chia
+
+Các file Kaggle được gom theo:
+
+```text
+Disease + Patient ID
+```
+
+Ví dụ concept:
+
+```text
+COPD_P01
+COPD_P02
+Pneumonia_P05
+...
+```
+
+Sau đó chia theo **group bệnh nhân**, không chia ngẫu nhiên từng WAV.
+
+Tỷ lệ mục tiêu:
+
+```text
+~80% train
+~10% validation
+~10% test
+```
+
+và thực hiện riêng trong từng nhóm bệnh để các split vẫn có đại diện của nhiều nhóm bệnh.
+
+---
+
+## Deduplication
+
+Script tính:
+
+```text
+SHA-256
+```
+
+cho các file gốc và loại các file có nội dung trùng hoàn toàn.
+
+Thông tin duplicate được lưu để truy vết:
+
+```text
+file_trung.csv
+```
+
+Thông tin split được lưu:
+
+```text
+chia_du_lieu.csv
+```
+
+---
+
+## Dữ liệu môi trường tự thu
+
+Các file môi trường tự thu hiện được đưa **chỉ vào train**.
+
+Lý do:
+
+> metadata về phiên thu hiện tại chưa đủ chặt để bảo đảm các đoạn thuộc cùng một recording session có thể được tách độc lập sang train/val/test mà không tạo leakage.
+
+Do đó:
+
+```text
+Environment self-recorded
+        ↓
+TRAIN ONLY
+```
+
+---
+
+# 3. `2_Chia_va_Tang_Cuong_Asthma.py`
+
+Script xử lý dữ liệu `Asthma`.
+
+Nguồn hiện tại:
+
+```text
+288 file Asthma gốc
+```
+
+## 3.1. Chia theo bệnh nhân
+
+Tên file được đọc Patient ID theo dạng:
+
+```text
+P<number>
+```
+
+Toàn bộ file thuộc cùng một bệnh nhân được giữ trong cùng một split.
+
+Pipeline:
+
+```text
+Asthma RAW
+   ↓
+hash dedup
+   ↓
+group by Patient
+   ↓
+shuffle với SEED=42
+   ↓
+train / val / test
+```
+
+Tỷ lệ chia dựa trên **số bệnh nhân**:
+
+```text
+~80% train
+~10% validation
+~10% test
+```
+
+Validation và test chỉ chứa **file gốc**.
+
+---
+
+# 4. Train-only Asthma Augmentation
+
+Sau khi split xong mới augmentation.
+
+```text
+Asthma TRAIN originals
+        ↓
+augmentation
+        ↓
+Asthma TRAIN expanded
+```
+
+Không augmentation:
+
+```text
+Validation
+Test
+```
+
+Số Asthma train được sinh động để gần bằng số Non-Asthma train thực tế, thay vì hard-code một con số cố định.
+
+---
+
+## 4.1. Các phép augmentation
+
+Các hàm nằm trong:
+
+```text
+Argument_Oversampling.py
+```
+
+và chỉ được gọi cho Asthma train.
+
+### 1. Mix Environmental Noise
+
+```text
+audio + environmental_noise × gain
+```
+
+Gain ngẫu nhiên:
+
+```text
+0.02 → 0.10
+```
+
+---
+
+### 2. Time Shift on Silence
+
+Script:
+
+1. Tính RMS theo frame.
+2. Tìm vùng năng lượng cao.
+3. Lấy khoảng lõi khoảng 4 giây.
+4. Chèn lõi này vào một vị trí ngẫu nhiên trong background silence 5 giây.
+
+Mục tiêu:
+
+> thay đổi vị trí respiratory pattern theo thời gian mà vẫn giữ phần tín hiệu quan trọng.
+
+---
+
+### 3. White Noise
+
+```text
+audio + noise_level × Gaussian noise
+```
+
+Giá trị hiện tại:
+
+```text
+noise_level = 0.001
+```
+
+---
+
+### 4. Time Stretch
+
+Rate ngẫu nhiên:
+
+```text
+0.8 → 1.2
+```
+
+Sau biến đổi, audio được fix lại về:
+
+```text
+5 s
+16 kHz
+```
+
+---
+
+### 5. Pitch Shift
+
+Pitch shift ngẫu nhiên:
+
+```text
+-0.5 → +0.5 semitone
+```
+
+Sau đó cũng fix lại độ dài 5 giây.
+
+---
+
+## 4.2. Khả năng truy vết augmentation
+
+Mỗi file augmentation lưu:
+
+- file mới;
+- file cha;
+- Patient ID;
+- phương pháp;
+- seed;
+- tham số biến đổi.
+
+Output:
+
+```text
+tang_cuong.csv
+```
+
+Điều này giúp truy lại nguồn của từng sample train.
+
+---
+
+# 5. Dataset sau khi chia
+
+Training log hiện tại cho thấy dữ liệu sau preprocessing có:
+
+| Split | Tổng | Asthma | Non-Asthma |
+|---|---:|---:|---:|
+| Train | **1666** | **833** | **833** |
+| Validation | **108** | 30 | 78 |
+| Test | **113** | 30 | 83 |
+
+Train được cân bằng:
+
+```text
+Asthma     = 833
+Non_Asthma = 833
+```
+
+Validation/Test không bị ép cân bằng bằng augmentation.
+
+Đây là chủ ý.
+
+---
+
+# 6. P2 — `Preprocess_Audio.py`
+
+Script không chia lại dữ liệu.
+
+Nó đọc trực tiếp:
+
+```text
+Dataset_Chia/
+├── Asthma/
+│   ├── train/
+│   ├── val/
+│   └── test/
+│
+└── Non_Asthma/
+    ├── train/
+    ├── val/
+    └── test/
+```
+
+và tạo Mel-Spectrogram cho từng split riêng biệt.
+
+---
+
+# 7. DSP Pipeline
+
+## Thông số
+
+| Tham số | Giá trị |
+|---|---:|
+| Sample Rate | 16000 Hz |
+| Duration | 5 s |
+| Samples | 80000 |
+| Low Cut | 100 Hz |
+| High Cut | 2000 Hz |
+| Butterworth Order | 5 |
+| Pre-emphasis | 0.97 |
+| N_FFT | 1024 |
+| Hop Length | 625 |
+| N_Mels | 64 |
+| Window | Hann |
+| Mel | Slaney |
+| `top_db` | 80 |
+
+---
+
+## Pipeline chính xác
+
+```text
+WAV
+ |
+ v
+librosa.load
+16 kHz / mono
+ |
+ v
+fix_length
+80000 samples
+ |
+ v
+Peak Normalization
+L∞
+ |
+ v
+Butterworth Bandpass
+100–2000 Hz
+ |
+ v
+Pre-emphasis
+0.97
+ |
+ v
+STFT
+Hann Window
+ |
+ v
+Mel Filterbank
+64 bands
+Slaney
+ |
+ v
+Power → dB
+top_db = 80
+ |
+ v
+Mel 64 × 129
+```
+
+Các tham số quan trọng được ghi tường minh trong code:
+
+```text
+center=True
+htk=False
+window="hann"
+pad_mode="constant"
+power=2.0
+norm="slaney"
+```
+
+nhằm tránh việc nâng phiên bản `librosa/scipy` làm thay đổi pipeline một cách âm thầm.
+
+---
+
+# 8. Output Preprocessing
+
+Mỗi split lưu riêng:
+
+```text
+Output_Preprocess/
+│
+├── X_train_mel.npy
+├── Y_train_mel.npy
+├── Files_train.npy
+│
+├── X_val_mel.npy
+├── Y_val_mel.npy
+├── Files_val.npy
+│
+├── X_test_mel.npy
+├── Y_test_mel.npy
+└── Files_test.npy
+```
+
+Shape mỗi sample:
+
+```text
+64 × 129 × 1
+```
+
+Nhãn:
+
+```text
+0 = Asthma
+1 = Non_Asthma
+```
+
+Script kiểm tra:
+
+- X/Y/file count phải khớp.
+- Không NaN.
+- Không Inf.
+- Mel phải đúng shape `(64,129)`.
+
+---
+
+# 9. P2 — `Training_Model.py`
+
+Training script nhận thẳng ba tập:
+
+```text
+train
+validation
+test
+```
+
+đã tạo từ bước preprocessing.
+
+Không thực hiện:
+
+```python
+train_test_split(...)
+```
+
+trên dataset đã augmentation.
+
+---
+
+# 10. Train-only Min-Max Normalization
+
+Chỉ lấy min/max từ train:
+
+```python
+train_min = np.min(x_train)
+train_max = np.max(x_train)
+```
+
+Kết quả hiện tại:
+
+```text
+TRAIN_MIN = -80.0
+TRAIN_MAX = 0.0
+```
+
+Công thức:
+
+```text
+X_norm = (X - TRAIN_MIN)
+         -----------------------
+         (TRAIN_MAX - TRAIN_MIN)
+```
+
+Hai hằng số từ train được áp dụng lại cho:
+
+```text
+Train
+Validation
+Test
+```
+
+Không tính min/max mới cho validation/test.
+
+---
+
+# 11. DS-CNN Architecture
+
+Input:
+
+```text
+64 × 129 × 1
+```
+
+Mạng hiện tại:
+
+```text
+Input
+ |
+ v
+SeparableConv2D(16, 3×3)
+BatchNormalization
+MaxPool2D
+ |
+ v
+SeparableConv2D(32, 3×3)
+BatchNormalization
+MaxPool2D
+ |
+ v
+SeparableConv2D(64, 3×3)
+BatchNormalization
+MaxPool2D
+ |
+ v
+Flatten
+8192
+ |
+ v
+Dense(64, ReLU)
+ |
+ v
+Dropout(0.3)
+ |
+ v
+Dense(1, Sigmoid)
+```
+
+Model summary:
+
+```text
+Total params       = 527,994
+Trainable params   = 527,770
+Non-trainable      = 224
+```
+
+Phần lớn parameter hiện nằm ở:
+
+```text
+Flatten(8192)
+      ↓
+Dense(64)
+```
+
+với:
+
+```text
+524,352 parameters
+```
+
+---
+
+# 12. Training Configuration
+
+```text
+SEED       = 42
+EPOCHS     = 100
+BATCH_SIZE = 32
+
+Optimizer  = Adam
+Loss       = Binary Crossentropy
+Metric     = Accuracy
+```
+
+Train hiện cân bằng 1:1 nên class weight thực tế:
+
+```text
+Asthma     = 1.0
+Non_Asthma = 1.0
+```
+
+---
+
+# 13. Callbacks
+
+## EarlyStopping
+
+```text
+monitor = val_loss
+patience = 10
+restore_best_weights = True
+```
+
+## ReduceLROnPlateau
+
+```text
+monitor = val_loss
+factor = 0.5
+patience = 5
+min_lr = 1e-6
+```
+
+## ModelCheckpoint
+
+Model tốt nhất theo:
+
+```text
+minimum val_loss
+```
+
+được lưu:
+
+```text
+Bin_Asthma.keras
+```
+
+Ngoài ra:
+
+- CSVLogger.
+- TensorBoard.
+- TerminateOnNaN.
+
+---
+
+# 14. Training History
+
+File:
+
+```text
+P2_Preprocess_&_Traning_Model/
+└── Output_Train/
+    └── Training_History.png
+```
+
+![Training History](./P2_Preprocess_&_Traning_Model/Output_Train/Training_History.png)
+
+## Nhận xét
+
+### Train Accuracy
+
+Tăng từ khoảng:
+
+```text
+0.76
+```
+
+lên gần:
+
+```text
+0.99
+```
+
+### Validation Accuracy
+
+Giai đoạn đầu rất thấp, sau đó tăng mạnh và về cuối chủ yếu dao động quanh:
+
+```text
+~0.90 → 0.97
+```
+
+### Train Loss
+
+Giảm rất nhanh và tiến gần 0.
+
+### Validation Loss
+
+Giai đoạn đầu tăng rất mạnh, sau đó giảm sâu và ổn định hơn.
+
+Điều này cho thấy model học rất mạnh trên train nhưng vẫn có **generalization gap** giữa train và validation.
+
+Vì vậy không dùng:
+
+```text
+Train Accuracy ≈ 99%
+```
+
+hay:
+
+```text
+Peak Validation Accuracy
+```
+
+làm kết quả chính thức.
+
+Kết quả cuối phải lấy từ **test độc lập**.
+
+---
+
+# 15. Test Evaluation
+
+Sau training, script load lại:
+
+```text
+Bin_Asthma.keras
+```
+
+là model có `val_loss` tốt nhất rồi mới chấm trên test.
+
+## Kết quả chính thức hiện tại
+
+```text
+Test Loss     = 0.825651
+Test Accuracy = 0.867257
+              = 86.73%
+```
+
+---
+
+# 16. Confusion Matrix
+
+Theo thứ tự:
+
+```text
+[Asthma, Non_Asthma]
+```
+
+kết quả:
+
+```text
+[[27,  3],
+ [12, 71]]
+```
+
+Diễn giải:
+
+| Ground Truth | Predict Asthma | Predict Non-Asthma |
+|---|---:|---:|
+| Asthma | **27** | 3 |
+| Non-Asthma | 12 | **71** |
+
+Do đó:
+
+```text
+Asthma:
+27 đúng
+3 bỏ sót
+
+Non-Asthma:
+71 đúng
+12 false-positive thành Asthma
+```
+
+---
+
+# 17. Classification Report
+
+| Class | Precision | Recall | F1-score | Support |
+|---|---:|---:|---:|---:|
+| Asthma | 0.6923 | **0.9000** | 0.7826 | 30 |
+| Non-Asthma | **0.9595** | 0.8554 | **0.9045** | 83 |
+| **Accuracy** | | | **0.8673** | 113 |
+| Macro Avg | 0.8259 | 0.8777 | 0.8435 | 113 |
+| Weighted Avg | 0.8885 | 0.8673 | 0.8721 | 113 |
+
+Điểm đáng chú ý:
+
+```text
+Asthma Recall = 90.00%
+```
+
+nhưng:
+
+```text
+Asthma Precision = 69.23%
+```
+
+Tức model bắt được phần lớn Asthma test nhưng vẫn có số lượng false-positive đáng kể.
+
+Không được gọi:
+
+```text
+Recall 90%
+```
+
+là:
+
+```text
+Accuracy 90%
+```
+
+vì hai metric khác nhau.
+
+---
+
+# 18. Vì sao model mới chỉ ~86.73%?
+
+Các phiên bản cũ từng có metric cao hơn.
+
+Tuy nhiên pipeline mới thay đổi methodology theo hướng chặt hơn:
+
+```text
+Patient-wise split
+      ↓
+Split BEFORE augmentation
+      ↓
+Train-only augmentation
+      ↓
+Validation/Test originals
+      ↓
+Train-only normalization statistics
+      ↓
+Validation selects model
+      ↓
+Test used only at the end
+```
+
+Do đó accuracy giảm không nhất thiết là model “tệ hơn”.
+
+Nó có thể phản ánh:
+
+> phép đánh giá hiện tại khó hơn và ít nguy cơ leakage hơn.
+
+Trong NCKH, kết quả:
+
+```text
+86.73%
+```
+
+được ưu tiên hơn một metric cao nhưng có methodology không chặt.
+
+---
+
+# 19. Output Training
+
+```text
+Output_Train/
+│
+├── Bin_Asthma.keras
+├── Normalization_Params.txt
+├── Test_Report.txt
+├── Training_History.png
+├── training_log.csv
+└── logs/
+```
+
+## `Normalization_Params.txt`
+
+Hiện tại:
+
+```text
+TRAIN_MIN=-80.0
+TRAIN_MAX=0.0
+```
+
+## `Test_Report.txt`
+
+Hiện tại lưu:
+
+- Test Loss.
+- Test Accuracy.
+- Confusion Matrix.
+- Precision.
+- Recall.
+- F1-score.
+- Support.
+
+---
+
+# 20. P3 — Quantize Model
+
+Sau khi model Float32 được chốt:
+
+```text
+Bin_Asthma.keras
+      ↓
+P3_Quantize_Model
+      ↓
+INT8 TFLite
+      ↓
+C/C++ model data
+```
+
+Nguyên tắc bắt buộc:
+
+- Representative dataset chỉ lấy từ **train**.
+- Representative dataset phải có đại diện của cả hai lớp.
+- Không dùng validation/test để calibration INT8.
+- Full INT8 phải được kiểm tra trước khi đưa lên firmware.
+- `scale/zero_point` phải lấy từ artifact/tensor tương ứng với model hiện tại, không giả định cố định giữa các lần train.
+
+Chi tiết implementation nằm trong `P3_Quantize_Model/`.
+
+---
+
+# 21. P4 — Kiểm tra C++
+
+Mục tiêu của:
+
+```text
+P4_Kiem_Tra_CPP/
+```
+
+là đối chiếu pipeline Python với implementation C++ trước khi đưa toàn bộ pipeline vào deployment thực.
+
+Các hạng mục kiểm tra của project hướng tới:
+
+```text
+PCM16
+↓
+DSP
+↓
+Mel
+↓
+Normalization / Quantization
+↓
+Inference
+```
+
+Mục tiêu là:
+
+> **functional / classification equivalence**
+
+không yêu cầu mọi giá trị floating-point Python và C++ phải bit-exact.
+
+---
+
+# 22. P5 — Kiểm tra Raw qua Microphone
+
+`P5_Kiem_Tra_Raw_Qua_Micro/` là stage gần deployment thực tế hơn:
+
+```text
+Raw WAV
+   ↓
+Speaker playback
+   ↓
+Air
+   ↓
+INMP441
+   ↓
+ESP32-S3
+   ↓
+DSP
+   ↓
+TinyML
+```
+
+Stage này kiểm tra ảnh hưởng thực tế của:
+
+- microphone;
+- playback/acoustic path;
+- amplitude;
+- environmental noise;
+- VAD;
+- deployment DSP.
+
+Đây là bước khác hoàn toàn với test tensor/static inference.
+
+---
+
+# 23. Current AI v1.0 Record
+
+```text
+Model                : DS-CNN Binary Classifier
+Classes              : Asthma / Non-Asthma
+
+Sample Rate          : 16 kHz
+Input Duration       : 5 s
+Input Samples        : 80,000
+
+Bandpass             : 100–2000 Hz
+Filter Order         : 5
+Pre-emphasis         : 0.97
+
+N_FFT                : 1024
+Hop Length           : 625
+N_Mels               : 64
+Window               : Hann
+Mel                  : Slaney
+Input Shape          : 64 × 129 × 1
+
+Normalization Min    : -80.0
+Normalization Max    : 0.0
+
+Train                : 1666 samples
+Validation           : 108 samples
+Test                 : 113 samples
+
+Test Loss            : 0.825651
+Test Accuracy        : 86.73%
+
+Asthma Precision     : 69.23%
+Asthma Recall        : 90.00%
+Asthma F1            : 78.26%
+
+Model Params         : 527,994
+
+Deployment Target    : ESP32-S3
+Deployment Runtime   : TensorFlow Lite Micro
+```
+
+---
+
+# 24. Model Freeze
+
+Phiên bản hiện tại được xem là:
+
+```text
+AI MODEL v1.0
+```
+
+Tạm freeze để tiếp tục xây dựng hệ thống IoT final.
+
+Không retrain chỉ với mục tiêu:
+
+```text
+"làm accuracy đẹp hơn"
+```
+
+nếu không có:
+
+- dataset mới có cơ sở;
+- phát hiện lỗi methodology;
+- bug preprocessing;
+- lỗi quantization;
+- domain gap cần giải quyết;
+- yêu cầu nghiên cứu mới.
+
+---
+
+# 25. Quy trình chạy lại từ đầu
+
+Thứ tự concept:
+
+```text
+1. Chuẩn bị Dataset/
+        ↓
+2. P1_Chia_Du_Lieu/
+        ↓
+   1_Chia_Non_Asthma.py
+        ↓
+   2_Chia_va_Tang_Cuong_Asthma.py
+        ↓
+3. Preprocess_Audio.py
+        ↓
+4. Training_Model.py
+        ↓
+5. Đọc Test_Report.txt
+        ↓
+6. P3_Quantize_Model
+        ↓
+7. P4_Kiem_Tra_CPP
+        ↓
+8. P5_Kiem_Tra_Raw_Qua_Micro
+        ↓
+9. Deploy_Model/
+```
+
+> `Argument_Oversampling.py` là module chứa các hàm augmentation và được `2_Chia_va_Tang_Cuong_Asthma.py` sử dụng; không phải stage độc lập cần chạy trực tiếp.
+
+---
+
+# 26. Checklist trước khi thay model trên ESP32-S3
+
+- [ ] Dataset được chia theo patient trước augmentation.
+- [ ] Không có augmentation trong validation/test.
+- [ ] Kiểm tra duplicate.
+- [ ] Preprocessing đúng `16 kHz / 5 s`.
+- [ ] Bandpass đúng `100–2000 Hz`.
+- [ ] Hann window.
+- [ ] Mel Slaney.
+- [ ] Shape đúng `64×129×1`.
+- [ ] `TRAIN_MIN=-80`.
+- [ ] `TRAIN_MAX=0`.
+- [ ] Đọc Test Report.
+- [ ] Kiểm tra Confusion Matrix.
+- [ ] Kiểm tra Asthma Precision/Recall/F1.
+- [ ] Quantize chỉ bằng representative train data.
+- [ ] Test INT8 model.
+- [ ] Đối chiếu Python ↔ C++.
+- [ ] Test qua INMP441.
+- [ ] Chỉ sau đó mới thay model trong final firmware.
+
+---
+
+# 27. Nguyên tắc của pipeline hiện tại
+
+1. **Split before augmentation.**
+2. **Patient-wise split.**
+3. **Train-only augmentation.**
+4. **Validation để chọn model.**
+5. **Test chỉ dùng ở cuối.**
+6. **Normalization statistics chỉ lấy từ train.**
+7. **INT8 representative data chỉ lấy từ train.**
+8. **Giữ khả năng truy vết file và augmentation.**
+9. **Python/C++ phải cùng specification DSP.**
+10. **Ưu tiên methodology đúng hơn metric đẹp.**
+
+---
+
+# 📌 Trạng thái
+
+```text
+P1 — Dataset Split / Augmentation     ✅
+P2 — Preprocess / DS-CNN Training     ✅
+P3 — Quantization                     ✅ / theo artifact hiện tại
+P4 — Python ↔ C++ Verification        ✅ / tiếp tục giữ để regression test
+P5 — Raw Audio ↔ INMP441 Test         ✅ / deployment validation
+
+AI v1.0                              FROZEN
+```
+
+Pipeline AI hiện được giữ ổn định để chuyển trọng tâm sang:
+
+```text
+Final_Project_NCKH/
+├── Patient_Node/
+├── Gateway/
+└── Dashboard/
+```

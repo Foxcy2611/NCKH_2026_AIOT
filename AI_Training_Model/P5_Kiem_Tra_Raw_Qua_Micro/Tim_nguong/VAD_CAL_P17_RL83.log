@@ -1,0 +1,8 @@
+========== KẾT QUẢ ĐO NĂNG LƯỢNG VAD ==========
+Yên lặng: min=2 | mean=13 | p95=34 | p99=45 | max=56
+Có âm thanh: min=3 | mean=94 | p10=8 | p25=48 | p50=78 | max=748
+Ngưỡng VAD hiện tại = 1250
+CẢNH BÁO: p25 tín hiệu chưa vượt ngưỡng hiện tại, có nguy cơ bỏ sót âm thanh yếu.
+Ngưỡng gợi ý ban đầu = 45 (p99 yên lặng + 30% khoảng cách đến p25 tín hiệu)
+Lưu toàn bộ kết quả này vào log. Reset ESP32 để đo một điều kiện khác.
+=================================================

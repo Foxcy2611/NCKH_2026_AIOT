@@ -1,0 +1,3 @@
+PRODUCT DEFINITION   = tài liệu WHY / WHAT
+SYSTEM ARCHITECTURE  = tài liệu HOW
+BUILD PLAN           = tài liệu DO NOW

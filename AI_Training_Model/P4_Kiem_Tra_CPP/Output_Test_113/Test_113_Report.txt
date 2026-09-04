@@ -1,0 +1,15 @@
+KẾT QUẢ TFLITE PYTHON TRÊN TẬP TEST 113
+
+Ngưỡng đã khóa từ validation: 0.500000000
+Tổng mẫu: 113
+
+Asthma đúng: 26/30
+Độ nhận Asthma: 0.866667
+
+Non-Asthma đúng: 78/83
+Độ nhận Non-Asthma: 0.939759
+
+Độ chính xác cân bằng: 0.903213
+Accuracy toàn bộ: 0.920354
+
+Test không tham gia chọn lại ngưỡng.

@@ -1,20 +1,11 @@
-# AI Training Model
-AI_Training_Model/8_Exported_C_Headers/*.h linguist-generated=true
-AI_Training_Model/10_Input_Asthma_Raw/Raw_Include_Phase_1/*.h linguist-generated=true
-AI_Training_Model/10_Input_Asthma_Raw/Raw_Include_Phase_2/*.h linguist-generated=true
-AI_Training_Model/10_Input_Asthma_Raw/Raw_Include_Phase_3/*.h linguist-generated=true
-AI_Training_Model/Training_Model_Phase_1/7_Output_TFLite/*.h linguist-generated=true
-AI_Training_Model/Training_Model_Phase_2/7_Output_TFLite/*.h linguist-generated=true
+# Generated model and test-data headers
+AI_Training_Model/P3_Quantize_Model/Output_Quantize/*.h linguist-generated=true
+Deploy_Model/1_Test_Model_Static_Profiling/include/Asthma_Model.h linguist-generated=true
+Deploy_Model/1_Test_Model_Static_Profiling/include/Sample_*.h linguist-generated=true
+Deploy_Model/2_Test_Model_LiveMic/include/Model_AI/Asthma_Model_3.h linguist-generated=true
+Deploy_Model/2_Test_Model_LiveMic/include/Raw_Include_Parity20/*.h linguist-generated=true
+Deploy_Model/2_Test_Model_LiveMic/include/Tensor_Include_Validation108/*.h linguist-generated=true
+Deploy_Model/2_Test_Model_LiveMic/include/Tensor_Include_Test113/*.h linguist-generated=true
+Deploy_Model/3_Model_Complete/include/Model_AI/Asthma_Model.h linguist-generated=true
 
-# Deploy Model
-# 1 Test Model Static
-Deploy_Model/1_Test_Model_Static/include/*.h linguist-generated=true
-Deploy_Model/2_Test_Model_Profiling/include/*.h linguist-generated=true
-
-Deploy_Model/3_Test_Model_LiveMic/include/Model_AI/Asthma_Model.h linguist-generated=true
-Deploy_Model/3_Test_Model_LiveMic/include/Model_AI/Asthma_Model_2.h linguist-generated=true
-Deploy_Model/3_Test_Model_LiveMic/include/Raw_Include_Phase_1/*.h linguist-generated=true
-Deploy_Model/3_Test_Model_LiveMic/include/Raw_Include_Phase_2/*.h linguist-generated=true
-Deploy_Model/3_Test_Model_LiveMic/include/Raw_Include_Phase_3/*.h linguist-generated=true
-
-Deploy_Model/4_Test_Model_Complete/include/Model_AI/Asthma_Model.h linguist-generated=true
+Final_Project_NCKH/AI_Model/Asthma_Model.h

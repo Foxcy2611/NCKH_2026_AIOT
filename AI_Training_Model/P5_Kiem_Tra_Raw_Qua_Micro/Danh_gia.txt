@@ -1,0 +1,72 @@
+- Quy tắc:
++ Chạy đủ 10 file Asthma + 10 file Non-Asthma
++ Vì âm lượng bé nên dí sát loa vào gần micro (Khoảng cách tầm 10cm)
++ Âm lượng loa 100, âm lượng file được mở là Full
+
+- Chi tiết output:
++ Kết quả 3 lần chạy 
++ Kết quả 3 lần ghi trên 1 dòng: 0: Asthma - 1: Non Asthma
++ Thứ tự chạy theo thứ tự file 
+(Asthma -> Non-Asthma [P11_55->P53_261 ; P2_30S -> P50_394])
+
+- 1: 0 0 0 => 0
+Note: + Phần cuối file có âm to nên ms đánh thức đc VAD
+      + Phần đầu bé nên chưa kích hoạt được
+
+- 2: 0 0 0 => 0
+Note: File âm lượng khá to đồng đều dễ đánh thức hơn
+
+- 3: 0 0 0 => 0
+Note: + File âm lượng quá bé, ko thể kích hoạt VAD
+      + Phải dùng 1 yếu tố ngoài kích hoạt VAD sau đó để thu, kết quả vẫn mong đợi
+
+- 4: 0 0 0 => 0
+Note: File âm lượng khá to đồng đều dễ đánh thức hơn
+
+- 5: 0 0 0 => 0
+Note: File âm lượng khá to đồng đều dễ đánh thức hơn
+
+- 6: 1 (50%) 1 (74,61%) 0 (74,61%) 0 (63,28%)
+Note: Khá to nên để xa hơn 1 xíu (Tầm 15-20cm)
+      
+- 7: 1 0 0 1
+Note: + Khả năng giống file 6, tức âm lượng khá to, dễ kích hoạt VAD
+      + Để xa 15-20 cm dễ ra NON, còn để sát < 10cm thì chắc chắn ASTHMA
+
+- 8: 0 0 0 
+Note: Âm đủ ổn, độ chính xác nhận diện khá cao (> 95%)
+
+- 9: 1 1 1 ?
+Note: + Âm rất to, kích VAD dễ
+      + 1 số lần interface độ chính xác thấp, 1 số lần rất cao
+      + Test nhiều lần nhất nhưng chưa thấy lần nào cho ASTHMA
+
+- 10: 0 0 0 => 0
+Note: + File âm lượng quá bé, ko thể kích hoạt VAD
+      + Phải dùng 1 yếu tố ngoài kích hoạt VAD sau đó để thu, kết quả vẫn mong đợi
+
+
+- 11: 1 1 1
+Note: Âm phát ra ổn
+
+- 12: 1 1 1
+Note: Âm phát ra ổn
+
+- 13: 1 1 1
+Note: Âm hơi bé, 1 số lần khó mới VAD được
+
+- 14: 1 1 1
+
+- 15: 1 1 1
+Note: Hơi khó để thu
+
+- 16: 1 1 1
+
+- 17: 1 1 1
+
+- 18: 1 1 1
+
+- 19: 1 1 1
+Note: Hơi bé đoạn đầu, cần tự kích ngoài
+
+- 20: 1 1 1
