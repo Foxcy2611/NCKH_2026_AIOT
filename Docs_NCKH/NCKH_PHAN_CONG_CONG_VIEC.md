@@ -56,7 +56,7 @@ Yêu cầu:
 
 | # | Việc | Giao cho ai dùng | DONE khi |
 |---|------|-------------------|----------|
-| 1 | Kiểm tra toàn bộ thư viện | M1, M4 dùng ngay | Kiểm tra được các lib tự viết cho tất cả các module hoạt động ổn định sử dụng tại [ESP Sensor Suite](../ESP32-Sensor_Suite/README.md)
+| 1 | Kiểm tra toàn bộ thư viện | M1, M2, M4 dùng ngay | Kiểm tra các lib tự viết cho tất cả các module hoạt động ổn định sử dụng tại [ESP Sensor Suite](../ESP32-Sensor_Suite/README.md)
 | 2 | Tạo header chứa sơ đồ chân | M1, M2 và cả M4 | Tạo 2 header chứa sơ đồ chân, thông số SPI, I2C, ... cho Node và Gateway để có thể bám vào |
 | 3 | Chốt layout thiết kế sản phẩm | — | Ý tưởng sản phẩm ở [READEME](../README.md) hay [PRODUCT](./NCKH_PRODUCT_DEFINITION_FINAL.md) chỉ là ý tưởng, chốt thiết kế cho 2 sản phẩm
 | 4 | Enclosure freeze (Phase 16) | — | Chỉ làm sau khi firmware/network ổn: vị trí mic/OLED/nút/MAX30102, kích thước Patient Node + Gateway (air vent, antenna, A7680C, GPS, power) |
