@@ -343,7 +343,7 @@ MAX30102 mặc định **OFF** trong Monitor Mode vì không thể giả định
 
 ---
 
-## 3. SLEEP / STOP
+## 3. STANDBY / SLEEP
 
 `SLEEP` có ưu tiên cao nhất.
 
@@ -733,11 +733,23 @@ Các driver/task cần:
 
 - timeout;
 - bounded retry;
-- Queue timeout;
-- Mutex timeout;
+- Queue timeout khi phù hợp;
+- Mutex timeout khi phù hợp;
 - non-blocking network reconnect;
-- watchdog;
-- tránh `while(1)` blocking không kiểm soát.
+- tránh busy-loop hoặc `while(1)` chờ vô hạn không có yield/block;
+- watchdog cho các task quan trọng;
+- xử lý lỗi và recovery rõ ràng.
+
+Gateway sử dụng cơ chế Watchdog của ESP32:
+
+- **Task Watchdog Timer (TWDT)**: phát hiện task bị treo,
+  busy-loop hoặc không được thực thi/yield trong thời gian cho phép.
+- **Interrupt Watchdog Timer (IWDT)**: bảo vệ trường hợp interrupt
+  hoặc critical section bị chặn quá lâu.
+
+`while(1)` bản thân không phải lỗi. Một FreeRTOS task có thể
+chạy vòng lặp vô hạn miễn là mỗi vòng lặp thực hiện công việc hữu hạn
+và có `vTaskDelay()`, queue/semaphore blocking hoặc cơ chế yield phù hợp.
 
 Mục tiêu:
 
