@@ -1,20 +1,72 @@
 #include <Arduino.h>
+#include "gateway_wifi.h"
+#include "MQTT.h"
 
-// put function declarations here:
-int myFunction(int, int);
+void setup()
+{
+    Serial.begin(9600);
+    delay(1000);
 
-void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+    Serial.println("=== Gateway start ===");
+
+    WiFi_Scan();
+
+    WiFi_Init();
+
+    if (!WiFi_IsConnected())
+    {
+        Serial.println("WiFi not connected after init.");
+    }
+
+    MQTT_Init();
+
+    if (WiFi_IsConnected())
+    {
+        MQTT_Connect();
+    }
+    else
+    {
+        Serial.println("MQTT skipped because WiFi is not connected.");
+    }
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
-}
+void loop()
+{
+    if (!WiFi_IsConnected())
+    {
+        Serial.println("WiFi disconnected. Reconnecting...");
+        WiFi_Reconnect();
+        delay(1000);
+        return;
+    }
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+    if (!MQTT_IsConnected())
+    {
+        Serial.println("MQTT disconnected. Reconnecting...");
+        MQTT_Reconnect();
+        delay(1000);
+        return;
+    }
 
-  //
+    MQTT_Loop();
+
+    static unsigned long lastPublish = 0;
+    if (millis() - lastPublish > 5000)
+    {
+        const char* topic = "nckh/gateway/status";
+        const char* payload = "Gateway online";
+
+        if (MQTT_Publish(topic, payload))
+        {
+            Serial.println("Published status to MQTT");
+        }
+        else
+        {
+            Serial.println("MQTT publish failed");
+        }
+
+        lastPublish = millis();
+    }
+
+    delay(200);
 }
