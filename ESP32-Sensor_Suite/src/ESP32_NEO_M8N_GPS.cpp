@@ -5,32 +5,36 @@ static HardwareSerial* gpsSerial;
 // Kinh độ Vĩ độ dùng đơn vị độ và phút
 // Convert sang độ thập phân, đơn vị sử dụng trong GG Maps
 // ddmm.mmmm
-static float Convert_NMEA_2Decimal(char* nmeaCoord, char direction){
+static float Convert_NMEA_2Decimal(const char* nmeaCoord, char direction){
+    if(!nmeaCoord) return 0.0f;
     if(strlen(nmeaCoord) < 5) return 0.0f;
 
     // Tìm vị trí dấu ., return về con trỏ
-    char *dotPos = strchr(nmeaCoord, '.');
+    const char *dotPos = strchr(nmeaCoord, '.');
     if(! dotPos) return 0.0f;
 
-    // Vdu: 4807.038
-    // Tách phần độ: dd
-    // Vị trí dấu . - đầu chuỗi
-    int degree_len = (dotPos - nmeaCoord) - 2; // (4 - 0) - 2 = 2
-    char degStr[4] = {0}; // 4 8
-    strncpy(degStr, nmeaCoord, degree_len);
+    // ddmm.mmmm or dddmm.mmmm
+    int degree_len = (int)(dotPos - nmeaCoord) - 2;
+    if(degree_len <= 0) return 0.0f;
 
-    
-    // Ép sang số
-    float degrees = atof(degStr); // 48
-    float minutes = atof(dotPos - 2); // 07.038 = 7.038
+    char degStr[8] = {0};
+    if(degree_len >= (int)sizeof(degStr)) degree_len = (int)sizeof(degStr) - 1;
+    strncpy(degStr, nmeaCoord, degree_len);
+    degStr[degree_len] = '\0';
+
+    float degrees = atof(degStr);
+    // minutes start at dotPos - 2
+    char minBuf[16] = {0};
+    const char* minStart = dotPos - 2;
+    size_t minLen = strlen(minStart);
+    if(minLen >= sizeof(minBuf)) minLen = sizeof(minBuf) - 1;
+    strncpy(minBuf, minStart, minLen);
+    minBuf[minLen] = '\0';
+    float minutes = atof(minBuf);
 
     float decimal = degrees + (minutes / 60.0f);
 
-    // Xử lý tọa độ cho Nam / Tây Bán Cầu
-    if(direction == 'S' || direction == 'W'){
-        decimal = -decimal;
-    }
-
+    if(direction == 'S' || direction == 'W') decimal = -decimal;
     return decimal;
 }
 
@@ -43,6 +47,20 @@ bool NEO_M8N_ReadData(NEO_Data_t* gpsData){
     static char buff[128];
     static uint8_t buff_idx = 0;
 
+    // Kiểm tra gpsSerial đã init chưa
+    if(gpsSerial == nullptr) return false;
+
+    // Khởi tạo giá trị mặc định để tránh giữ giá trị cũ
+    if(gpsData){
+        gpsData->isValid = false;
+        gpsData->latitude = 0.0f;
+        gpsData->longitude = 0.0f;
+        gpsData->speed_kmh = 0.0f;
+        gpsData->hour = gpsData->minute = gpsData->second = 0;
+        gpsData->day = gpsData->month = 0;
+        gpsData->year = 0;
+    }
+
     // Đọc toàn bộ - Sử dụng \n làm ký tự kết thúc
     while(gpsSerial->available()){
         char c = gpsSerial->read();
@@ -52,6 +70,8 @@ bool NEO_M8N_ReadData(NEO_Data_t* gpsData){
             buff_idx = 0;
 
             if(strncmp(buff, "$GNRMC", 6) == 0 || strncmp(buff, "$GPRMC", 6) == 0){
+                // Debug: in câu NMEA nhận được
+                Serial.print("[GPS RAW] "); Serial.println(buff);
                 char* token = strtok(buff, ",");
                 int field = 0;
                 
@@ -84,7 +104,8 @@ bool NEO_M8N_ReadData(NEO_Data_t* gpsData){
 
                         // Vĩ độ thô
                         case 4:         
-                            strcpy(latStr, token);
+                            strncpy(latStr, token, sizeof(latStr)-1);
+                            latStr[sizeof(latStr)-1] = '\0';
                             break;
                             
                         // Hướng vĩ độ N/S
@@ -94,7 +115,8 @@ bool NEO_M8N_ReadData(NEO_Data_t* gpsData){
 
                         // Kinh độ thô
                         case 6:
-                            strcpy(lonStr, token);
+                            strncpy(lonStr, token, sizeof(lonStr)-1);
+                            lonStr[sizeof(lonStr)-1] = '\0';
                             break;
 
                         // Hướng kinh độ W/E
@@ -139,34 +161,60 @@ bool NEO_M8N_ReadData(NEO_Data_t* gpsData){
 }
 
 // ==== TEST MAIN ====
-NEO_Data_t myGPS;
-void NEO_M8N_TestSetup(void){
-    // Lưu ý: Nếu ở hàm setup() chính đã gọi Serial.begin(115200) thì bỏ dòng dưới đi
-    Serial.begin(115200); 
-    
+
+static NEO_Data_t gpsData;
+void Test_Setup(void){
+    Serial.begin(115200);
+    delay(1000);
+
+    // Khởi tạo UART cho GPS
     Serial1.begin(9600, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
+
+    // Truyền cổng UART cho driver GPS
     NEO_M8N_Init(&Serial1);
-    
-    Serial.println("\n--- NEO-M8N GPS Test ---");
-    Serial.println("[INFO] Dang tim ve tinh... Hay mang ra ngoai troi!");
+
+    Serial.println("\n--- GPS Test Main ---");
+    Serial.println("Dang khoi dong GPS, vui long cho 1-2 phut de bat fix ve tinh...");
 }
 
-void NEO_M8N_TestLoop(void){
-    if (NEO_M8N_ReadData(&myGPS)) {
-        // Xử lý múi giờ VN
-        int local_hour = myGPS.hour + 7;
-        int local_day = myGPS.day;
-        if(local_hour >= 24) {
+void Test_Loop(void){
+    // Đọc và xử lý dữ liệu GPS
+    if (NEO_M8N_ReadData(&gpsData)) {
+
+        // UTC -> giờ Việt Nam
+        int local_hour = gpsData.hour + 7;
+        int local_day = gpsData.day;
+
+        if (local_hour >= 24) {
             local_hour -= 24;
             local_day += 1;
         }
 
         Serial.println("\n[GPS FIXED] ---------------------------");
-        Serial.printf("Thoi gian: %02d:%02d:%02d - Ngay: %02d/%02d/%d\n", 
-                      local_hour, myGPS.minute, myGPS.second, 
-                      local_day, myGPS.month, myGPS.year);
-        Serial.printf("Vi tri   : %.6f, %.6f\n", myGPS.latitude, myGPS.longitude);
-        Serial.printf("Toc do   : %.2f km/h\n", myGPS.speed_kmh);
+
+        Serial.printf(
+            "Thoi gian: %02d:%02d:%02d - Ngay: %02d/%02d/%d\n",
+            local_hour,
+            gpsData.minute,
+            gpsData.second,
+            local_day,
+            gpsData.month,
+            gpsData.year
+        );
+
+        Serial.printf(
+            "Vi tri   : %.6f, %.6f\n",
+            gpsData.latitude,
+            gpsData.longitude
+        );
+
+        Serial.printf(
+            "Toc do   : %.2f km/h\n",
+            gpsData.speed_kmh
+        );
+
         Serial.println("---------------------------------------");
     }
+
+    delay(1000);
 }

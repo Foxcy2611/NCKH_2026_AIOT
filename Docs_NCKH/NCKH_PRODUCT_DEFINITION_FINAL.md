@@ -352,12 +352,13 @@ Stop I2S -> Stop MAX30102 -> Reset buffers/state -> OLED OFF -> ESP-NOW OFF -> E
 | STANDBY | Start Manual Check | Start Monitor | No-op / sleep |
 | MANUAL_CAPTURE | Ignore | Ignore | Abort |
 | PROCESSING | Ignore | Ignore | Abort safely |
-| AUDIO_RESULT | Start Vital Check | Start Monitor optionally | Sleep |
+| AUDIO_RESULT | Start Vital Check | Ignore | Sleep |
 | VITAL_CHECK | Ignore | Ignore | Abort |
-| MONITOR | Ignore or contextual | Exit Monitor | Stop |
+| MONITOR | Ignore | Exit Monitor | Stop |
 | ERROR | Retry/contextual | Monitor optional | Sleep |
 
-Rule final có thể tinh chỉnh khi code UX, nhưng **không dùng long-press/double-click**.
+- ABORT: Chen ngang hành động đang thực hiện, reset tiến trình (Mục 8.5) đưa về STANDBY
+- SLEEP: Ngủ, tắt mô hình và chỉ được tắt khi đang ở STANDBY
 
 ---
 

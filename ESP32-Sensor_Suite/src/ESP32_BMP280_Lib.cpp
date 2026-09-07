@@ -2,50 +2,73 @@
 
 static BMP280_CalibData calib;
 static double t_fine;
+static uint8_t bmp280_i2c_addr = BMP280_ADDR_REG;
 
-static void BMP280_Write(uint8_t reg, uint8_t value){
-    Wire.beginTransmission(BMP280_ADDR_REG);
+static bool BMP280_Write(uint8_t reg, uint8_t value){
+    Wire.beginTransmission(bmp280_i2c_addr);
     Wire.write(reg);
     Wire.write(value);
-    Wire.endTransmission();
+    return Wire.endTransmission() == 0;
 }
 
-static uint8_t BMP280_Read_8Bit(uint8_t reg){
-    Wire.beginTransmission(BMP280_ADDR_REG);
+static bool BMP280_Read_8Bit(uint8_t reg, uint8_t* value){
+    if(value == nullptr){
+        return false;
+    }
+
+    Wire.beginTransmission(bmp280_i2c_addr);
     Wire.write(reg);
-    Wire.endTransmission(false);
-    Wire.requestFrom(BMP280_ADDR_REG, (uint8_t)1);
+    if(Wire.endTransmission(false) != 0){
+        return false;
+    }
 
-    return Wire.read();
+    if(Wire.requestFrom(bmp280_i2c_addr, (uint8_t)1) != 1 || !Wire.available()){
+        return false;
+    }
+
+    *value = Wire.read();
+    return true;
 }
 
-static uint16_t BMP280_Read_16Bit(uint8_t reg){
-    Wire.beginTransmission(BMP280_ADDR_REG);
-    Wire.write(reg);
-    Wire.endTransmission(false);
-    Wire.requestFrom(BMP280_ADDR_REG, (uint8_t)2);
+// Đọc toàn bộ 24 byte hệ số trong một giao dịch I2C.
+static bool BMP280_ReadCoefficients(){
+    uint16_t coefficient[12];
 
-    uint8_t lsb = Wire.read();
-    uint8_t msb = Wire.read();
+    Wire.beginTransmission(bmp280_i2c_addr);
+    Wire.write(BMP280_COEF_T1);
+    if(Wire.endTransmission(false) != 0){
+        return false;
+    }
 
-    return (msb << 8) | lsb;
-}
+    if(Wire.requestFrom(bmp280_i2c_addr, (uint8_t)24) != 24){
+        return false;
+    }
 
-// --- ĐỌC 24 BYTE HỆ SỐ BÙ TỪ ROM CHIP ---
-static void BMP280_ReadCoefficients(){
-    calib.dig_T1 = BMP280_Read_16Bit(BMP280_COEF_T1);
-    calib.dig_T2 = BMP280_Read_16Bit(BMP280_COEF_T2);
-    calib.dig_T3 = BMP280_Read_16Bit(BMP280_COEF_T3);
+    for(uint8_t i = 0; i < 12; ++i){
+        if(Wire.available() < 2){
+            return false;
+        }
 
-    calib.dig_P1 = BMP280_Read_16Bit(BMP280_COEF_P1);
-    calib.dig_P2 = BMP280_Read_16Bit(BMP280_COEF_P2);
-    calib.dig_P3 = BMP280_Read_16Bit(BMP280_COEF_P3);
-    calib.dig_P4 = BMP280_Read_16Bit(BMP280_COEF_P4);
-    calib.dig_P5 = BMP280_Read_16Bit(BMP280_COEF_P5);
-    calib.dig_P6 = BMP280_Read_16Bit(BMP280_COEF_P6);
-    calib.dig_P7 = BMP280_Read_16Bit(BMP280_COEF_P7);
-    calib.dig_P8 = BMP280_Read_16Bit(BMP280_COEF_P8);
-    calib.dig_P9 = BMP280_Read_16Bit(BMP280_COEF_P9);
+        uint8_t lsb = Wire.read();
+        uint8_t msb = Wire.read();
+        coefficient[i] = ((uint16_t)msb << 8) | lsb;
+    }
+
+    calib.dig_T1 = coefficient[0];
+    calib.dig_T2 = (int16_t)coefficient[1];
+    calib.dig_T3 = (int16_t)coefficient[2];
+    calib.dig_P1 = coefficient[3];
+    calib.dig_P2 = (int16_t)coefficient[4];
+    calib.dig_P3 = (int16_t)coefficient[5];
+    calib.dig_P4 = (int16_t)coefficient[6];
+    calib.dig_P5 = (int16_t)coefficient[7];
+    calib.dig_P6 = (int16_t)coefficient[8];
+    calib.dig_P7 = (int16_t)coefficient[9];
+    calib.dig_P8 = (int16_t)coefficient[10];
+    calib.dig_P9 = (int16_t)coefficient[11];
+
+    return calib.dig_T1 != 0 && calib.dig_T1 != 0xFFFF &&
+           calib.dig_P1 != 0 && calib.dig_P1 != 0xFFFF;
 }
 
 // ==== THUẬT TOÁN BÙ TRỪ ====
@@ -84,37 +107,51 @@ static double BMP280_Compensate_P_Double(int32_t adc_P){
 }
 
 bool BMP280_Init(uint8_t i2cAddr){
-    // 1. Đọc ID chip
-    uint8_t chipID = BMP280_Read_8Bit(BMP280_ID_REG);
-    if(chipID != BMP280_ID_RES){
-        return false;
+    uint8_t addrs[2] = {0x77, 0x76};
+
+    if (i2cAddr == 0x76 || i2cAddr == 0x77) {
+        addrs[0] = i2cAddr;
+        addrs[1] = (i2cAddr == 0x77) ? 0x76 : 0x77;
     }
 
-    // 2. Reset chip
-    BMP280_Write(BMP280_RST_REG, BMP280_RST_VAL);
-    delay(10); // xTaskDelay
+    for (uint8_t i = 0; i < 2; ++i) {
+        bmp280_i2c_addr = addrs[i];
 
-    // 3. Đọc dữ liệu Calib
-    BMP280_ReadCoefficients();
+        Wire.beginTransmission(bmp280_i2c_addr);
+        uint8_t err = Wire.endTransmission();
+        if (err != 0) {
+            continue;
+        }
 
-    // 4. Cấu hình thanh ghi Config
-    // Standby - 1000ms - 101
-    // Filter - 4 - 010 
-    // => 101 010 00 = 1010 1000 = 0xA8
-    BMP280_Write(BMP280_CONFIG_REG, 0xA8);
+        uint8_t chipID = 0;
+        if (!BMP280_Read_8Bit(BMP280_ID_REG, &chipID) ||
+            chipID != BMP280_ID_RES) {
+            continue;
+        }
 
-    // 5. Cấu hình thanh ghi Ctrl_Meas
-    // Over sampling NĐ - x1 - 001
-    // Over sampling AS - x4 - 011
-    // Mode - Normal mode (Đo liên tục) - 11
-    // 001 011 11 = 0010 1111 = 0x2F
-    BMP280_Write(BMP280_CTRL_MEAS_REG, 0x2F);
+        if (!BMP280_Write(BMP280_RST_REG, BMP280_RST_VAL)) {
+            continue;
+        }
+        delay(10);
 
-    return true;
+        if (!BMP280_ReadCoefficients() ||
+            !BMP280_Write(BMP280_CONFIG_REG, 0xA8) ||
+            !BMP280_Write(BMP280_CTRL_MEAS_REG, 0x2F)) {
+            continue;
+        }
+
+        return true;
+    }
+
+    return false;
 }
 
 bool BMP280_ReadData(float* temperature, float* pressure){
-    Wire.beginTransmission(BMP280_ADDR_REG);
+    if(temperature == nullptr || pressure == nullptr){
+        return false;
+    }
+
+    Wire.beginTransmission(bmp280_i2c_addr);
     Wire.write(BMP280_PRESSURE_MSB_REG);
     
     // Không gửi STOP mà Repeated tín hiệu, thành công thì = 0
@@ -123,7 +160,7 @@ bool BMP280_ReadData(float* temperature, float* pressure){
     }
     
     // Gửi 6 bytes dữ liệu gồm: 3 bytes Áp suất + 3 bytes Nhiệt độ
-    if(Wire.requestFrom(BMP280_ADDR_REG, (uint8_t)6) != 6){
+    if(Wire.requestFrom(bmp280_i2c_addr, (uint8_t)6) != 6){
         return false;
     }
     
@@ -138,14 +175,27 @@ bool BMP280_ReadData(float* temperature, float* pressure){
     int32_t adc_P = (p_msb << 12) | (p_lsb << 4) | (p_xlsb >> 4);
     int32_t adc_T = (t_msb << 12) | (t_lsb << 4) | (t_xlsb >> 4);
 
-    *pressure    = (float)BMP280_Compensate_P_Double(adc_P) / 100.0; // Ra hPa
+    if(adc_P == 0x80000 || adc_T == 0x80000){
+        return false;
+    }
+
     *temperature = (float)BMP280_Compensate_T_Double(adc_T);
+    double pressurePa = BMP280_Compensate_P_Double(adc_P);
+    if(pressurePa <= 0.0){
+        return false;
+    }
+
+    *pressure = (float)pressurePa / 100.0; // Ra hPa
         
     return true;
 }
 
 // --- HÀM TÍNH ĐỘ CAO ---
 float BMP280_CalculateAltitude(float currentPressure_hPa, float seaLevelPressure_hPa){
+    if(currentPressure_hPa <= 0.0f || seaLevelPressure_hPa <= 0.0f){
+        return NAN;
+    }
+
     // Công thức Barometric
     return 44330.0f * (1.0f - pow(currentPressure_hPa / seaLevelPressure_hPa, 0.1903));
 }
@@ -157,12 +207,10 @@ void BMP280_TestSetup(void){
 
     Wire.begin(I2C_SDA, I2C_SCL);
 
-    // Khởi tạo BMP280 ở địa chỉ 0x76
-    if (BMP280_Init(0x76)) {
+    if (BMP280_Init(0x77)) {
         Serial.println("[OK] BMP280 Khoi tao thanh cong!");
     } else {
-        Serial.println("[ERR] Khong tim thay BMP280. Kiem tra dia chi hoac day I2C!");
-        while(1);
+        Serial.println("[ERR] Khong tim thay BMP280. Kiem tra dia chi 0x77 hoac day I2C!");
     }
 }
 void BMP280_TestLoop(void){

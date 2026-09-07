@@ -1,0 +1,194 @@
+GHI CHÚ NỀN TẢNG KẾT NỐI HỆ THỐNG
+
+1. MQTT Broker
+
+- Hệ thống lựa chọn HiveMQ làm MQTT Broker cho tầng uplink dữ liệu.
+- HiveMQ được dùng như máy chủ trung gian để nhận và phân phối dữ liệu giữa
+  các MQTT Client theo mô hình Publish/Subscribe.
+- Trong kiến trúc Final Project, Gateway ESP32 đóng vai trò MQTT Client, kết
+  nối tới HiveMQ qua Wi-Fi và gửi các payload đã được tổng hợp.
+- Dashboard Qt6/QML hoặc các service khác có thể Subscribe các topic tương
+  ứng để nhận dữ liệu theo thời gian thực.
+- HiveMQ là lựa chọn phù hợp cho giai đoạn triển khai thử nghiệm và demo vì
+  dễ cấu hình, hỗ trợ nền tảng cloud và ổn định cho truyền dữ liệu MQTT.
+- Broker không trực tiếp xử lý cảm biến; nó chỉ nhận và truyền các message
+  từ Gateway sang hệ thống downstream.
+
+2. Mạng kết nối chính
+
+- Wi-Fi là mạng kết nối chính (Primary Network) của hệ thống.
+- Gateway ESP32 sử dụng Wi-Fi để kết nối tới mạng IP và truyền dữ liệu lên HiveMQ.
+- ESP-NOW được dùng như phương thức liên lạc nội bộ giữa các thiết bị cục bộ,
+  đặc biệt là giữa Patient Node và Gateway.
+- ESP-NOW không thay thế hoàn toàn Wi-Fi; nó chỉ phục vụ cho việc truyền dữ
+  liệu gần, nhanh và tiết kiệm năng lượng trong phạm vi cục bộ.
+- A7680C (LTE) được xem như phương án dự phòng cho trường hợp Wi-Fi mất kết
+  nối hoặc không có hạ tầng Wi-Fi.
+- Mô hình failover: Wi-Fi ưu tiên dùng; LTE kích hoạt khi cần cho phép MQTT
+  uplink tiếp tục hoạt động.
+
+2.1 Luồng khởi tạo Wi-Fi trên ESP32 (STA mode)
+
+- ESP32 hoạt động theo chế độ Station (STA), nghĩa là nó sẽ kết nối vào một
+  mạng Wi-Fi đã có sẵn, chứ không tự tạo mạng riêng cho thiết bị khác kết nối vào.
+- Hàm `WiFi.mode(WIFI_STA);` xác định ESP32 ở trạng thái client trên mạng, với
+  mô hình:
+
+  Router / Access Point
+          ↑
+          │ Wi-Fi
+          │
+        ESP32
+        (STA)
+
+- Trong dự án này, lựa chọn `WIFI_STA` là phù hợp vì Gateway cần truy cập Internet
+  để gửi dữ liệu lên HiveMQ Broker. ESP32 không cần làm Access Point, nên không cần
+  dùng `WIFI_AP` trong phần uplink này.
+- Nếu dùng `WIFI_AP`, ESP32 sẽ tự tạo mạng Wi-Fi riêng như "ESP32_AP" để thiết bị
+  khác kết nối vào, ví dụ như trang cấu hình hoặc quản lý cục bộ, khác hoàn toàn với
+  mô hình Gateway cần tham gia vào mạng nội bộ/sẵn có.
+- Sau khi chọn chế độ STA, lệnh `WiFi.begin(WIFI_SSID, WIFI_PASSWORD);` sẽ bắt đầu
+  quá trình kết nối bằng cách gửi thông tin SSID và password tới stack Wi-Fi của ESP32.
+- Đây không phải là lệnh "đợi kết nối xong" mà chỉ là "khởi động quá trình kết nối".
+  Vì vậy, code cần theo dõi trạng thái liên tục bằng:
+
+  while (WiFi.status() != WL_CONNECTED)
+  {
+      delay(500);
+      Serial.print(".");
+  }
+
+- `WiFi.status()` trả về trạng thái hiện tại của kết nối Wi-Fi. Khi trạng thái bằng
+  `WL_CONNECTED`, nghĩa là ESP32 đã liên kết thành công với mạng Wi-Fi và nhận được
+  địa chỉ IP hợp lệ.
+- `WL_CONNECTED` là điều kiện xác nhận rằng ESP32 đã có đường truyền IP và sẵn sàng
+  dùng cho MQTT, HTTP hoặc các dịch vụ outbound khác.
+- Ví dụ luồng rõ ràng:
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+  while (WiFi.status() != WL_CONNECTED)
+  {
+      delay(500);
+  }
+
+  Serial.println("WiFi connected!");
+
+- Đây là logic cần thiết để Gateway ESP32 biết chắc chắn rằng thiết bị đã được nối
+  mạng trước khi tiến hành triển khai MQTT connect và publish.
+
+3. Luồng triển khai dữ liệu
+
+Patient Node (ESP32-S3)
+    │
+    │ thu audio + cảm biến + AI inference
+    ▼
+ESP-NOW transmit
+    │
+    ▼
+Gateway ESP32
+    │
+    ├── nhận PatientEvent qua ESP-NOW
+    ├── đọc môi trường từ DHT22/BMP280/SGP30
+    ├── ghép dữ liệu theo thời gian gần nhất
+    ├── kiểm tra trạng thái thiết bị / cảnh báo / lịch sử
+    │
+    ▼
+Network Manager
+    │
+    ├── Wi-Fi primary
+    ├── LTE fallback (A7680C)
+    └── kết nối tới HiveMQ Broker
+    │
+    ▼
+MQTT Client
+    │
+    ├── Connect()
+    ├── Publish(topic, payload)
+    ├── Subscribe(topic để nhận lệnh / config)
+    └── Loop() / reconnect nếu mất kết nối
+    │
+    ▼
+HiveMQ Broker
+    │
+    ├── nhận message từ Gateway
+    ├── phân phối tới Dashboard / backend / service khác
+    └── quản lý topic-based messaging
+    │
+    ▼
+Qt6/QML Dashboard / Monitoring App
+    │
+    ├── Subscribe vào topic phù hợp
+    ├── hiển thị biểu đồ, cảnh báo, trạng thái thiết bị
+    └── lưu lịch sử / theo dõi thời gian thực
+
+4. Luồng MQTT cụ thể
+
+ESP32 START
+    │
+    ▼
+WiFi_Init()
+    │
+    ▼
+MQTT_Init()
+    │
+    │ chuẩn bị MQTT client và cấu hình Broker
+    ▼
+MQTT_Connect()
+    │
+    ├── Kết nối thành công ───────────────┐
+    │                                     │
+    └── Kết nối thất bại → Retry / Reconnect │
+                                          │
+                                          ▼
+                                  MQTT_CONNECTED
+                                          │
+                                 ┌────────┴────────┐
+                                 │                 │
+                                 ▼                 ▼
+                         MQTT_Publish()     MQTT_Subscribe()
+                                 │                 │
+                                 └────────┬────────┘
+                                          ▼
+                                     MQTT_Loop()
+                                          │
+                                ┌─────────┴─────────┐
+                                │                   │
+                                ▼                   ▼
+                         Có message           Không có message
+                                │                   │
+                                ▼                   │
+                           Callback()               │
+                                │                   │
+                                └────────┬──────────┘
+                                         ▼
+                                 Kiểm tra kết nối
+                                         │
+                              ┌──────────┴──────────┐
+                              │                     │
+                              OK                    LOST
+                              │                     │
+                              │                     ▼
+                              │              MQTT_Reconnect()
+                              │                     │
+                              └─────────────────────┘
+
+5. Mục tiêu triển khai
+
+- Gateway tập trung xử lý dữ liệu từ sensor, ESP-NOW và mạng.
+- MQTT chỉ dùng cho uplink dữ liệu từ Gateway lên Broker.
+- Dashboard nhận dữ liệu nhờ Subscribe topic và không cần trực tiếp giao tiếp
+  với device cục bộ.
+- Hệ thống có thể dễ mở rộng cho nhiều Gateway, nhiều node và nhiều ứng dụng
+  giám sát theo từng nhóm bệnh nhân hoặc khu vực.
+
+6. Topic đề xuất
+
+- `nckh/gateway/patient_event`
+- `nckh/gateway/environment`
+- `nckh/gateway/status`
+- `nckh/gateway/alert`
+- `nckh/gateway/complete_record`
+
+Các topic này có thể được mở rộng tùy theo schema dữ liệu cuối cùng của dự án.
