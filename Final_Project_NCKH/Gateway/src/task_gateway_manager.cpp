@@ -1,9 +1,9 @@
 #include <Arduino.h>
 
-#include "gateway_config.h"
-#include "gateway_types.h"
-#include "gateway_queue.h"
-#include "gateway_tasks.h"
+#include "Config/gateway_config.h"
+#include "Config/gateway_types.h"
+#include "System/gateway_queue.h"
+#include "Task/gateway_tasks.h"
 
 
 // ============================================================

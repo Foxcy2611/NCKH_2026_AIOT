@@ -1,8 +1,8 @@
-#ifndef GATEWAY_QUEUE_H
-#define GATEWAY_QUEUE_H
+#ifndef NCKH_GATEWAY_QUEUE_H
+#define NCKH_GATEWAY_QUEUE_H
 
 #include <Arduino.h>
-#include "gateway_types.h"
+#include "Config/gateway_types.h"
 
 // ============================================================
 // Global queues

@@ -1,5 +1,5 @@
-#ifndef GATEWAY_TASKS_H
-#define GATEWAY_TASKS_H
+#ifndef NCKH_GATEWAY_TASKS_H
+#define NCKH_GATEWAY_TASKS_H
 
 #include <Arduino.h>
 

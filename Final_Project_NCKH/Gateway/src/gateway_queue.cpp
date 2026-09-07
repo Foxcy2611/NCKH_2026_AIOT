@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
-#include "gateway_config.h"
-#include "gateway_queue.h"
+#include "Config/gateway_config.h"
+#include "System/gateway_queue.h"
 
 
 // ============================================================

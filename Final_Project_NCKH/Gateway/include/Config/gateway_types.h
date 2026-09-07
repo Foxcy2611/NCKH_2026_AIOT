@@ -1,5 +1,5 @@
-#ifndef GATEWAY_TYPES_H
-#define GATEWAY_TYPES_H
+#ifndef NCKH_GATEWAY_TYPES_H
+#define NCKH_GATEWAY_TYPES_H
 
 #include <Arduino.h>
 

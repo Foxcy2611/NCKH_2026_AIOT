@@ -3,10 +3,10 @@
 #include <WiFi.h>
 #include <esp_now.h>
 #include <esp_wifi.h>
-#include "gateway_config.h"
-#include "gateway_types.h"
-#include "gateway_queue.h"
-#include "gateway_tasks.h"
+#include "Config/gateway_config.h"
+#include "Config/gateway_types.h"
+#include "System/gateway_queue.h"
+#include "Task/gateway_tasks.h"
 
 
 // ============================================================
@@ -41,10 +41,9 @@ GatewayStats gatewayStats = {
 //       ↓
 //     Return
 // ============================================================
-
 static void onEspNowReceive(
-    const esp_now_recv_info_t *info,
-    const uint8_t *data,
+    const esp_now_recv_info_t *info, 
+    const uint8_t *data, 
     int len)
 {
     if (data == nullptr)

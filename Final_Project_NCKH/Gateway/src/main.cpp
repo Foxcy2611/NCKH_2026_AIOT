@@ -1,9 +1,8 @@
 #include <Arduino.h>
 
-#include "gateway_config.h"
-#include "gateway_queue.h"
-#include "gateway_tasks.h"
-
+#include "Config/gateway_config.h"
+#include "System/gateway_queue.h"
+#include "Task/gateway_tasks.h"
 
 // ============================================================
 // Setup
@@ -118,7 +117,6 @@ void setup()
         "[Gateway] Phase 10 ready"
     );
 }
-
 
 // ============================================================
 // Loop

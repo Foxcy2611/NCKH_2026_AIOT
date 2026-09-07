@@ -1,5 +1,5 @@
-#ifndef GATEWAY_CONFIG_H
-#define GATEWAY_CONFIG_H
+#ifndef NCKH_GATEWAY_CONFIG_H
+#define NCKH_GATEWAY_CONFIG_H
 
 // ============================================================
 // Serial

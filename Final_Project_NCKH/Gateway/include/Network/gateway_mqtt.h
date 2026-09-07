@@ -1,5 +1,5 @@
-#ifndef MQTT_H
-#define MQTT_H
+#ifndef NCKH_GATEWAY_MQTT_H
+#define NCKH_GATEWAY_MQTT_H
 
 #include <Arduino.h>
 #include <WiFi.h>

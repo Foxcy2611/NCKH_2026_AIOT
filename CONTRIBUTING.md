@@ -42,3 +42,11 @@
 ## 6. XỬ LÝ XUNG ĐỘT (MERGE CONFLICT)
 - Nếu tạo Pull Request mà GitHub báo lỗi Conflict (đụng code với người khác), tuyệt đối **không tự ý xóa code của người khác** để giữ code mình.  
 - Phải nhắn lên group để cùng Trùm repo (Leader) xử lý.
+
+## 7. QUY ĐỊNH HEADER VÀ TỔ CHỨC THƯ VIỆN
+- Trong các header viết thư viện, ta ghi dưới dạng như `NCKH_` + `Tên_Thư_Viện`, nó trình bày bố cục rõ ràng mà không
+```text
+`op.h` -> `NCKH_OP_H`
+```
+
+- Các header có cùng chức năng sẽ được ném vào 1 folder nói chung về chức năng, để dễ quản lý

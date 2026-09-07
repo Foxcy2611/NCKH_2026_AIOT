@@ -1,5 +1,5 @@
-#ifndef GATEWAY_WIFI_H
-#define GATEWAY_WIFI_H
+#ifndef NCKH_GATEWAY_WIFI_H
+#define NCKH_GATEWAY_WIFI_H
 
 #include <Arduino.h>
 #include <WiFi.h>
