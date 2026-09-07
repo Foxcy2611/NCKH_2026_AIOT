@@ -35,8 +35,8 @@ Serial0 115200 hiện data
 => Sử dụng nó để update thời gian vào trong bộ RTC có sẵn trong ESP32
 */
 
-#define GPS_RX_PIN 32
-#define GPS_TX_PIN 33
+#define GPS_RX_PIN 16
+#define GPS_TX_PIN 17
 
 // Struct bóc tách gói tin 
 typedef struct {
@@ -59,7 +59,8 @@ void NEO_M8N_Init(HardwareSerial* serialPort);
 bool NEO_M8N_ReadData(NEO_Data_t* gpsData);
 
 // ==== TEST MAIN ====
-void NEO_M8N_TestSetup(void);
-void NEO_M8N_TestLoop(void);
+// Alternate test function names requested: expose simple Test_Setup/Test_Loop
+void Test_Setup(void);
+void Test_Loop(void);
 
 #endif

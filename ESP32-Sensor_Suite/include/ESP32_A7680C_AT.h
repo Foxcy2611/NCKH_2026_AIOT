@@ -17,6 +17,8 @@ tự động tắt sau bắt máy 5-10s
 (SNS + Call)
 */
 
+extern const char* const A7680C_ALERT_MESSAGE;
+
 /*
 - Bảng lệnh
 Lệnh   |     Chức năng        | Phản hồi mong đợi
@@ -37,6 +39,10 @@ Lệnh   |     Chức năng        | Phản hồi mong đợi
 #define SIM_TX_PIN 17
 
 bool A7680C_Init(HardwareSerial& serialPort, uint8_t rxPin, uint8_t txPin, uint32_t baudrate);
+bool A7680C_InitAndDiagnose(HardwareSerial& serialPort,
+                            uint8_t rxPin,
+                            uint8_t txPin,
+                            uint32_t baudrate);
 
 // Các hàm kiểm tra trạng thái
 int A7680C_GetSignalQuality();
@@ -45,14 +51,11 @@ bool A7680C_CheckSIM();
 bool A7680C_CheckNetwork();
 
 // Các hàm thực thi cơ bản
-bool A7680C_MakeCall(const char* phoneNumber);
-bool A7680C_HangUp();
+// Phần cứng A7680C hiện tại chỉ hỗ trợ SMS, không hỗ trợ thoại.
+// Hai hàm gọi/cúp máy giữ lại để dùng nếu sau này đổi sang module có thoại.
+
 bool A7680C_SendSMS(const char* phoneNumber, const char* message);
 
-// Hàm gọi điện thông minh: Tự động cúp máy sau X giây (Có hỗ trợ ghi chú chuyển đổi RTOS)
-bool A7680C_CallWithAutoHangUp(const char* phoneNumber, uint8_t activeDuration_sec, uint8_t maxTimeout_sec);
-
-// Hàm test trong main gồm setup, loop để delay treo
-void A7680C_TestMain();
+// KHÔNG hoạt động với A7680C hiện tại; giữ lại cho module có hỗ trợ thoại.
 
 #endif
