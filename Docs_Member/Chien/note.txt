@@ -1,0 +1,17 @@
+Note: Design OLED
+
+Hiển thị theo tứng bước
+
+Ví dụ:
+Check: 
+-> Màn hiển: Vui lòng đặt miệng gần micro
+-> HĐ: Đưa miệng gần micro, 5s sau bắt đầu thu âm
+-> Màn hình: Tiến trình thu 1-2-3-4-5
+-> HĐ: Kết luận audio chuẩn/ồn/yếu/... 
+-> Màn hình: ÂM thanh đạt chuẩn/ồn/...: KO đạt chuẩn -> Hủy
+-> Chuẩn, Màn hình: HIển thị process
+-> HĐ: INTERFACE -> Đưa ra kết luận: Hen h ko
+-> Màn: Hiển thị kết luận audio
+-> HĐ: Đo nhịp tim 
+
+

@@ -1,0 +1,38 @@
+Check
+    Nhấn CHECK → OLED hướng dẫn → ghi âm ĐÚNG 5s
+    → Kiểm tra chất lượng âm thanh (Quality Check)
+       FAIL: Gồm 3 trường hợp: 
+        + ỒN (LOUD)
+        + BÉ QUÁ (WEAK)
+        + Không hiện tượng (INACTIVE) 
+        => hiện thị "Retry"
+
+       PASS → [DSP → DS-CNN (3x invoke/voting)] 
+    → Kết quả phân loại
+        + ASTHMA
+        + NON-ASTHMA
+        => Hiển thị
+    
+    → OLED: "PLACE FINGER / PRESS CHECK"
+    → Nhấn CHECK lần 2 → MAX30102 ON → đo HR/SpO2
+       (hoặc nhấn SLEEP → bỏ qua, HR/SpO2 = unavailable)
+    → Hiển thị data MAX30102
+    → [Session hoàn chỉnh → tạo PatientEvent → ESP-NOW → Gateway → về STANDBY]
+    → Hiển thị gói tin `đã được gửi qua ESP-NOW` *****(LƯU Ý SẼ NÓI SAU)
+
+Monitor
+    Nhấn MONITOR → I2S ON → rolling 1s PSRAM buffer → VAD chạy liên tục
+    → đủ 4 block liên tiếp vượt threshold → TRIGGER
+        => OLED hiển thị phát hiện 4 block vượt THRESHOLD
+    → ghép 1s pre-trigger (từ PSRAM) + 4s post-trigger = 5s final audio
+        => OLED hiển thị đủ 5s chuẩn bị kiểm tra chất lượng
+    → Quality Check → DSP → DS-CNN (3x invoke/voting) → Event gửi qua gateway (Tương tự check)
+    → ESP-NOW → Gateway → quay lại `MONITOR` (chờ vòng lặp tiếp)
+
+    Lưu ý: Qualitu Check mà FAIL -> Quay về MONITOR thu âm (Hiển thị OLED cảnh báo)
+    Nếu nhấn MONITOR 1 lần nữa thoát -> Về STANDBY (OLED hiển thị thoát mode MONITOR)
+
+Lưu ý: Có 3 nút là Check - Monitor - Sleep/STANDBY (1 - 2 - 3)
++ Khi model tắt, ấn nút 3 thì về mode STANDBY (Chờ 2 nút kia)
++ Nút 3 có quyền cắt ngang tiến trình `Check`
++ Chỉ khi model đang ở STANDBY thì ấn nút 3 sẽ tắt (SLEEP)
