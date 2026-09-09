@@ -5,18 +5,42 @@
 
 /* HEADER này chứa các enum luôn chuyển trạng thái */
 
+// -------------------- STATE TRẠNG THÁI -------------------- // 
+
 // ============================
 // 1. Các trạng thái của hệ thống
 // ============================
 typedef enum {
-    STATE_STANDBY = 0,      // Chế độ chờ, ngủ đông
-    STATE_MANUAL_CHECK,     // Đang ghi âm 5s thủ công bằng nút CHECK
-    STATE_AUTO_MONITOR,     // Chạy VAD liên tục, ghi âm tự động
-    STATE_PROCESSING,       // Đang chạy DSP, Quality Gate và DS-CNN
-    STATE_AUDIO_RESULT,     // Đã có kết quả AI, hiển thị OLED, chờ Vitals
-    STATE_VITAL_CHECK,      // Đang đo HR/SpO2 qua MAX30102
-    STATE_SESSION_READY,    // Gói dữ liệu xong, chuẩn bị ESP-NOW
-    STATE_ERROR_STATE       // Lỗi hệ thống / Timeout
+    // Không có phiên đang chạy; chờ người dùng bấm CHECK hoặc MONITOR.
+    STATE_STANDBY = 0,
+
+    // CHECK thủ công: INMP441 đang ghi đúng một đoạn âm thanh 5 giây.
+    STATE_MANUAL_CAPTURE,
+
+    // Kiểm tra đoạn âm thanh vừa thu có đủ điều kiện chạy mô hình không.
+    STATE_AUDIO_QUALITY,
+
+    // Tiền xử lý Mel và chạy mô hình TinyML.
+    STATE_AI_PROCESSING,
+
+    // Đã có kết luận âm thanh; chờ CHECK để đo sinh hiệu hoặc SLEEP để bỏ qua.
+    STATE_AUDIO_RESULT,
+
+    // MAX30102 đang đo nhịp tim và SpO2.
+    STATE_VITAL_CHECK,
+
+    // Phiên đã đủ dữ liệu; chờ gửi hoặc lưu chờ gửi lại rồi mới kết thúc.
+    STATE_SESSION_READY,
+
+    // Monitor đang nghe liên tục và chờ VAD phát hiện âm thanh phù hợp.
+    STATE_MONITOR_LISTENING,
+
+    // VAD đã kích hoạt; Monitor đang hoàn thiện đoạn âm thanh 5 giây.
+    STATE_MONITOR_CAPTURE,
+
+    // Có lỗi hoặc âm thanh không đạt; chờ CHECK thử lại hoặc SLEEP hủy.
+    STATE_ERROR
+    
 } Patient_State_t;
 
 // ============================
@@ -43,7 +67,7 @@ typedef enum {
 // 4. Kết quả phân loại từ TinyML
 // ============================
 typedef enum {
-    INTERFACE_UNCERTAIN = 0,    // Không chắc chắn
+    INTERFACE_UNSURE = 0,    // Không chắc chắn
     INTERFACE_ASTHMA_LIKE,
     INTERFACE_NON_ASTHMA
 } Interface_TinyML_t;
@@ -58,13 +82,32 @@ typedef enum {
 } Event_Type_t;
 
 // ============================
-// 6. Cấu trúc lưu trữ cục bộ (PATIENT SESSION)
+// 6. Kết quả so sánh Checksum
+// ============================
+typedef enum {
+    CRC_MATCH = 0,          // Checksum chính xác
+    CRC_MISMATCH            // Checksum không chính xác
+} Crc_Check_Result_t;
+
+// ============================
+// 7. Trạng thái tổng thể khi gửi 1 packet qua ESP-NOW
+// ============================
+typedef enum {
+    STATUS_ACK_PENDING = 0,     // Đã gửi, chờ ACK
+    STATUS_ACK_CONFIRMED,       // Đã nhận ACK khớp vs sequence -> Xong
+    STATUS_RETRY_REQUESTED,     // Yêu cầu retry lại lần nữa
+    STATUS_RETRY_EXCEEDED       // Hết số lần retry cho phép
+} Event_Send_Status_t;
+
+
+// -------------------- STRUCT GÓI BẢN TIN -------------------- //
+
+// ============================
+// 1. Cấu trúc lưu trữ cục bộ (PATIENT SESSION)
 // ============================
 typedef struct {
-    // -- Nhóm định danh --
-    uint32_t session_id;    // ID ngẫu nhiên duy nhất cho mỗi phiên
-    uint32_t sequence;      // Số thứ tự gói tin, tăng dần
-    uint64_t timestamp;     // Dấu thời gian lúc thực hiện phiên đo
+    uint32_t session_id;       // Sinh một lần khi bắt đầu phiên, dùng khi đóng gói packet
+    Event_Type_t event_type; // Phiên thủ công hay sự kiện do Monitor phát hiện
 
     // --- Nhóm Xử lý Âm thanh & AI ---
     Audio_Quality_t audio_quality;      // Đánh giá sơ bộ file ghi âm trước khi cho phép suy luận
@@ -77,13 +120,12 @@ typedef struct {
     uint8_t spo2;              // Nồng độ Oxy trong máu (%) kéo từ MAX30102
 
     // --- Nhóm Trạng thái Hệ thống ---
-    uint8_t battery;           // Phần trăm pin hiện tại của Patient Node
-    bool synced;               // Cờ theo dõi gửi ESP-NOW. Nếu Gateway chưa trả ACK, cờ = false, lưu lại gửi bù sau
+    uint64_t event_timestamp;
 } Patient_Session_t;
 
 
 // ==========================================
-// 7. Cấu trúc PAYLOAD ESP-NOW (TRUYỀN TẢI)
+// 2. Cấu trúc PAYLOAD ESP-NOW (TRUYỀN TẢI)
 // ==========================================
 #pragma pack(push, 1) // Ép không cho trình biên dịch chèn byte trống (padding) để truyền sóng RF chuẩn từng byte
 typedef struct {
@@ -104,7 +146,22 @@ typedef struct {
     uint8_t spo2;              // Dữ liệu SpO2
 
     uint8_t battery;           // Phần trăm pin hiện hành
+
+    uint32_t crc32;            // Checksum cho toàn bộ packet
 } Patient_Event_Packet_t;
 #pragma pack(pop)
+
+// ==========================================
+// 3. Struct hàng đợi Pending ACK khi gửi qua ESP-NOW
+// ==========================================
+typedef struct {
+    Event_Send_Status_t status;         // PENDING / CON
+    Patient_Event_Packet_t packet;      // Bản sao gói đã gửi, để gửi lại y hệt khi retry
+
+    uint8_t retry_count;                // Đã retry bao nhiêu lần ?
+    uint32_t last_sent_timestamp;       // millis() lúc gửi gần nhất 
+} Pending_ACK_Entry_t;
+
+
 
 #endif /* NCKH_SYSTEM_STATE_H */

@@ -87,7 +87,7 @@ bool Init_Asthma_Model(void) {
 }
 
 Asthma_Result Run_Asthma_Interface(float input_mel_db[][MAX_FRAMES]) {
-    Asthma_Result result = {0.0f, 0.0f, -1, 0};
+    Asthma_Result result = {0.0f, 0.0f, 0.0f, -1, 0};
 
     for (int mel_idx = 0; mel_idx < N_MELS; mel_idx++) {
         for (int frame_idx = 0; frame_idx < MAX_FRAMES; frame_idx++) {
@@ -123,13 +123,35 @@ Asthma_Result Run_Asthma_Interface(float input_mel_db[][MAX_FRAMES]) {
     result.Output_Raw_Int8 = raw;
     result.Asthma_Prob = (1.0f - probability) * 100.0f;
     result.Non_Asthma_Prob = probability * 100.0f;
-    result.Predicted_Class = probability < kDecisionThreshold ? 0 : 1;
+
+    if(probability <= 0.45){
+        result.Predicted_Class = 0; // ASTHMA
+    } else if(probability >= 0.65){
+        result.Predicted_Class = 1; // NON ASTHMA
+    } else {
+        result.Predicted_Class = 2; // UNSURE
+        result.Unsure_Prob = result.Asthma_Prob;
+    }
+
+    const char* class_name =
+        (result.Predicted_Class == 0) ? "ASTHMA" :
+        (result.Predicted_Class == 1) ? "NON_ASTHMA" : "UNSURE";
 
     Serial.printf(
-        "[AI] Asthma=%.2f%% | Non-Asthma=%.2f%% | Lop=%d\n",
+        "[AI] ASTHMA=%.2f%% | NON_ASTHMA=%.2f%% | UNSURE=%.2f%% | Class=%s\n",
         result.Asthma_Prob,
         result.Non_Asthma_Prob,
-        result.Predicted_Class
+        result.Unsure_Prob,
+        class_name
     );
+
+    if (result.Predicted_Class == 0) {
+        Serial.println("[RESULT] Phát hiện âm thanh giống mẫu hen.");
+    } else if (result.Predicted_Class == 1) {
+        Serial.println("[RESULT] Không phát hiện âm thanh giống mẫu hen.");
+    } else {
+        Serial.println("[RESULT] Kết quả không chắc chắn, nên kiểm tra lại.");
+    }
+
     return result;
 }

@@ -3,17 +3,15 @@
 
 #include <Arduino.h>
 #include <driver/i2s.h>
-#include "board_pinout.h"
 
-#include "DSP_Preprocessing/DSP_Filter.h"
 #include "DSP_Preprocessing/Mel_Scale.h"
-#include "Model_AI/Interface_Asthma.h"
 
 enum System_State {
-    MICRO_STATE_LISTENING,
-    MICRO_STATE_RECORDING,
-    MICRO_STATE_PROCESSING,
-    MICRO_STATE_INTERFACE,
+    MICRO_STATE_LISTENING, // Lắng nghe phát hiện VAD
+    MICRO_STATE_RECORDING, // Thu đủ 5s
+    MICRO_STATE_QUALITY,   // Kiểm tra chất lượng 
+    MICRO_STATE_PROCESSING, // Xử lý âm thanh
+    MICRO_STATE_INTERFACE, // Suy luận
 };
 
 const uint16_t Buffer_Samples = 256;
@@ -23,6 +21,9 @@ const uint8_t Amplify_Factor = 1;
 
 void I2S_Mic_Init(int SCK_Pin, int WS_Pin, int SD_Pin);
 void Process_Audio_Stream(void);
+
+// Hàm dùng để check, dừng lại ở STATE AUDIO RESULT
+bool Process_ManualCheck_Pipeline(void);
 
 /* API thêm */
 // Thu đủ 80000 samples ở 16KHz, ko dùng VAD/pre-triger

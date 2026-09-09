@@ -9,9 +9,9 @@
 #define PIN_I2S_SCK 14
 
 // BTN 
-#define PIN_BTN_SLEEP   1
-#define PIN_BTN_CHECK   2
-#define PIN_BTN_MONITOR 3
+#define PIN_BTN_SLEEP   6
+#define PIN_BTN_CHECK   4
+#define PIN_BTN_MONITOR 5
 
 // OLED
 #define PIN_OLED_SCL 4

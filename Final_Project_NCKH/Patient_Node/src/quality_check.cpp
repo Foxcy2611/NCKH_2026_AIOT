@@ -1,4 +1,4 @@
-#include "State_Machine/quality_check.h"
+#include "Core_Logic/Quality_Check.h"
 
 #include <Arduino.h>
 #include <math.h>
@@ -13,6 +13,16 @@ namespace {
     constexpr int32_t  kActiveBlockThreshold = 80; // biên độ TB/block để coi là "có hoạt động"
 
     constexpr uint32_t kBlockSize = 256;          // ~16ms/block @16kHz
+
+    const char* AudioQualityName(Audio_Quality_t quality){
+        switch(quality){
+            case AUDIO_OK:       return "AUDIO_OK";
+            case AUDIO_TOO_WEAK: return "AUDIO_TOO_WEAK";
+            case AUDIO_TOO_LOUD: return "AUDIO_TOO_LOUD";
+            case AUDIO_INACTIVE: return "AUDIO_INACTIVE";
+            default:             return "AUDIO_UNKNOWN";
+        }
+    }
 } 
 
 Audio_Quality_t AudioQuality_Check(
@@ -73,7 +83,7 @@ Audio_Quality_t AudioQuality_Check(
     }
 
     Serial.printf(
-        "[QUALITY] RMS=%.1f Peak=%ld Clipped=%lu/%lu (%.2f%%) ActiveBlocks=%lu/%lu (%.1f%%) -> %d\n",
+        "[QUALITY] RMS=%.1f Peak=%ld Clipped=%lu/%lu (%.2f%%) ActiveBlocks=%lu/%lu (%.1f%%) -> %s\n",
         metrics.rms,
         static_cast<long>(metrics.peak),
         static_cast<unsigned long>(metrics.clipped_samples),
@@ -82,7 +92,7 @@ Audio_Quality_t AudioQuality_Check(
         static_cast<unsigned long>(metrics.active_blocks),
         static_cast<unsigned long>(metrics.total_blocks),
         active_ratio * 100.0f,
-        result
+        AudioQualityName(result)
     );
 
     if(out_metrics != NULL){

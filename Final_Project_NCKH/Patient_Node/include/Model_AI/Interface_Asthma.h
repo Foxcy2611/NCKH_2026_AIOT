@@ -8,6 +8,7 @@
 struct Asthma_Result {
     float Asthma_Prob;
     float Non_Asthma_Prob;
+    float Unsure_Prob; // Chưa chắc
     int Predicted_Class;
     int8_t Output_Raw_Int8;
 };

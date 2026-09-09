@@ -347,17 +347,19 @@ Stop I2S -> Stop MAX30102 -> Reset buffers/state -> OLED OFF -> ESP-NOW OFF -> E
 
 ### 8.6. Button conflict policy
 
-| Current State | CHECK | MONITOR | SLEEP |
+| State | CHECK | MONITOR | SLEEP |
 |---|---|---|---|
-| STANDBY | Start Manual Check | Start Monitor | No-op / sleep |
-| MANUAL_CAPTURE | Ignore | Ignore | Abort |
-| PROCESSING | Ignore | Ignore | Abort safely |
-| AUDIO_RESULT | Start Vital Check | Ignore | Sleep |
-| VITAL_CHECK | Ignore | Ignore | Abort |
-| MONITOR | Ignore | Exit Monitor | Stop |
-| ERROR | Retry/contextual | Monitor optional | Sleep |
+| STANDBY | Manual Capture | Monitor Listening | No-op / sleep |
+| MANUAL_CAPTURE | Bỏ qua | Bỏ qua | Hủy phiên |
+| AUDIO_QUALITY | Bỏ qua | Bỏ qua | Hủy phiên |
+| AI_PROCESSING | Bỏ qua | Bỏ qua | Đánh dấu dủy, xử lý sau khi AI xong |
+| AUDIO_RESULT | Đo HR/SpO2 | Bỏ qua | Bỏ đo sinh hiệu, sang Session Ready |
+| VITAL_CHECK | Bỏ qua | Bỏ qua | Dừng đo, vẫn giữ phiên audio |
+| MONITOR_LISTENING | Bỏ qua | Tắt Monitor | Tắt Monitor |
+| MONITOR_CAPTURE | Bỏ qua | Bỏ qua | Hủy đoạn đang thu |
+| ERROR | Thử lại tùy lỗi | Bỏ qua | Về Standby |
 
-- ABORT: Chen ngang hành động đang thực hiện, reset tiến trình (Mục 8.5) đưa về STANDBY
+- ABORT - Hủy phiên: Chen ngang hành động đang thực hiện, reset tiến trình (Mục 8.5) đưa về STANDBY
 - SLEEP: Ngủ, tắt mô hình và chỉ được tắt khi đang ở STANDBY
 
 ---
@@ -377,6 +379,17 @@ KHÔNG CÓ PHIÊN/SỰ KIỆN -> Không gửi gì
 CÓ CHECK -> Hoàn thành CHECK -> PatientEvent -> Gửi Gateway
 CÓ MONITOR EVENT -> AI xử lý xong -> PatientEvent -> Gửi Gateway
 ```
+
+Patient Node gửi 1 Event Packet đi cũng là 1 vấn đề
+
+- Nó chỉ biết đã gửi đi nhưng không hề biết bên kia đã nhận được chưa và đã nhận đúng gói tin chưa
+- Sử dụng cơ chế CRC32, 1 hàng đợi tự chế cho toàn bộ packet và cơ chế ACK/NACK như sau
+
+| | Gateway nhận | Patient Node gửi |
+|---|---|---|
+| Nhận đúng (CRC OK) | Gửi ACK ngay, xong việc quay trở lại nhận packet mới | Nhận ACK -> Xoá khỏi hàng đợi pending, không cần retry |
+| Nhận sai (CRC FAIL) | Im lặng, bỏ qua, quay lại chờ packet tiếp — không có khái niệm "NACK" chủ động | Không thấy ACK sau timeout → tăng retry_count, gửi lại cùng packet cũ (không tạo mới) | 
+| Retry hết số lần cho phép | (không liên quan) | Lưu local, đánh dấu synced = false, không giữ Node kẹt ở việc gửi mãi | 
 
 ---
 
@@ -452,6 +465,16 @@ Patient Node --PatientEvent seq=N--> Gateway --ACK seq=N--> Patient Node
 - Timeout → `store local`, `synced = false`.
 - Gateway xuất hiện lại → `retry pending events`.
 - Gateway giữ `last_sequence_per_patient` để tránh duplicate.
+
+### 11.2. Cơ chế hàng đợi
+
+Lưu lại **bản sao gói tin vừa gửi** cùng trạng thái/thời gian/số lần retry,để Node có thể theo dõi và tự động gửi lại đúng gói đó khi chưa nhận được
+ACK — mà không cần dựng lại dữ liệu từ đầu (buffer audio, kết quả AI đã bị
+dọn cho phiên tiếp theo) và không làm block vòng lặp chính trong lúc chờ.
+
+Nói ngắn gọn: nó là "bộ nhớ tạm" giữ nguyên gói tin + tiến trình gửi, tách
+biệt khỏi state machine chính, để việc chờ ACK/retry chạy song song mà
+không cần Node đứng yên đợi Gateway phản hồi.
 
 ---
 
@@ -721,7 +744,7 @@ Primary use: always-on USB/power adapter. Battery: optional backup/mobile.
 
 **Patient Node:** Deep sleep vs light sleep, Battery capacity, MAX30102 measurement duration, OLED timeout, Event storage size.
 
-**ESP-NOW:** Exact packet schema, Retry count, ACK timeout, Re-sync algorithm, Channel management.
+**ESP-NOW:** Exact packet schema, Retry count, Re-sync algorithm, Channel management.
 
 **Gateway:** Sensor sampling period, MQTT QoS, Wi-Fi/LTE failover policy, GPS activation policy, TFT requirement.
 

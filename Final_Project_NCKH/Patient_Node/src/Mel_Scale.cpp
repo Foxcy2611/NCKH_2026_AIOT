@@ -98,7 +98,7 @@ bool Init_Mel_Filterbank(void){
 
     if(mel_filterbank == nullptr){
         Serial.printf(
-            "[ERR] Không thể cấp phát %u byte PSRAM cho Mel Filterbank!\n",
+            "[ERROR] Không thể cấp phát %u byte PSRAM cho Mel Filterbank!\n",
             static_cast<unsigned int>(filterbank_bytes)
         );
         return false;
