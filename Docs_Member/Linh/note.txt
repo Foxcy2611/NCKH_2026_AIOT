@@ -1,0 +1,25 @@
+-------------LUỒNG CHẠY OLED-----------
+1. Nút POWER
+  ấn start => màn hình welcome ===============> OLED_Show_Welcome();
+  ấn sleep => màn hình sleep ===============> OLED_Show_Sleep();
+  màn hình standby ===================> OLED_Show_Standby();
+2. Check
+  1. ấn CHECK => màn hình hướng dẫn đặt miệng vào  ===================> OLED_Show_PlaceNearMouth();
+  2. delay 3s sau đó hiển thị màn hình thu âm =======================> OLED_Show_Recording();
+  3.1. FAIL: màn hình hiển thị các state audio bị lỗi và retry  =========>  OLED_Show_QualityError(const char* error_type);  // error type: loud, weak, inactive
+    => hiển thị màn hình standby =====================> void OLED_Show_Standby();
+  3.2. OK: màn hình hiển thị audio ok ==============================> void OLED_Show_AudioOK();
+  4. màn hình hiển thị quá trình xử lý AI =======================> void OLED_Show_Processing();
+  5. màn hình hiển thị kết quả AI =================================> void OLED_Show_AI_Result(bool isAsthma); //true or false
+  6. màn hình hiển thị đặt tay, ấn check ===========================>  OLED_Show_PlaceFinger();
+  7. ấn check => hiển thị kết quả đo HR/SpO2 ============================> void OLED_Show_FinalResult(bool isAsthma, int hr, int spo2);
+
+3. MONITER
+  1. ấn nút moniter => hiển thị giao diện monitering ================> OLED_Show_Monitoring();
+  2. khi phát hiện âm thanh =============================> OLED_Show_SoundDetected();
+  3. xử lý âm thanh ================================> OLED_Show_Processing();
+  4.1. FAIL: màn hình hiển thị các state audio bị lỗi và retry  =========>  OLED_Show_QualityError(const char* error_type);  // error type: loud, weak, inactive
+        => quay về màn hình monitering ============================> OLED_Show_Monitoring();
+  4.2. OK: màn hình hiển thị audio ok =============================> void OLED_Show_AudioOK();
+  5. màn hình hiển thị quá trình xử lý AI =======================> void OLED_Show_Processing();
+  6. màn hình hiển thị kết quả AI =================================> void OLED_Show_AI_Result(bool isAsthma); //true or false
