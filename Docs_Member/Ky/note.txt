@@ -27,7 +27,38 @@ GHI CHÚ NỀN TẢNG KẾT NỐI HỆ THỐNG
 - Mô hình failover: Wi-Fi ưu tiên dùng; LTE kích hoạt khi cần cho phép MQTT
   uplink tiếp tục hoạt động.
 
-2.1 Luồng khởi tạo Wi-Fi trên ESP32 (STA mode)
+2.1 ESP-NOW trong kiến trúc cục bộ
+
+- ESP-NOW là giao thức truyền dữ liệu dạng peer-to-peer do Espressif phát triển,
+  hoạt động trên băng tần 2.4 GHz và không cần địa chỉ IP hay cơ chế kết nối TCP/IP
+  như Wi-Fi truyền thống.
+- Trong hệ thống này, ESP-NOW được dùng như kênh liên lạc nội bộ giữa Patient Node
+  và Gateway, nhằm truyền các packet dữ liệu ngắn gọn, nhanh và có độ trễ thấp.
+- Điểm khác biệt quan trọng so với Wi-Fi: ESP-NOW không yêu cầu thiết bị kia phải
+  kết nối vào cùng một Access Point; mỗi ESP32 có thể ghi danh một peer bằng MAC address
+  và gửi dữ liệu trực tiếp tới peer đó hoặc phát broadcast trong phạm vi cục bộ.
+- Vì không cần handshake phức tạp của IP stack, ESP-NOW rất phù hợp với các thiết bị
+  cảm biến hoặc node thu nhận dữ liệu theo chu kỳ ngắn, nơi ưu tiên tốc độ phản hồi và
+  tiêu thụ năng lượng thấp hơn so với liên kết Wi-Fi đầy đủ.
+- Trong mô hình bệnh nhân, Patient Node có thể thu audio, đo nhịp tim/SpO2, chạy AI
+  inference trên bộ xử lý cục bộ, rồi gửi một payload nhẹ như cảnh báo, kết quả dự đoán
+  hoặc dữ liệu tổng hợp tới Gateway bằng ESP-NOW.
+- Gateway đóng vai trò receiver / coordinator: nhận các packet từ Patient Node, kiểm tra
+  tính hợp lệ, ghép với dữ liệu môi trường khác, sau đó mới tiến hành publish lên MQTT.
+- Đặc điểm kỹ thuật của ESP-NOW cần lưu ý:
+  - payload thường ngắn và gọn để tránh quá tải;
+  - không phù hợp để truyền dữ liệu lớn hoặc lưu lượng liên tục theo kiểu streaming;
+  - khả năng truyền nhanh nhưng cần quản lý peer list, xác thực MAC và callback xử lý
+    trạng thái gửi/nhận;
+  - hiệu quả cao trong mạng cục bộ nhỏ, ví dụ 1 gateway điều phối nhiều node.
+- Từ góc độ kiến trúc hệ thống, ESP-NOW là tầng “local edge communication”, còn Wi-Fi và
+  MQTT là tầng “uplink communication”. Nghĩa là dữ liệu sinh ra ở node được gửi ngắn gọn
+  qua ESP-NOW tới Gateway, sau đó Gateway mới triển khai kết nối Internet và public lên HiveMQ.
+- Do đó, ESP-NOW không thay thế hoàn toàn Wi-Fi trong hệ thống, mà bổ sung một lớp truyền
+  dữ liệu cục bộ cực nhanh, giảm tải cho tầng IP và tăng độ tin cậy trong điều kiện mạng
+  nội bộ gần thiết bị.
+
+2.2 Luồng khởi tạo Wi-Fi trên ESP32 (STA mode)
 
 - ESP32 hoạt động theo chế độ Station (STA), nghĩa là nó sẽ kết nối vào một
   mạng Wi-Fi đã có sẵn, chứ không tự tạo mạng riêng cho thiết bị khác kết nối vào.
