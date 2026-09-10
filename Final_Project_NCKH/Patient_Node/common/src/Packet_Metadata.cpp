@@ -42,6 +42,13 @@ uint32_t PacketMetadata_NewSessionId(void) {
 uint32_t PacketMetadata_NextSequence(void) {
     ++next_sequence;
     if (next_sequence == 0U) ++next_sequence;
+
+    Preferences preferences;
+    if(preferences.begin(NVS_NAMESPACE, false)){
+        preferences.putUInt(NVS_SEQUENCE_KEY, next_sequence);
+        preferences.end();
+    }
+
     return next_sequence;
 }
 

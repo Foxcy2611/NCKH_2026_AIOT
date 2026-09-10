@@ -1,19 +1,33 @@
 # Phase 2 — Kiểm thử pipeline C++ và micro trực tiếp
 
-Đây là project phát triển/kiểm chứng đầy đủ của phần TinyML trên ESP32-S3:
+Project này kiểm chứng pipeline TinyML trên ESP32-S3 ở hai mức:
 
-- Đối chiếu tensor Python–ESP32 bằng dữ liệu PCM/tensor nhúng.
-- Thu INMP441 ở 16 kHz, một kênh, khung 32 bit chuyển về PCM16.
-- VAD ngưỡng 75, cần 4 khối liên tiếp.
-- Bỏ 100 khối I2S đầu sau reset.
-- Giữ bộ đệm vòng 1 giây và thu thêm 4 giây để đủ 5 giây.
-- Chạy chuẩn hóa, Butterworth, pre-emphasis, Mel-Spectrogram và model INT8.
-- Bỏ phiếu 3 lượt trước khi đưa ra kết luận.
+1. **Parity có kiểm soát:** nạp tensor INT8 hoặc PCM16 nhúng để đối chiếu với
+   kết quả Python.
+2. **LiveMic:** thu INMP441, kích hoạt bằng VAD, tạo đoạn 5 giây rồi chạy toàn
+   bộ DSP và model trên thiết bị.
 
-Các chế độ kiểm chứng được chọn trong `include/Audio_IO/I2S_Mic.h`. Khi chạy
-micro thật, tất cả macro kiểm tra phải bằng 0.
+```text
+INMP441 / PCM16
+  → 5 giây audio
+  → normalize + Butterworth + pre-emphasis
+  → Mel-Spectrogram 64 × 129
+  → INT8
+  → DS-CNN / TFLite Micro
+```
 
-Model sử dụng: `include/Model_AI/Asthma_Model_3.h`.
+Khi chạy LiveMic, firmware bỏ 100 khối I2S khởi động, tạo bộ đệm vòng 1 giây,
+chờ bốn khối liên tiếp vượt ngưỡng VAD 75 rồi thu thêm 4 giây. Kết luận voting
+được tạo từ ba đoạn capture/inference riêng biệt.
 
-Project này giữ header tensor và tài liệu đối chiếu để phục vụ nghiên cứu. Bản
-tinh gọn dùng tích hợp hệ thống nằm ở `../3_Model_Complete`.
+Các chế độ kiểm chứng được chọn trong `include/Audio_IO/I2S_Mic.h`; khi chạy
+micro thật, tất cả macro test phải bằng `0`. Model sử dụng là
+`include/Model_AI/Asthma_Model_3.h`.
+
+- [Tài liệu kỹ thuật](./doc/README.md)
+- [Nhật ký kiểm thử](./logs/README.md)
+
+Phase này không phải firmware Patient Node hoàn chỉnh: chưa có Quality Gate,
+MAX30102, OLED, PatientSession hay ESP-NOW. Bản rút gọn sau kiểm chứng nằm ở
+`../3_Model_Complete`; source tích hợp cuối nằm trong
+`../../Final_Project_NCKH/Patient_Node`.

@@ -1,13 +1,10 @@
 #include "Audio_IO/I2S_Mic.h"
-#include "board_pinout.h"
-
 #include "DSP_Preprocessing/DSP_Filter.h"
 #include "DSP_Preprocessing/Mel_Scale.h"
 #include "Model_AI/Interface_Asthma.h"
 
 #include <esp_heap_caps.h>
 #include "Core_Logic/State_Machine.h"
-#include "Core_Logic/Quality_Check.h"
 
 namespace {
     constexpr uint32_t kTotalSamples = 80000;
@@ -15,11 +12,6 @@ namespace {
     constexpr uint32_t kVadThreshold = 75;
     constexpr uint8_t kVadConsecutiveRequired = 4;
     constexpr uint8_t kWarmupChunks = 100;
-    constexpr uint8_t kVoteRounds = 3;
-
-    Audio_Quality_t quality = AUDIO_OK;
-    System_State current_state = MICRO_STATE_LISTENING;
-    Interface_TinyML_t classification = INTERFACE_UNSURE;
 
     int16_t* audio_buffer = nullptr;
     float* audio_float_buffer = nullptr;
@@ -31,217 +23,47 @@ namespace {
     uint32_t pre_roll_write_index = 0;
     uint32_t pre_roll_valid_samples = 0;
 
-    uint8_t asthma_votes = 0;
-    uint8_t non_asthma_votes = 0;
-    uint8_t unsure_votes = 0;
-    uint8_t current_vote_round = 0;
-
     float mel_spectrogram_buffer[N_MELS][MAX_FRAMES];
 
-    void Reset_Capture_State(){
-        quality = AUDIO_OK;
-        classification = INTERFACE_UNSURE;
-        current_state = MICRO_STATE_LISTENING;
+    void Reset_MonitorCaptureState(){
         sample_count = 0;
         pre_roll_write_index = 0;
         pre_roll_valid_samples = 0;
         vad_consecutive_chunks = 0;
-        Serial.println("[VAD] Đang tạo lại bộ đệm 1 giây...");
     }
 
-    void Update_Votes(const Asthma_Result& result){
-        if(result.Predicted_Class == 0){
-            asthma_votes++;
-            classification = INTERFACE_ASTHMA_LIKE;
-        } else if(result.Predicted_Class == 1){
-            non_asthma_votes++;
-            classification = INTERFACE_NON_ASTHMA;
-        } else {
-            unsure_votes++;
-            classification = INTERFACE_UNSURE;
-        }
+    int Read_I2SChunk(int16_t* chunk, int capacity){
+        if(chunk == nullptr || capacity <= 0) return -1;
 
-        current_vote_round++;
-        Serial.printf(
-            "[VOTE] %u/%u | ASTHMA=%u | NON_ASTHMA=%u | UNSURE=%u\n",
-            current_vote_round,
-            kVoteRounds,
-            asthma_votes,
-            non_asthma_votes,
-            unsure_votes
+        int32_t raw_samples[Buffer_Samples];
+        size_t bytes_read = 0;
+        const esp_err_t read_status = i2s_read(
+            I2S_Port,
+            raw_samples,
+            sizeof(raw_samples),
+            &bytes_read,
+            portMAX_DELAY
         );
-
-        if(current_vote_round < kVoteRounds) return;
-
-        if(asthma_votes > non_asthma_votes){
-            Serial.println("[RESULT] Cảnh báo phát hiện âm thanh giống mẫu hen.");
-        } else if(non_asthma_votes > asthma_votes){
-            Serial.println("[RESULT] Không phát hiện âm thanh giống mẫu hen.");
-        } else {
-            Serial.println("[RESULT] Không chắc chắn, cần đo lại.");
-        }
-
-        asthma_votes = 0;
-        non_asthma_votes = 0;
-        unsure_votes = 0;
-        current_vote_round = 0;
-    }
-}
-
-void Process_Audio_Stream(void){
-    int32_t raw_samples[Buffer_Samples];
-    int16_t chunk[Buffer_Samples];
-    size_t bytes_read = 0;
-
-    i2s_read(
-        I2S_Port,
-        raw_samples,
-        sizeof(raw_samples),
-        &bytes_read,
-        portMAX_DELAY
-    );
-
-    const int samples_read = bytes_read / sizeof(int32_t);
-    if(samples_read <= 0) return;
-
-    for(int i = 0 ; i < samples_read ; i++){
-        int32_t sample = (raw_samples[i] >> 16) * Amplify_Factor;
-        if(sample > 32767) sample = 32767;
-        if(sample < -32768) sample = -32768;
-        chunk[i] = static_cast<int16_t>(sample);
-    }
-
-    if(current_state == MICRO_STATE_LISTENING){
-        if(warmup_chunks_remaining > 0){
-            warmup_chunks_remaining--;
-            if(warmup_chunks_remaining == 0){
-                Serial.println("[VAD] Khởi động xong, đang tạo bộ đệm 1 giây...");
-            }
-            return;
-        }
-
-        const bool pre_roll_was_full = pre_roll_valid_samples >= kPreRollSamples;
-        for(int i = 0 ; i < samples_read ; i++){
-            pre_roll_buffer[pre_roll_write_index] = chunk[i];
-            pre_roll_write_index = (pre_roll_write_index + 1) % kPreRollSamples;
-            if(pre_roll_valid_samples < kPreRollSamples) pre_roll_valid_samples++;
-        }
-
-        if(pre_roll_valid_samples < kPreRollSamples) return;
-        if(!pre_roll_was_full){
-            Serial.println("[VAD] Bộ đệm đã đủ 1 giây, bắt đầu lắng nghe.");
-        }
-
-        uint32_t energy_sum = 0;
-        for(int i = 0 ; i < samples_read ; i++){
-            const int32_t value = chunk[i];
-            energy_sum += value < 0 ? static_cast<uint32_t>(-value)
-                                    : static_cast<uint32_t>(value);
-        }
-        const uint32_t average_energy = energy_sum / samples_read;
-
-        if(average_energy > kVadThreshold){
-            if(vad_consecutive_chunks < kVadConsecutiveRequired){
-                vad_consecutive_chunks++;
-            }
-        } else {
-            vad_consecutive_chunks = 0;
-        }
-
-        if(vad_consecutive_chunks >= kVadConsecutiveRequired){
-            for(uint32_t i = 0 ; i < kPreRollSamples ; i++){
-                const uint32_t source_index =
-                    (pre_roll_write_index + i) % kPreRollSamples;
-                audio_buffer[i] = pre_roll_buffer[source_index];
-            }
-            sample_count = kPreRollSamples;
-            vad_consecutive_chunks = 0;
-            current_state = MICRO_STATE_RECORDING;
+        if(read_status != ESP_OK){
             Serial.printf(
-                "[VAD] Kích hoạt ở mức %lu, đã giữ lại 1 giây đầu.\n",
-                static_cast<unsigned long>(average_energy)
+                "[I2S ERROR] Monitor không đọc được audio chunk | Mã lỗi=%d\n",
+                static_cast<int>(read_status)
             );
+            return -1;
         }
-        return;
+
+        int samples_read = static_cast<int>(bytes_read / sizeof(int32_t));
+        if(samples_read > capacity) samples_read = capacity;
+
+        for(int i = 0; i < samples_read; ++i){
+            int32_t sample = (raw_samples[i] >> 16) * Amplify_Factor;
+            if(sample > 32767) sample = 32767;
+            if(sample < -32768) sample = -32768;
+            chunk[i] = static_cast<int16_t>(sample);
+        }
+
+        return samples_read;
     }
-
-    if(current_state == MICRO_STATE_RECORDING){
-        for(int i = 0 ; i < samples_read && sample_count < kTotalSamples ; i++){
-            audio_buffer[sample_count++] = chunk[i];
-        }
-
-        if(sample_count >= kTotalSamples){
-            current_state = MICRO_STATE_QUALITY;
-            Serial.println("[MIC] Đã thu đủ 5 giây.");
-        }
-        return;
-    }
-
-    if(current_state == MICRO_STATE_QUALITY){
-        Serial.println("[CHECK] Tiến hành kiểm tra chất lượng âm thanh.");
-
-        Audio_Quality_Metrics_t metrics = {0.0f, 0, 0, 0, 0};
-        quality = AudioQuality_Check(audio_buffer, kTotalSamples, &metrics);
-        // Vẽ OLED từ metrics
-
-        if(quality == AUDIO_INACTIVE){
-            Serial.println("[QUALITY FAIL] Âm thanh gần như không có hoạt động. Yêu cầu thu lại.");
-            Reset_Capture_State();
-            return;
-        } else if(quality == AUDIO_TOO_LOUD){
-            Serial.println("[QUALITY FAIL] Âm thanh quá lớn hoặc bị clipping. Vui lòng thu lại.");
-            Reset_Capture_State();
-            return;
-        } else if(quality == AUDIO_TOO_WEAK){
-            Serial.println("[QUALITY FAIL] Âm thanh quá yếu. Vui lòng thu lại.");
-            Reset_Capture_State();
-            return;
-        } else {
-            Serial.println("[QUALITY OK] Âm thanh đạt yêu cầu. Tiến hành xử lý.");
-            current_state = MICRO_STATE_PROCESSING;
-        }
-    }
-
-    if(current_state == MICRO_STATE_PROCESSING){
-        Normalize_To_Float(audio_buffer, audio_float_buffer, kTotalSamples);
-        Butterworth_Reset();
-        Butterworth_Process_Buffer(audio_float_buffer, kTotalSamples);
-        Apply_Pre_Emphasis(audio_float_buffer, kTotalSamples);
-
-        const int frame_count = Compute_Mel_Power_Spectrogram(
-            audio_float_buffer,
-            kTotalSamples,
-            mel_spectrogram_buffer,
-            MAX_FRAMES
-        );
-        if(frame_count != MAX_FRAMES){
-            Serial.printf("[ERROR] Số Mel frame=%d, yêu cầu=%d.\n", frame_count, MAX_FRAMES);
-            Reset_Capture_State();
-            return;
-        }
-
-        Power_To_dB_RefMax(
-            mel_spectrogram_buffer,
-            mel_spectrogram_buffer,
-            frame_count
-        );
-        current_state = MICRO_STATE_INTERFACE;
-        return;
-    }    
-
-    const Asthma_Result result = Run_Asthma_Interface(mel_spectrogram_buffer);
-    Update_Votes(result);
-
-    StateMachine_SubmitAudioResult(
-        quality, 
-        classification, 
-        ((classification == INTERFACE_ASTHMA_LIKE) ? result.Asthma_Prob : 
-        (classification == INTERFACE_NON_ASTHMA) ? result.Non_Asthma_Prob : result.Unsure_Prob) / 100.0f
-    );
-
-    // Update Session
-
-    Reset_Capture_State();
 }
 
 void I2S_Mic_Init(int SCK_Pin, int WS_Pin, int SD_Pin){
@@ -291,37 +113,24 @@ void I2S_Mic_Init(int SCK_Pin, int WS_Pin, int SD_Pin){
         Serial.println("[ERROR] Không khởi tạo được I2S.");
         while (true) delay(100);
     }
+
+    I2S_MonitorReset();
 }
 
-bool Process_ManualCheck_Pipeline(void){
-    // Chỉ được Abort trong quá trình thu
-    if(!I2S_RecordSamples()){
-        if(!StateMachine_IsAbortRequested()){
-            StateMachine_ReportError("MANUAL_CAPTURE_FAILED");
-        }
+bool Process_Record_Audio(
+    Interface_TinyML_t* out_classification,
+    float* out_score
+){
+    if(out_classification == nullptr
+        || out_score == nullptr
+        || audio_buffer == nullptr
+        || audio_float_buffer == nullptr){
+        Serial.println("[AI] Buffer hoặc con trỏ đầu ra không hợp lệ.");
         return false;
     }
 
-    StateMachine_NotifyCaptureDone();
-
-    Audio_Quality_Metrics_t metrics = {0.0f, 0, 0, 0, 0};
-    Audio_Quality_t quality = AudioQuality_Check(audio_buffer, kTotalSamples, &metrics);
-
-    StateMachine_SubmitAudioQuality(quality);
-
-    if(quality == AUDIO_INACTIVE){
-        Serial.println("[QUALITY FAIL] Âm thanh gần như không có hoạt động. Yêu cầu thu lại.");
-        return false;
-    } else if(quality == AUDIO_TOO_LOUD){
-        Serial.println("[QUALITY FAIL] Âm thanh quá lớn hoặc bị clipping. Vui lòng thu lại.");
-        return false;
-    } else if(quality == AUDIO_TOO_WEAK){
-        Serial.println("[QUALITY FAIL] Âm thanh quá yếu. Vui lòng thu lại.");
-        return false;
-    } else {
-        Serial.println("[QUALITY OK] Âm thanh đạt yêu cầu. Tiến hành xử lý.");
-    }
-
+    Serial.println("[AI] Tiến hành tiền xử lý Audio ...");
+    
     Normalize_To_Float(audio_buffer, audio_float_buffer, kTotalSamples);
     Butterworth_Reset();
     Butterworth_Process_Buffer(audio_float_buffer, kTotalSamples);
@@ -335,7 +144,6 @@ bool Process_ManualCheck_Pipeline(void){
     );
     if(frame_count != MAX_FRAMES){
         Serial.printf("[ERROR] Số Mel frame=%d, yêu cầu=%d.\n", frame_count, MAX_FRAMES);
-        StateMachine_ReportError("INVALID_MEL_FRAME_COUNT");
         return false;
     }
 
@@ -350,16 +158,16 @@ bool Process_ManualCheck_Pipeline(void){
     const float manual_score =
         (manual_classification == INTERFACE_ASTHMA_LIKE) ? result.Asthma_Prob :
         (manual_classification == INTERFACE_NON_ASTHMA) ? result.Non_Asthma_Prob : result.Unsure_Prob;
-
-    StateMachine_SubmitAudioResult(quality, manual_classification, manual_score / 100.0f);
+    
+    *out_classification = manual_classification;
+    *out_score = manual_score / 100.0f; // Chuẩn hóa xác suất từ 0-100 về 0-1.
     
     return true;
 }
 
-
 bool I2S_RecordSamples(void){
     if(audio_buffer == nullptr){
-        Serial.println("[ERROR] Audio buffer chưa được cấp phát; cần gọi I2S_Mic_Init trước.");
+        Serial.println("[I2S ERROR] AUDIO_BUFFER_NOT_READY: cần gọi I2S_Mic_Init trước.");
         return false;
     }
  
@@ -377,13 +185,23 @@ bool I2S_RecordSamples(void){
         }
  
         size_t bytes_read = 0;
-        i2s_read(
+        const esp_err_t read_status = i2s_read(
             I2S_Port,
             raw_samples,
             sizeof(raw_samples),
             &bytes_read,
             portMAX_DELAY
         );
+
+        if(read_status != ESP_OK){
+            Serial.printf(
+                "[I2S ERROR] Manual Check không đọc được audio | Mã lỗi=%d | Đã thu=%lu/%lu samples\n",
+                static_cast<int>(read_status),
+                static_cast<unsigned long>(recorded),
+                static_cast<unsigned long>(kTotalSamples)
+            );
+            return false;
+        }
  
         const int samples_read = bytes_read / sizeof(int32_t);
         if(samples_read <= 0) continue;
@@ -423,4 +241,97 @@ float* I2S_GetFloatBuffer(void){
  
 float (*I2S_GetMelBuffer(void))[MAX_FRAMES] {
     return mel_spectrogram_buffer;
+}
+
+void I2S_MonitorReset(void){
+    Reset_MonitorCaptureState();
+    warmup_chunks_remaining = kWarmupChunks;
+}
+
+void I2S_MonitorPrepareNextCapture(void){
+    Reset_MonitorCaptureState();
+    warmup_chunks_remaining = 0;
+    Serial.println("[VAD] Đang tạo lại bộ đệm trước kích hoạt 1 giây...");
+}
+
+bool I2S_MonitorListenStep(void) {
+    if(audio_buffer == nullptr || pre_roll_buffer == nullptr) return false;
+
+    int16_t chunk[Buffer_Samples];
+    const int samples_read = Read_I2SChunk(chunk, Buffer_Samples);
+    if(samples_read <= 0) return false;
+
+    if(warmup_chunks_remaining > 0){
+        --warmup_chunks_remaining;
+        if(warmup_chunks_remaining == 0){
+            Serial.println("[VAD] Micro ổn định, đang tạo bộ đệm 1 giây...");
+        }
+        return false;
+    }
+
+    const bool pre_roll_was_full = pre_roll_valid_samples >= kPreRollSamples;
+    for(int i = 0; i < samples_read; ++i){
+        pre_roll_buffer[pre_roll_write_index] = chunk[i];
+        pre_roll_write_index = (pre_roll_write_index + 1U) % kPreRollSamples;
+        if(pre_roll_valid_samples < kPreRollSamples) ++pre_roll_valid_samples;
+    }
+
+    if(pre_roll_valid_samples < kPreRollSamples) return false;
+    if(!pre_roll_was_full){
+        Serial.println("[VAD] Bộ đệm đã đủ 1 giây, bắt đầu lắng nghe.");
+    }
+
+    uint32_t energy_sum = 0;
+    for(int i = 0; i < samples_read; ++i){
+        const int32_t value = chunk[i];
+        energy_sum += value < 0
+            ? static_cast<uint32_t>(-value)
+            : static_cast<uint32_t>(value);
+    }
+    const uint32_t average_energy = energy_sum
+        / static_cast<uint32_t>(samples_read);
+
+    if(average_energy > kVadThreshold){
+        if(vad_consecutive_chunks < kVadConsecutiveRequired){
+            ++vad_consecutive_chunks;
+        }
+    } else {
+        vad_consecutive_chunks = 0;
+    }
+
+    if (vad_consecutive_chunks >= kVadConsecutiveRequired) {
+        for(uint32_t i = 0; i < kPreRollSamples; ++i){
+            const uint32_t source_index =
+                (pre_roll_write_index + i) % kPreRollSamples;
+            audio_buffer[i] = pre_roll_buffer[source_index];
+        }
+
+        sample_count = kPreRollSamples;
+        vad_consecutive_chunks = 0;
+        Serial.printf(
+            "[VAD] Kích hoạt ở mức %lu, đã giữ lại 1 giây đầu.\n",
+            static_cast<unsigned long>(average_energy)
+        );
+        return true;
+    }
+
+    return false;
+}
+
+bool I2S_MonitorCaptureStep(void) {
+    if(audio_buffer == nullptr || sample_count < kPreRollSamples) return false;
+
+    int16_t chunk[Buffer_Samples];
+    const int samples_read = Read_I2SChunk(chunk, Buffer_Samples);
+    if(samples_read <= 0) return false;
+
+    for (int i = 0; i < samples_read && sample_count < kTotalSamples;
+         ++i) {
+        audio_buffer[sample_count++] = chunk[i];
+    }
+
+    if(sample_count < kTotalSamples) return false;
+
+    Serial.println("[MIC] Monitor đã thu đủ 5 giây.");
+    return true;
 }

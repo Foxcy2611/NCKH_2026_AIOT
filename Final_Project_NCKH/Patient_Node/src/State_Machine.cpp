@@ -1,6 +1,11 @@
 #include "Core_Logic/State_Machine.h"
 
+#include <stddef.h>
 #include <string.h>
+#include "Audio_IO/I2S_Mic.h"
+#include "Core_Logic/Quality_Check.h"
+
+#include "Vitals_UI/PPG_Sensor.h"
 
 #include "Packet_Metadata.h"
 #include "Checksum_CRC32.h"
@@ -12,6 +17,7 @@ namespace {
     constexpr uint8_t kCheckEventBit = 1U << 0;
     constexpr uint8_t kMonitorEventBit = 1U << 1;
     constexpr uint32_t kButtonDebounceMs = 180;
+    constexpr uint8_t kMonitorVoteRounds = 3;
 
     Patient_State_t current_state = STATE_STANDBY;
     Patient_Session_t current_session;
@@ -24,10 +30,20 @@ namespace {
     bool packet_built = false;
     bool packet_queued = false;
     bool monitor_enabled = false;
+    bool vitals_sensor_available = false;
+    bool vitals_wait_logged = false;
     bool has_check_timestamp = false;
     bool has_monitor_timestamp = false;
     uint32_t last_check_timestamp = 0;
     uint32_t last_monitor_timestamp = 0;
+
+    uint8_t monitor_vote_round = 0;
+    uint8_t asthma_votes = 0;
+    uint8_t non_asthma_votes = 0;
+    uint8_t unsure_votes = 0;
+    float asthma_score_sum = 0.0f;
+    float non_asthma_score_sum = 0.0f;
+    float unsure_score_sum = 0.0f;
 
     void IRAM_ATTR ISR_BTN_Sleep(void) {
         abort_requested = true;
@@ -57,6 +73,35 @@ namespace {
         }
     }
 
+    /** Bổ sung tên dễ đọc để log không chỉ hiện giá trị enum dạng số. */
+    const char* EventTypeName(Event_Type_t event_type) {
+        switch (event_type) {
+            case EVENT_MANUAL_CHECK:  return "MANUAL_CHECK";
+            case EVENT_MONITOR_EVENT: return "MONITOR_EVENT";
+            case EVENT_STATUS:        return "STATUS";
+            default:                  return "EVENT_UNKNOWN";
+        }
+    }
+
+    const char* AudioQualityName(Audio_Quality_t quality) {
+        switch (quality) {
+            case AUDIO_OK:       return "AUDIO_OK";
+            case AUDIO_TOO_WEAK: return "AUDIO_TOO_WEAK";
+            case AUDIO_TOO_LOUD: return "AUDIO_TOO_LOUD";
+            case AUDIO_INACTIVE: return "AUDIO_INACTIVE";
+            default:             return "AUDIO_UNKNOWN";
+        }
+    }
+
+    const char* ClassificationName(Interface_TinyML_t classification) {
+        switch (classification) {
+            case INTERFACE_ASTHMA_LIKE: return "ASTHMA";
+            case INTERFACE_NON_ASTHMA:  return "NON_ASTHMA";
+            case INTERFACE_UNSURE:      return "UNSURE";
+            default:                    return "CLASS_UNKNOWN";
+        }
+    }
+
     void StateMachine_StateTransition(Patient_State_t next_state, const char* reason) {
         if (next_state == current_state) return;
 
@@ -69,6 +114,16 @@ namespace {
         current_state = next_state;
     }
 
+    void Reset_MonitorVotes(void) {
+        monitor_vote_round = 0;
+        asthma_votes = 0;
+        non_asthma_votes = 0;
+        unsure_votes = 0;
+        asthma_score_sum = 0.0f;
+        non_asthma_score_sum = 0.0f;
+        unsure_score_sum = 0.0f;
+    }
+
     void Reset_CurrentSession(void) {
         memset(&current_session, 0, sizeof(current_session));
         current_session.audio_quality = AUDIO_INACTIVE;
@@ -78,6 +133,7 @@ namespace {
         memset(&ready_packet, 0, sizeof(ready_packet));
         packet_built = false;
         packet_queued = false;
+        Reset_MonitorVotes();
     }
 
     void Begin_NewSession(Event_Type_t event_type) {
@@ -85,6 +141,13 @@ namespace {
         current_session.session_id = PacketMetadata_NewSessionId();
         current_session.event_type = event_type;
         current_session.event_timestamp = static_cast<uint64_t>(millis());
+
+        Serial.printf(
+            "[SESSION] Bắt đầu %s | SessionID=0x%08lX | LocalMillis=%llu\n",
+            EventTypeName(event_type),
+            static_cast<unsigned long>(current_session.session_id),
+            static_cast<unsigned long long>(current_session.event_timestamp)
+        );
     }
 
     Button_Event_t Consume_ButtonEvent(void) {
@@ -117,7 +180,7 @@ namespace {
         return BTN_NONE;
     }
 
-        bool Build_EventPacket(
+    bool Build_EventPacket(
         const Patient_Session_t& session,
         Patient_Event_Packet_t* packet
     ){
@@ -159,33 +222,109 @@ namespace {
         } else if (event == BTN_MONITOR_PRESSED) {
             monitor_enabled = true;
             Reset_CurrentSession();
+            I2S_MonitorReset();
+            Serial.println("[MONITOR] Đã bật; đang ổn định micro và tạo bộ đệm 1 giây.");
             StateMachine_StateTransition(STATE_MONITOR_LISTENING, "MONITOR_ON");
         }
     }
 
     void Handle_ManualCapture(Button_Event_t event) {
         (void)event;
-        // Chờ Audio_IO gọi StateMachine_NotifyCaptureDone().
+        
+        if(I2S_RecordSamples()){
+            StateMachine_NotifyCaptureDone();
+            return;
+        }
+
+        if(!abort_requested){
+            StateMachine_ReportError("MANUAL_CAPTURE_FAILED");
+        }
     }
 
     void Handle_AudioQuality(Button_Event_t event) {
         (void)event;
-        // Chờ Quality Gate gọi StateMachine_SubmitAudioQuality().
+        Audio_Quality_Metrics_t metrics = {};
+
+        Serial.printf(
+            "[AUDIO] Kiểm tra chất lượng | Nguồn=%s | Samples=%lu\n",
+            EventTypeName(current_session.event_type),
+            static_cast<unsigned long>(I2S_GetRecordedSampleCount())
+        );
+
+        const Audio_Quality_t quality = AudioQuality_Check(
+            I2S_GetRecordedBuffer(),
+            I2S_GetRecordedSampleCount(),
+            &metrics
+        );
+
+        StateMachine_SubmitAudioQuality(quality);
     }
 
     void Handle_AIProcessing(Button_Event_t event) {
         (void)event;
+
+        Interface_TinyML_t classification = INTERFACE_UNSURE;
+        float model_score = 0.0f;
+
+        Serial.printf(
+            "[AUDIO] Bắt đầu DSP/TinyML | Nguồn=%s\n",
+            EventTypeName(current_session.event_type)
+        );
+
+        if(!Process_Record_Audio(&classification, &model_score)){
+            StateMachine_ReportError("AI_PROCESS_FAILED");
+            return;
+        }
+
+        StateMachine_SubmitAudioResult(
+            current_session.audio_quality, 
+            classification,
+            model_score
+        );
         // Chờ TinyML gọi StateMachine_SubmitAudioResult().
     }
 
     void Handle_AudioResult(Button_Event_t event) {
         if (event == BTN_CHECK_PRESSED) {
+            vitals_wait_logged = false;
             StateMachine_StateTransition(STATE_VITAL_CHECK, "CHECK_VITALS");
         }
     }
 
     void Handle_VitalCheck(Button_Event_t event) {
         (void)event;
+
+        if(!vitals_sensor_available){
+            if(!vitals_wait_logged){
+                Serial.println("[VITALS] MAX30102 chưa sẵn sàng; nhấn SLEEP để bỏ qua.");
+                vitals_wait_logged = true;
+            }
+            return;
+        }
+
+        const MAX30102_State state = MAX30102_Poll();
+        
+        if(state == MAX30102_STATE_RESULT_READY){
+            int32_t heart_rate = 0;
+            int32_t spo2 = 0;
+
+            int8_t valid_hr = 0;
+            int8_t valid_spo2 = 0;
+
+            MAX30102_GetLastResult(
+                &heart_rate, &valid_hr,
+                &spo2, &valid_spo2
+            );
+
+            StateMachine_SubmitVitals(
+                valid_hr && valid_spo2,
+                static_cast<uint16_t>(heart_rate),
+                static_cast<uint16_t>(spo2)
+            );
+
+        } else if (state == MAX30102_STATE_TIMEOUT){
+            StateMachine_SubmitVitals(false, 0, 0); 
+        }
         // Chờ mô-đun MAX30102 gọi StateMachine_SubmitVitals().
     }
 
@@ -193,9 +332,42 @@ namespace {
         (void)event;
         
         if(!packet_built){
-
             packet_built = Build_EventPacket(current_session, &ready_packet);
+
+            if(packet_built){
+                const uint32_t calculated_crc = Crc32_Compute(
+                    &ready_packet,
+                    offsetof(Patient_Event_Packet_t, crc32)
+                );
+                const bool crc_matches = calculated_crc == ready_packet.crc32;
+
+                Serial.printf(
+                    "[PACKET] Size=%u | Device=0x%08lX | Sequence=%lu | SessionID=0x%08lX\n",
+                    static_cast<unsigned int>(sizeof(ready_packet)),
+                    static_cast<unsigned long>(ready_packet.device_id),
+                    static_cast<unsigned long>(ready_packet.sequence),
+                    static_cast<unsigned long>(ready_packet.session_id)
+                );
+                Serial.printf(
+                    "[PACKET] Event=%s | Result=%s | Score=%.2f%% | Quality=%s | Vitals=%s\n",
+                    EventTypeName(current_session.event_type),
+                    ClassificationName(current_session.classification),
+                    current_session.model_score * 100.0f,
+                    AudioQualityName(current_session.audio_quality),
+                    current_session.vitals_valid ? "VALID" : "NOT_AVAILABLE"
+                );
+                Serial.printf(
+                    "[PACKET] Timestamp=%llu%s | CRC=0x%08lX | %s\n",
+                    static_cast<unsigned long long>(ready_packet.timestamp),
+                    PacketMetadata_HasTimeSync() ? "" : " (NOT_SYNCED)",
+                    static_cast<unsigned long>(ready_packet.crc32),
+                    crc_matches ? "CRC_MATCH" : "CRC_MISMATCH"
+                );
+                Serial.println("[PACKET READY] Đã đóng gói xong; đang chờ đưa vào hàng đợi gửi.");
+            }
         }
+
+
 
         if(packet_built && !packet_queued){
             // Đưa vào now
@@ -206,15 +378,25 @@ namespace {
     void Handle_MonitorListening(Button_Event_t event) {
         if (event == BTN_MONITOR_PRESSED) {
             monitor_enabled = false;
+            I2S_MonitorReset();
             Reset_CurrentSession();
+            Serial.println("[MONITOR] Đã tắt; đã xóa session, vote và buffer tạm.");
             StateMachine_StateTransition(STATE_STANDBY, "MONITOR_OFF");
+
+            return;
         }
-        // VAD gọi StateMachine_NotifyMonitorTriggered() khi phát hiện âm thanh.
+
+        if(I2S_MonitorListenStep()){
+            StateMachine_NotifyMonitorTriggered();
+        }
     }
 
     void Handle_MonitorCapture(Button_Event_t event) {
         (void)event;
-        // Chờ Audio_IO gọi StateMachine_NotifyCaptureDone().
+
+        if(I2S_MonitorCaptureStep()){
+            StateMachine_NotifyCaptureDone();
+        }
     }
 
     void Handle_Error(Button_Event_t event) {
@@ -254,6 +436,10 @@ namespace {
 
             default:
                 // Hủy phiên đang thu/xử lý hoặc tắt chế độ Monitor.
+                if(monitor_enabled) {
+                    I2S_MonitorReset();
+                    Serial.println("[MONITOR] Đã hủy; đã xóa session, vote và buffer tạm.");
+                }
                 monitor_enabled = false;
                 Reset_CurrentSession();
                 StateMachine_StateTransition(STATE_STANDBY, "SLEEP_ABORT");
@@ -268,6 +454,8 @@ void StateMachine_Init(void) {
     PacketMetadata_Init();
     current_state = STATE_STANDBY;
     monitor_enabled = false;
+    vitals_sensor_available = false;
+    vitals_wait_logged = false;
     abort_requested = false;
     pending_button_bits = 0;
     packet_built = false;
@@ -283,6 +471,8 @@ void StateMachine_Init(void) {
     attachInterrupt(digitalPinToInterrupt(PIN_BTN_CHECK), ISR_BTN_Check, FALLING);
     attachInterrupt(digitalPinToInterrupt(PIN_BTN_MONITOR), ISR_BTN_Monitor, FALLING);
 }
+
+// ------------------- API MAIN ------------------- //
 
 void StateMachine_Run(void) {
     if (Handle_AbortAction()) return;
@@ -327,6 +517,8 @@ void StateMachine_Run(void) {
     }
 }
 
+// --------------------------------------------------------- //
+
 Patient_State_t StateMachine_GetCurrentState(void) {
     return current_state;
 }
@@ -358,7 +550,10 @@ void StateMachine_NotifyMonitorTriggered(void) {
         return;
     }
 
-    Begin_NewSession(EVENT_MONITOR_EVENT);
+    // Vote đầu tiên mở session. Các vote sau giữ nguyên session_id/timestamp.
+    if(current_session.session_id == 0U){
+        Begin_NewSession(EVENT_MONITOR_EVENT);
+    }
     StateMachine_StateTransition(STATE_MONITOR_CAPTURE, "VAD_TRIGGER");
 }
 
@@ -379,10 +574,39 @@ void StateMachine_SubmitAudioQuality(Audio_Quality_t quality) {
     }
 
     current_session.audio_quality = quality;
-    if (quality == AUDIO_OK) {
-        StateMachine_StateTransition(STATE_AI_PROCESSING, "AUDIO_QUALITY_OK");
+
+    if(quality != AUDIO_OK
+        && current_session.event_type == EVENT_MONITOR_EVENT){
+        Serial.printf(
+            "[MONITOR] Bỏ đoạn thu do %s; vote vẫn là %u/%u và tiếp tục lắng nghe.\n",
+            AudioQualityName(quality),
+            monitor_vote_round,
+            kMonitorVoteRounds
+        );
+        I2S_MonitorPrepareNextCapture();
+        StateMachine_StateTransition(
+            STATE_MONITOR_LISTENING,
+            "MONITOR_AUDIO_REJECTED"
+        );
+        return;
+    }
+
+    if(quality == AUDIO_INACTIVE){
+        Serial.println("[QUALITY FAIL] Âm thanh gần như không có hoạt động. Yêu cầu thu lại.");
+        StateMachine_StateTransition(STATE_ERROR, "AUDIO_INACTIVE");
+
+    } else if(quality == AUDIO_TOO_LOUD){
+        Serial.println("[QUALITY FAIL] Âm thanh quá lớn hoặc bị clipping. Vui lòng thu lại.");
+        StateMachine_StateTransition(STATE_ERROR, "AUDIO_TOO_LOUD");
+
+    } else if(quality == AUDIO_TOO_WEAK){
+        Serial.println("[QUALITY FAIL] Âm thanh quá yếu. Vui lòng thu lại.");
+        StateMachine_StateTransition(STATE_ERROR, "AUDIO_TOO_WEAK");
+
     } else {
-        StateMachine_StateTransition(STATE_ERROR, "AUDIO_QUALITY_FAILED");
+        Serial.println("[QUALITY OK] Âm thanh đạt yêu cầu. Tiến hành xử lý.");
+        StateMachine_StateTransition(STATE_AI_PROCESSING, "AUDIO_OK");
+
     }
 }
 
@@ -396,14 +620,73 @@ void StateMachine_SubmitAudioResult(
         return;
     }
 
+    const float safe_score = constrain(model_score, 0.0f, 1.0f);
     current_session.audio_quality = quality;
-    current_session.classification = classification;
-    current_session.model_score = constrain(model_score, 0.0f, 1.0f);
 
     if (current_session.event_type == EVENT_MONITOR_EVENT) {
+        ++monitor_vote_round;
+
+        switch(classification){
+            case INTERFACE_ASTHMA_LIKE:
+                ++asthma_votes;
+                asthma_score_sum += safe_score;
+                break;
+            case INTERFACE_NON_ASTHMA:
+                ++non_asthma_votes;
+                non_asthma_score_sum += safe_score;
+                break;
+            case INTERFACE_UNSURE:
+            default:
+                ++unsure_votes;
+                unsure_score_sum += safe_score;
+                break;
+        }
+
+        Serial.printf(
+            "[VOTE] %u/%u | Lần này=%s (%.2f%%) | ASTHMA=%u | NON_ASTHMA=%u | UNSURE=%u\n",
+            monitor_vote_round,
+            kMonitorVoteRounds,
+            ClassificationName(classification),
+            safe_score * 100.0f,
+            asthma_votes,
+            non_asthma_votes,
+            unsure_votes
+        );
+
+        if(monitor_vote_round < kMonitorVoteRounds){
+            I2S_MonitorPrepareNextCapture();
+            StateMachine_StateTransition(
+                STATE_MONITOR_LISTENING,
+                "MONITOR_NEXT_VOTE"
+            );
+            return;
+        }
+
+        if(asthma_votes > non_asthma_votes && asthma_votes > unsure_votes){
+            current_session.classification = INTERFACE_ASTHMA_LIKE;
+            current_session.model_score = asthma_score_sum / asthma_votes;
+            Serial.println("[RESULT] Cảnh báo phát hiện âm thanh giống mẫu hen.");
+        } else if(non_asthma_votes > asthma_votes
+            && non_asthma_votes > unsure_votes){
+            current_session.classification = INTERFACE_NON_ASTHMA;
+            current_session.model_score = non_asthma_score_sum / non_asthma_votes;
+            Serial.println("[RESULT] Không phát hiện âm thanh giống mẫu hen.");
+        } else if(unsure_votes > asthma_votes && unsure_votes > non_asthma_votes){
+            current_session.classification = INTERFACE_UNSURE;
+            current_session.model_score = unsure_score_sum / unsure_votes;
+            Serial.println("[RESULT] Không chắc chắn, cần kiểm tra lại.");
+        } else {
+            // Trường hợp 1-1-1: không có kết quả chiếm đa số.
+            current_session.classification = INTERFACE_UNSURE;
+            current_session.model_score = 0.0f;
+            Serial.println("[RESULT] Ba vote không tạo được đa số, cần kiểm tra lại.");
+        }
+
         current_session.vitals_valid = false;
-        StateMachine_StateTransition(STATE_SESSION_READY, "MONITOR_AI_RESULT");
+        StateMachine_StateTransition(STATE_SESSION_READY, "MONITOR_VOTE_DONE");
     } else {
+        current_session.classification = classification;
+        current_session.model_score = safe_score;
         StateMachine_StateTransition(STATE_AUDIO_RESULT, "AI_RESULT_SUBMITTED");
     }
 }
@@ -432,7 +715,13 @@ void StateMachine_ReportError(const char* reason) {
         return;
     }
 
-    StateMachine_StateTransition(STATE_ERROR, reason != nullptr ? reason : "MODULE_ERROR");
+    const char* safe_reason = reason != nullptr ? reason : "MODULE_ERROR";
+    Serial.printf(
+        "[ERROR] State=%s | Lỗi=%s\n",
+        StateName(current_state),
+        safe_reason
+    );
+    StateMachine_StateTransition(STATE_ERROR, safe_reason);
 }
 
 const Patient_Session_t* StateMachine_GetCurrentSession(void) {
@@ -449,8 +738,22 @@ void StateMachine_NotifyEventSent(void) {
         monitor_enabled && current_session.event_type == EVENT_MONITOR_EVENT;
 
     Reset_CurrentSession();
+    if(return_to_monitor) I2S_MonitorPrepareNextCapture();
     StateMachine_StateTransition(
         return_to_monitor ? STATE_MONITOR_LISTENING : STATE_STANDBY,
         return_to_monitor ? "SESSION_SENT_MONITOR" : "SESSION_SENT"
     );
+}
+
+void StateMachine_SetVitalsAvailable(bool available){
+    vitals_sensor_available = available;
+    vitals_wait_logged = false;
+}
+
+bool StateMachine_IsPacketReady(void){
+    return current_state == STATE_SESSION_READY && packet_built;
+}
+
+const Patient_Event_Packet_t* StateMachine_GetReadyPacket(void){
+    return StateMachine_IsPacketReady() ? &ready_packet : nullptr;
 }
