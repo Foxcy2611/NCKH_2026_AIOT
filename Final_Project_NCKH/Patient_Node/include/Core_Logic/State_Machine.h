@@ -53,14 +53,16 @@ void StateMachine_ReportError(const char* reason);
 // Chỉ đọc phiên hiện tại để hiển thị hoặc đóng gói truyền tin.
 const Patient_Session_t* StateMachine_GetCurrentSession(void);
 
-// Mô-đun truyền tin báo đã gửi hoặc đã lưu chờ gửi lại.
-void StateMachine_NotifyEventSent(void);
+// Mô-đun truyền tin chỉ gọi sau khi payload đã được mã hóa và packet 64 byte
+// đã được sao chép an toàn vào hàng đợi Pending ACK.
+void StateMachine_NotifyEventQueued(void);
 
-// Chỉ true khi SESSION_READY đã được chuyển thành packet hoàn chỉnh có CRC32.
-bool StateMachine_IsPacketReady(void);
+// Chỉ true khi SESSION_READY đã được chuyển thành plaintext payload 24 byte.
+bool StateMachine_IsEventPayloadReady(void);
 
-// Trả con trỏ chỉ đọc tới packet sẵn sàng; trả nullptr nếu packet chưa sẵn sàng.
-// Tầng truyền tin phải copy packet trước khi gọi StateMachine_NotifyEventSent().
-const Patient_Event_Packet_t* StateMachine_GetReadyPacket(void);
+// Trả con trỏ chỉ đọc tới payload sẵn sàng; trả nullptr nếu chưa sẵn sàng.
+// Lớp AES phải copy payload, mã hóa và enqueue packet thành công trước khi gọi
+// StateMachine_NotifyEventQueued().
+const Patient_Event_Payload_t* StateMachine_GetReadyEventPayload(void);
 
 #endif /* NCKH_STATE_MACHINE_H */

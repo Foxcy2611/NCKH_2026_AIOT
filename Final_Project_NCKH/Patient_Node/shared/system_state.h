@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include "Secure_Protocol.h"
+
 /* HEADER này chứa các enum luôn chuyển trạng thái */
 
 // -------------------- STATE TRẠNG THÁI -------------------- // 
@@ -82,23 +84,19 @@ typedef enum {
 } Event_Type_t;
 
 // ============================
-// 6. Kết quả so sánh Checksum
+// 6. Trạng thái tổng thể khi gửi 1 packet qua ESP-NOW
 // ============================
 typedef enum {
-    CRC_MATCH = 0,          // Checksum chính xác
-    CRC_MISMATCH            // Checksum không chính xác
-} Crc_Check_Result_t;
-
-// ============================
-// 7. Trạng thái tổng thể khi gửi 1 packet qua ESP-NOW
-// ============================
-typedef enum {
-    STATUS_ACK_PENDING = 0,     // Đã gửi, chờ ACK
-    STATUS_ACK_CONFIRMED,       // Đã nhận ACK khớp vs sequence -> Xong
-    STATUS_RETRY_REQUESTED,     // Yêu cầu retry lại lần nữa
-    STATUS_RETRY_EXCEEDED       // Hết số lần retry cho phép
+    STATUS_IDLE = 0,          // Không có packet cần gửi
+    STATUS_QUEUED,            // Packet đã nằm trong hàng đợi
+    STATUS_SENDING,           // Đã gọi esp_now_send()
+    STATUS_ACK_PENDING,       // ESP-NOW báo gửi được, đang chờ Gateway phản hồi
+    STATUS_RETRY_WAIT,        // Đang chờ đến thời điểm gửi lại
+    STATUS_ACK_CONFIRMED,     // Gateway xác nhận packet hợp lệ
+    STATUS_NACK_RECEIVED,     // Gateway từ chối packet
+    STATUS_RETRY_EXCEEDED,    // Đã vượt số lần gửi lại
+    STATUS_SEND_ERROR         // Không thể gửi ở mức ESP-NOW
 } Event_Send_Status_t;
-
 
 // -------------------- STRUCT GÓI BẢN TIN -------------------- //
 
@@ -123,45 +121,15 @@ typedef struct {
     uint64_t event_timestamp;
 } Patient_Session_t;
 
-
 // ==========================================
-// 2. Cấu trúc PAYLOAD ESP-NOW (TRUYỀN TẢI)
-// ==========================================
-#pragma pack(push, 1) // Ép không cho trình biên dịch chèn byte trống (padding) để truyền sóng RF chuẩn từng byte
-typedef struct {
-    uint32_t device_id;        // Định danh thiết bị (đọc từ MAC address) để Gateway nhận diện nguồn phát
-    uint32_t sequence;         // Số thứ tự gói tin để Gateway đồng bộ lịch sử
-    uint32_t session_id;       // ID phiên đo liên kết các tập dữ liệu
-    uint64_t timestamp;        // Dấu thời gian lúc đóng gói bản tin
-
-    uint8_t event_type;        // Phân loại mục đích gói tin 
-
-    uint8_t classification;    // Kết quả AI (Sử dụng AiResult ép kiểu uint8_t)
-    float model_score;         // Độ tự tin của mô hình AI
-
-    uint8_t audio_quality;     // Tình trạng file âm thanh (Sử dụng AudioQuality ép kiểu uint8_t)
-
-    bool vitals_valid;         // Cờ xác nhận dữ liệu nhịp tim/SpO2 bên dưới có giá trị thực hay không
-    uint16_t heart_rate;       // Dữ liệu nhịp tim
-    uint8_t spo2;              // Dữ liệu SpO2
-
-    uint8_t battery;           // Phần trăm pin hiện hành
-
-    uint32_t crc32;            // Checksum cho toàn bộ packet
-} Patient_Event_Packet_t;
-#pragma pack(pop)
-
-// ==========================================
-// 3. Struct hàng đợi Pending ACK khi gửi qua ESP-NOW
+// 2. Struct hàng đợi Pending ACK khi gửi qua ESP-NOW
 // ==========================================
 typedef struct {
     Event_Send_Status_t status;         // PENDING / CON
-    Patient_Event_Packet_t packet;      // Bản sao gói đã gửi, để gửi lại y hệt khi retry
+    Secure_EspNow_Packet_t packet;      // Bản sao packet bảo mật đã gửi, để retry y hệt
 
     uint8_t retry_count;                // Đã retry bao nhiêu lần ?
     uint32_t last_sent_timestamp;       // millis() lúc gửi gần nhất 
 } Pending_ACK_Entry_t;
-
-
 
 #endif /* NCKH_SYSTEM_STATE_H */

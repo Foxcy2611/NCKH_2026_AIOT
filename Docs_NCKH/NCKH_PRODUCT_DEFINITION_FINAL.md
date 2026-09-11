@@ -5,6 +5,8 @@
 
 **Phạm vi:** hoàn thành nguyên mẫu NCKH, không phải thiết bị y tế thương mại, không nhằm tự chẩn đoán bệnh.
 
+**Đặc tả bảo mật đường truyền:** [Encrypt_AES-128-GCM.md](./Encrypt_AES-128-GCM.md). Khi nội dung liên quan đến cấu trúc packet, nonce, khóa, ACK/NACK hoặc retry, tài liệu bảo mật này là nguồn quy định chi tiết.
+
 ---
 
 ## 1. Tên đề tài & Mục tiêu
@@ -44,7 +46,7 @@ Hệ thống hướng tới **hỗ trợ theo dõi và cảnh báo**, **không**
           | DSP + DS-CNN INT8        |
           +------------+-------------+
                        |
-                    ESP-NOW
+              ESP-NOW + AES-128-GCM
                        |
                        v
           +--------------------------+
@@ -88,7 +90,7 @@ Thiết bị cá nhân nhỏ gọn, cầm tay, chạy pin, có thể mang theo.
 - Đo hô hấp vẫn phải đưa thiết bị gần miệng dù đeo tay.
 - MAX30102 dạng finger measurement phù hợp thiết bị cầm tay hơn trong phạm vi NCKH hiện tại.
 
-**Trách nhiệm:** thu audio I2S, VAD, rolling pre-trigger buffer PSRAM, Audio Quality Check, DSP, TinyML inference, voting, MAX30102 theo phiên, OLED interaction, low-power state, local event storage khi mất Gateway, ESP-NOW event TX.
+**Trách nhiệm:** thu audio I2S, VAD, rolling pre-trigger buffer PSRAM, Audio Quality Check, DSP, TinyML inference, voting, MAX30102 theo phiên, OLED interaction, low-power state, tạo payload sự kiện, mã hóa/xác thực AES-128-GCM, local event storage khi mất Gateway, ESP-NOW event TX và xử lý phản hồi bảo mật từ Gateway.
 
 **Không chịu trách nhiệm:** Wi-Fi credential, MQTT, TLS, cloud reconnect, GPS, LTE, environment sensing.
 
@@ -98,7 +100,7 @@ Vai trò: Gateway truyền thông, Environmental Node, Data Aggregator, Network 
 
 **Phần cứng:** ESP32, DHT22, BMP280, SGP30, NEO-M8N, A7680C, Wi-Fi, ESP-NOW. Nguồn cấp cố định; pin là tùy chọn nếu cần mobile. TFT là tùy chọn, không bắt buộc.
 
-**Trách nhiệm:** ESP-NOW RX; đọc DHT22/BMP280/SGP30 định kỳ; Environment Snapshot; ghép PatientEvent + Environment Snapshot gần thời điểm tương ứng; quản lý sequence/history; local storage/queue; Wi-Fi; LTE qua A7680C; MQTT publish; GPS khi cần; optional TFT/status UI.
+**Trách nhiệm:** ESP-NOW RX; xác thực và giải mã AES-128-GCM; chống nhận trùng; tạo ACK/NACK đã mã hóa; đọc DHT22/BMP280/SGP30 định kỳ; Environment Snapshot; ghép Patient Event đã giải mã với Environment Snapshot gần thời điểm tương ứng; quản lý sequence/history; local storage/queue; Wi-Fi; LTE qua A7680C; MQTT publish; GPS khi cần; optional TFT/status UI.
 
 ---
 
@@ -289,13 +291,19 @@ Dùng **3 nút vật lý riêng** để tránh logic long-press/double-click ph�
                   |SESSION READY|
                   +------+------+
                          |
-                      ESP-NOW
+              Build payload + AES-GCM
+                         |
+                  Lưu pending + gửi
+                         |
+                  Chờ ACK/NACK nền
                          |
                          v
                       STANDBY
 ```
 
 Monitor event xong có thể quay lại `AUTO_MONITOR`.
+
+Việc chờ phản hồi và retry thuộc bộ quản lý truyền thông, không tạo thêm trạng thái chặn cho luồng đo chính. Sau khi lưu bản sao packet mã hóa vào hàng đợi, state machine có thể về `STANDBY` hoặc tiếp tục `AUTO_MONITOR`.
 
 ### 8.2. Mode 0 — STANDBY/SLEEP
 
@@ -329,7 +337,8 @@ Nếu user không muốn đo: nhấn `SLEEP` — session vẫn hợp lệ với 
 MONITOR -> INMP441+I2S ON -> 1s rolling PSRAM -> VAD continuous
    -> 4 consecutive blocks > threshold -> TRIGGER
    -> 1s pre + 4s post -> 5s final audio -> Quality Check
-   -> DSP -> 3x Invoke/Voting -> Event -> ESP-NOW -> Return to MONITOR
+   -> DSP -> 3x Invoke/Voting -> Event Payload -> AES-GCM Packet
+   -> Lưu pending -> ESP-NOW -> Return to MONITOR
 ```
 
 **MAX30102 trong Monitor Mode = OFF mặc định** — không thể giả định người dùng đang đặt ngón tay trên sensor; Monitor Mode tập trung vào acoustic monitoring. Nếu Monitor phát hiện event đáng chú ý, OLED có thể yêu cầu user thực hiện HR/SpO₂ check bằng nút `CHECK`.
@@ -368,89 +377,83 @@ Stop I2S -> Stop MAX30102 -> Reset buffers/state -> OLED OFF -> ESP-NOW OFF -> E
 
 Patient Node không thu thập/gửi dữ liệu bệnh nhân liên tục. Hoạt động theo phiên/sự kiện:
 
-- Bấm CHECK → ghi âm 5s + AI + optional HR/SpO₂ → hoàn thành → tạo `PatientEvent` → gửi Gateway.
-- Bật MONITOR → mic hoạt động liên tục chờ acoustic event → phát hiện & xử lý xong 1 sự kiện → mới tạo `PatientEvent` → gửi Gateway.
+- Bấm CHECK → ghi âm 5s + AI + optional HR/SpO₂ → hoàn thành → tạo `Patient_Event_Payload_t` → mã hóa và gửi Gateway.
+- Bật MONITOR → mic hoạt động liên tục chờ acoustic event → phát hiện & xử lý xong 1 sự kiện → mới tạo payload, mã hóa và gửi Gateway.
 - HR/SpO₂ chỉ đo khi có phiên đo, không giả định đo liên tục 24/7.
 - Không có phiên/sự kiện → không gửi dữ liệu bệnh nhân mới.
 - Gateway tạm không khả dụng → Patient Node lưu event chưa đồng bộ, gửi lại khi kết nối khôi phục.
 
 ```text
 KHÔNG CÓ PHIÊN/SỰ KIỆN -> Không gửi gì
-CÓ CHECK -> Hoàn thành CHECK -> PatientEvent -> Gửi Gateway
-CÓ MONITOR EVENT -> AI xử lý xong -> PatientEvent -> Gửi Gateway
+CÓ CHECK -> Hoàn thành CHECK -> Payload -> AES-GCM Packet -> Gateway
+CÓ MONITOR EVENT -> AI xử lý xong -> Payload -> AES-GCM Packet -> Gateway
 ```
 
-Patient Node gửi 1 Event Packet đi cũng là 1 vấn đề
+`esp_now_send()` thành công chỉ cho biết tầng truyền đã gửi xong, không chứng minh Gateway đã xác thực và xử lý nội dung. Vì vậy phản hồi nghiệp vụ vẫn bắt buộc:
 
-- Nó chỉ biết đã gửi đi nhưng không hề biết bên kia đã nhận được chưa và đã nhận đúng gói tin chưa
-- Sử dụng cơ chế CRC32, 1 hàng đợi tự chế cho toàn bộ packet và cơ chế ACK/NACK như sau
-
-| | Gateway nhận | Patient Node gửi |
+| Trường hợp tại Gateway | Gateway xử lý | Patient Node xử lý |
 |---|---|---|
-| Nhận đúng (CRC OK) | Gửi ACK ngay, xong việc quay trở lại nhận packet mới | Nhận ACK -> Xoá khỏi hàng đợi pending, không cần retry |
-| Nhận sai (CRC FAIL) | Im lặng, bỏ qua, quay lại chờ packet tiếp — không có khái niệm "NACK" chủ động | Không thấy ACK sau timeout → tăng retry_count, gửi lại cùng packet cũ (không tạo mới) | 
-| Retry hết số lần cho phép | (không liên quan) | Lưu local, đánh dấu synced = false, không giữ Node kẹt ở việc gửi mãi | 
+| Packet mới, tag hợp lệ | Giải mã, nhận Event một lần và gửi `ACK_ACCEPTED` đã mã hóa | Xác thực ACK, xóa đúng packet khỏi pending |
+| Packet hợp lệ nhưng trùng `device_id + sequence` | Không lưu/publish lần hai; gửi `ACK_DUPLICATE` đã mã hóa | Coi là đã đồng bộ và xóa pending |
+| Sai kích thước, MAC, magic, phiên bản hoặc tag | Im lặng loại bỏ; không sử dụng dữ liệu và không phản hồi | Hết timeout thì gửi lại **đúng packet mã hóa cũ** |
+| Gateway tạm bận nhưng packet đã xác thực | Có thể gửi `NACK_BUSY` đã mã hóa | Chờ khoảng retry rồi gửi lại packet cũ |
+| Hết số lần retry | Không liên quan | Giữ bản sao local, đánh dấu chưa đồng bộ; không khóa state machine |
+
+`authentication_tag` của AES-GCM thay cho CRC32: vừa phát hiện dữ liệu bị sửa, vừa xác thực thiết bị có đúng khóa. Không dùng thêm CRC32 trong packet bảo mật.
 
 ---
 
 ## 10. Data models
 
-### 10.1. PatientSession (trên Patient Node)
+### 10.1. `Patient_Session_t` — dữ liệu cục bộ trên Patient Node
 
 ```cpp
-struct PatientSession {
+typedef struct {
     uint32_t session_id;
-    uint32_t sequence;
-    uint64_t timestamp;
-
-    uint8_t classification;
+    Event_Type_t event_type;
+    Audio_Quality_t audio_quality;
+    Interface_TinyML_t classification;
     float model_score;
-
-    uint8_t audio_quality;
-
     bool vitals_valid;
     uint16_t heart_rate;
     uint8_t spo2;
-
-    uint8_t battery;
-    bool synced;
-};
+    uint64_t event_timestamp;
+} Patient_Session_t;
 ```
 
-Nếu user bỏ qua HR/SpO₂ → `vitals_valid = false`. Không coi là lỗi.
+Nếu người dùng bỏ qua HR/SpO₂ → `vitals_valid = false`; đây vẫn là một phiên hợp lệ. `device_id`, `sequence`, trạng thái gửi và số lần retry thuộc lớp packet/hàng đợi truyền thông, không thuộc Session.
 
-### 10.2. PatientEventPacket (ESP-NOW payload)
+### 10.2. Hai payload logic trước mã hóa
 
-```cpp
-struct PatientEventPacket {
-    uint32_t device_id;
-    uint32_t sequence;
-    uint32_t session_id;
-    uint64_t timestamp;
-
-    uint8_t event_type;
-
-    uint8_t classification;
-    float model_score;
-
-    uint8_t audio_quality;
-
-    bool vitals_valid;
-    uint16_t heart_rate;
-    uint8_t spo2;
-
-    uint8_t battery;
-};
+```text
+Node -> Gateway: Patient_Event_Payload_t      = 24 byte plaintext tạm
+Gateway -> Node: Gateway_Response_Payload_t   = 24 byte plaintext tạm
 ```
+
+- `Patient_Event_Payload_t` chứa `session_id`, thời gian sự kiện, loại sự kiện, kết quả AI, chất lượng audio, HR/SpO₂ và pin.
+- `Gateway_Response_Payload_t` chứa Node đích, `session_id` được phản hồi, thời gian Gateway, cờ thời gian hợp lệ, mã ACK/NACK và vùng dự phòng.
+- Payload chỉ tồn tại trước mã hóa hoặc sau giải mã thành công; không gửi trực tiếp qua ESP-NOW.
+
+### 10.3. `Secure_EspNow_Packet_t` — packet bảo mật dùng chung hai chiều
+
+```text
++------------------+----------+------------------+--------------------+
+| HEADER / AAD     | NONCE    | CIPHERTEXT       | AUTHENTICATION TAG |
+| 12 byte          | 12 byte  | 24 byte          | 16 byte            |
++------------------+----------+------------------+--------------------+
+                         Tổng: 64 byte
+```
+
+Hai chiều đều truyền đúng `Secure_EspNow_Packet_t`. Trường `message_type` trong Header/AAD cho biết ciphertext chứa Patient Event hay Gateway Response. Hai chiều dùng khóa AES-128 riêng. Định nghĩa trường, cách sinh nonce và mã phản hồi nằm trong [Encrypt_AES-128-GCM.md](./Encrypt_AES-128-GCM.md).
 
 ---
 
 ## 11. ESP-NOW — vai trò final
 
-Giữ ESP-NOW làm **local event transport**, không stream raw audio. Patient Node không dùng Wi-Fi/MQTT trực tiếp, chỉ gửi event/session.
+Giữ ESP-NOW làm **local event transport**, không stream raw audio. Patient Node không dùng Wi-Fi/MQTT trực tiếp, chỉ gửi packet sự kiện đã được AES-128-GCM bảo vệ. `peer.encrypt = false`; bảo mật được thực hiện thống nhất ở tầng ứng dụng.
 
 ```text
-Patient Node -> ESP-NOW -> Gateway -> Wi-Fi/LTE -> MQTT
+Patient Node -> AES-GCM -> ESP-NOW -> Verify/Decrypt tại Gateway -> Wi-Fi/LTE -> MQTT
 ```
 
 **Lợi ích:** giảm độ phức tạp Patient Node, giảm power, không Wi-Fi credentials, không MQTT reconnect, không TLS/broker logic, giữ Patient Node độc lập với Internet.
@@ -458,23 +461,31 @@ Patient Node -> ESP-NOW -> Gateway -> Wi-Fi/LTE -> MQTT
 ### 11.1. Reliability
 
 ```text
-Patient Node --PatientEvent seq=N--> Gateway --ACK seq=N--> Patient Node
+Patient Node --Encrypted Event seq=N--> Gateway --Encrypted ACK/NACK seq=N--> Patient Node
 ```
 
-- ACK nhận được → `synced = true`.
-- Timeout → `store local`, `synced = false`.
-- Gateway xuất hiện lại → `retry pending events`.
-- Gateway giữ `last_sequence_per_patient` để tránh duplicate.
+- Chỉ công nhận ACK/NACK sau khi đúng MAC Gateway, Header/AAD, `sequence`, `session_id` và GCM tag.
+- `ACK_ACCEPTED` hoặc `ACK_DUPLICATE` hợp lệ → xóa packet khỏi pending, đánh dấu đã đồng bộ.
+- Timeout hoặc phản hồi không hợp lệ → giữ local và retry theo giới hạn.
+- Gateway xuất hiện lại → retry các packet pending.
+- Gateway lưu dấu `device_id + sequence` để ACK packet trùng nhưng không lưu/publish Event lần hai.
 
 ### 11.2. Cơ chế hàng đợi
 
-Lưu lại **bản sao gói tin vừa gửi** cùng trạng thái/thời gian/số lần retry,để Node có thể theo dõi và tự động gửi lại đúng gói đó khi chưa nhận được
-ACK — mà không cần dựng lại dữ liệu từ đầu (buffer audio, kết quả AI đã bị
-dọn cho phiên tiếp theo) và không làm block vòng lặp chính trong lúc chờ.
+Lưu lại **nguyên bản packet 64 byte sau mã hóa** cùng trạng thái/thời gian/số lần retry để Node tự động gửi lại đúng packet đó khi chưa nhận được ACK hợp lệ — không dựng lại payload, không tạo nonce mới và không tăng sequence cho cùng một Event.
 
 Nói ngắn gọn: nó là "bộ nhớ tạm" giữ nguyên gói tin + tiến trình gửi, tách
 biệt khỏi state machine chính, để việc chờ ACK/retry chạy song song mà
-không cần Node đứng yên đợi Gateway phản hồi.
+không cần Node đứng yên đợi Gateway phản hồi. Nếu hết retry, packet vẫn được giữ trong vùng lưu cục bộ để đồng bộ lại sau.
+
+### 11.3. Quy tắc bảo mật bắt buộc
+
+- Không đọc hoặc publish ciphertext như dữ liệu nghiệp vụ.
+- Chỉ dùng plaintext sau khi `authentication_tag` đã được xác thực.
+- Node → Gateway và Gateway → Node dùng hai khóa khác nhau.
+- Một nonce không được dùng cho hai plaintext khác nhau dưới cùng một khóa.
+- Retry phải gửi lại nguyên packet cũ; chỉ Event hoặc Response mới được sinh nonce mới.
+- Không log khóa, plaintext nhạy cảm hoặc toàn bộ nonce/tag ở bản firmware phát hành.
 
 ---
 
@@ -483,7 +494,7 @@ không cần Node đứng yên đợi Gateway phản hồi.
 ### 12.1. Aggregation flow
 
 ```text
-PatientEvent -> Get nearest EnvironmentSnapshot -> Get GatewayStatus
+Verified/Decrypted Patient Event -> Get nearest EnvironmentSnapshot -> Get GatewayStatus
    -> Optional GPS -> Build CompleteRecord -> MQTT Publish
 ```
 
@@ -502,21 +513,21 @@ Cloud không cần tự ghép hai stream rời rạc nếu Gateway đã aggregat
 ### 13.1. Home Monitoring
 
 ```text
-Patient Node -> ESP-NOW -> Home Gateway -> Wi-Fi -> MQTT -> Qt Dashboard
+Patient Node -> AES-GCM/ESP-NOW -> Home Gateway -> Wi-Fi -> MQTT -> Qt Dashboard
 ```
 Gateway: always-on, đo môi trường định kỳ, Wi-Fi primary uplink, GPS thường OFF, LTE standby/fallback.
 Patient Node: portable, Standby phần lớn thời gian, Manual Check khi cần, Monitor Mode khi user chủ động bật.
 
 ### 13.2. Portable Offline
 
-Người dùng mang Patient Node ra khỏi vùng Gateway. Patient Node vẫn hoạt động: Manual Check, TinyML, HR/SpO2, OLED Result, Local event storage. ESP-NOW gửi thất bại → `event.synced = false`; quay lại gần Gateway → `sync pending events`.
+Người dùng mang Patient Node ra khỏi vùng Gateway. Patient Node vẫn hoạt động: Manual Check, TinyML, HR/SpO2, OLED Result, Local event storage. ESP-NOW gửi thất bại → giữ nguyên packet mã hóa trong hàng đợi chưa đồng bộ; quay lại gần Gateway → gửi lại các packet pending.
 
 > **Nguyên tắc:** Mất Gateway/Internet không làm mất chức năng TinyML cốt lõi.
 
 ### 13.3. Mobile Connected
 
 ```text
-Patient Node -> ESP-NOW -> Gateway -> A7680C LTE -> MQTT
+Patient Node -> AES-GCM/ESP-NOW -> Gateway -> A7680C LTE -> MQTT
 ```
 LTE là primary uplink, GPS có thể ON, Environment sensors tiếp tục đo môi trường xung quanh. Gateway không bắt buộc phải luôn đi theo Patient Node — chế độ mở rộng khi cần mobile realtime.
 
@@ -564,7 +575,10 @@ Gateway phải concurrent: ESP-NOW, Environment sensors, Wi-Fi, LTE, MQTT, GPS, 
 
 **Task proposal:**
 ```text
-TaskEspNow -> PatientEventQueue -> TaskGatewayManager
+TaskEspNow RX -> RawSecurePacketQueue -> Verify/Decrypt -> PatientEventQueue
+                                                    |
+                                                    +-> Encrypted ACK/NACK TX
+PatientEventQueue -> TaskGatewayManager
                                         +-------> Storage
                                         +-------> PublishQueue -> TaskNetwork/MQTT
 
@@ -609,7 +623,7 @@ RTOS không tự đảm bảo fault isolation. Rules:
 │  • Error / Retry                                   │
 └──────────────────────┬─────────────────────────────┘
                        │
-                    ESP-NOW
+              AES-GCM / ESP-NOW
                        │
                        ▼
 ┌────────────────────────────────────────────────────┐
@@ -744,7 +758,7 @@ Primary use: always-on USB/power adapter. Battery: optional backup/mobile.
 
 **Patient Node:** Deep sleep vs light sleep, Battery capacity, MAX30102 measurement duration, OLED timeout, Event storage size.
 
-**ESP-NOW:** Exact packet schema, Retry count, Re-sync algorithm, Channel management.
+**ESP-NOW/AES-GCM:** schema packet v1 đã khóa ở 64 byte; còn TBD: Retry count, thời gian timeout/backoff, Re-sync algorithm, Channel management, cách nạp/thay khóa và quy tắc phục hồi khi mất đồng bộ thời gian.
 
 **Gateway:** Sensor sampling period, MQTT QoS, Wi-Fi/LTE failover policy, GPS activation policy, TFT requirement.
 
@@ -762,7 +776,8 @@ PHASE 2 — PATIENT NODE LOGIC
     Monitor Mode, MAX30102 session, low power
 
 PHASE 3 — ESP-NOW EVENT LINK
-    PatientEvent, sequence, ACK, local retry
+    Payload 24 byte, AES-128-GCM packet 64 byte, directional keys,
+    sequence, secure ACK/NACK, chống trùng, local retry
 
 PHASE 4 — GATEWAY RTOS
     SensorTask, EspNowTask, GatewayManager, Network/MQTT, storage
@@ -781,7 +796,8 @@ PHASE 8 — FINAL HARDWARE
 
 PHASE 9 — EXPERIMENTAL EVALUATION
     AI metrics, Python↔ESP32 parity, acoustic quality, VAD,
-    latency, memory, power, ESP-NOW reliability, Wi-Fi/LTE, end-to-end demo
+    latency, memory, power, ESP-NOW reliability, AES-GCM tamper/replay tests,
+    Wi-Fi/LTE, end-to-end demo
 
 PHASE 10 — FINAL NCKH REPORT
 ```
@@ -805,7 +821,8 @@ PHASE 10 — FINAL NCKH REPORT
 11. **INMP441 giữ cho NCKH final**; Near-field là điều kiện acquisition chính.
 12. **Quality Gate** kiểm tra final 5s trước inference; **1s PSRAM** chỉ là pre-trigger buffer cho Auto Monitor (không phải noise baseline).
 13. **Patient Node dùng state machine**; **Gateway dùng FreeRTOS** vì concurrency thực sự cần.
-14. **ESP-NOW** giữ làm local event link, không stream raw audio lên cloud.
+14. **ESP-NOW + AES-128-GCM:** ESP-NOW giữ làm local event link; Event và ACK/NACK đều được mã hóa/xác thực ở tầng ứng dụng, không stream raw audio lên cloud.
 15. **Wi-Fi** là home uplink; **LTE** là fallback/mobile uplink; **GPS** dùng khi mobile/alert, không cần luôn bật ở nhà.
 16. **Dashboard phân biệt** dữ liệu continuous và event/session based.
 17. Hệ thống hỗ trợ **monitoring/warning, không tự chẩn đoán**.
+18. **Không tin dữ liệu trước khi xác thực:** Gateway/Node chỉ xử lý plaintext sau khi GCM tag hợp lệ; tag thay CRC32 trong packet bảo mật.

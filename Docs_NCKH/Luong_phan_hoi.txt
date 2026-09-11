@@ -1,0 +1,50 @@
+LUỒNG PATIENT EVENT VÀ PHẢN HỒI BẢO MẬT
+
+ESP32-S3 NODE                                      ESP32 GATEWAY
+
+Patient_Session_t
+      │
+      ▼
+Patient_Event_Payload_t (24 byte plaintext tạm)
+      │
+      ▼  AES-128-GCM bằng KEY_NODE_TO_GATEWAY
+Secure_EspNow_Packet_t (64 byte, SEQ=150)
+      │
+      ├────────────── ESP-NOW ─────────────────────►│
+      │                                              ▼
+      │                                  Kiểm MAC/Header/AAD/tag
+      │                                              │
+      │                                    ┌─────────┴─────────┐
+      │                                    │                   │
+      │                                  KHÔNG HỢP LỆ         HỢP LỆ
+      │                                    │                   │
+      │                             DROP, không phản hồi   Giải mã Event
+      │                                                        │
+      │                                           Kiểm device_id + sequence
+      │                                                        │
+      │                                         ┌──────────────┴─────────────┐
+      │                                         │                            │
+      │                                    Event mới                    Event trùng
+      │                                  xử lý đúng 1 lần              không xử lý lại
+      │                                         │                            │
+      │                                         └──────────────┬─────────────┘
+      │                                                        ▼
+      │                                      Gateway_Response_Payload_t
+      │                                      ACK_ACCEPTED/ACK_DUPLICATE
+      │                                                        │
+      │                                      AES-128-GCM bằng KEY_GATEWAY_TO_NODE
+      │                                                        ▼
+      │◄──────── Secure_EspNow_Packet_t, SEQ=150 / ESP-NOW ─────┤
+      │
+      ▼
+Kiểm MAC/Header/SEQ/tag, sau đó giải mã Response
+      │
+      ├── ACK_ACCEPTED hoặc ACK_DUPLICATE hợp lệ -> xóa pending
+      ├── NACK_BUSY hợp lệ -> chờ rồi gửi lại packet cũ
+      └── Timeout/phản hồi sai -> gửi lại nguyên packet 64 byte cũ
+
+GHI NHỚ:
+- Hai chiều dùng cùng format Secure_EspNow_Packet_t, nhưng plaintext và khóa khác nhau.
+- ACK/NACK cũng phải mã hóa và xác thực; ACK chỉ từ callback gửi của ESP-NOW là chưa đủ.
+- Retry không tạo nonce, sequence hoặc ciphertext mới.
+- GCM tag thay CRC32 trong packet bảo mật.

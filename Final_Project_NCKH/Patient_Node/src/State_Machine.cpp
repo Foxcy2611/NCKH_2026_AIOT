@@ -1,6 +1,5 @@
 #include "Core_Logic/State_Machine.h"
 
-#include <stddef.h>
 #include <string.h>
 #include "Audio_IO/I2S_Mic.h"
 #include "Core_Logic/Quality_Check.h"
@@ -8,7 +7,6 @@
 #include "Vitals_UI/PPG_Sensor.h"
 
 #include "Packet_Metadata.h"
-#include "Checksum_CRC32.h"
 #include "board_pinout.h"
 
 // Toàn bộ biến và hàm trong anonymous namespace chỉ tồn tại trong file này,
@@ -26,9 +24,12 @@ namespace {
     volatile uint8_t pending_button_bits = 0;
     volatile bool abort_requested = false;
 
-    Patient_Event_Packet_t ready_packet{};
-    bool packet_built = false;
-    bool packet_queued = false;
+    // /** AES-GCM MIGRATION:
+    //  * State Machine chỉ giữ dữ liệu nghiệp vụ trước mã hóa.
+    //  * Packet 64 byte, sequence, nonce và tag thuộc mô-đun truyền thông.
+    //  */
+    Patient_Event_Payload_t ready_payload{};
+    bool payload_built = false;
     bool monitor_enabled = false;
     bool vitals_sensor_available = false;
     bool vitals_wait_logged = false;
@@ -130,9 +131,8 @@ namespace {
         current_session.classification = INTERFACE_UNSURE;
         current_session.vitals_valid = false;
 
-        memset(&ready_packet, 0, sizeof(ready_packet));
-        packet_built = false;
-        packet_queued = false;
+        memset(&ready_payload, 0, sizeof(ready_payload));
+        payload_built = false;
         Reset_MonitorVotes();
     }
 
@@ -180,36 +180,35 @@ namespace {
         return BTN_NONE;
     }
 
-    bool Build_EventPacket(
+    // /** Chuyển Session cục bộ thành plaintext 24 byte.
+    //  * Hàm này không sinh sequence/nonce và không thực hiện AES-GCM.
+    //  */
+    bool Build_EventPayload(
         const Patient_Session_t& session,
-        Patient_Event_Packet_t* packet
+        Patient_Event_Payload_t* payload
     ){
-        if(packet == nullptr){
-            Serial.println("[PATIENT EVENT] Packet pointer không hợp lệ.");
+        if(payload == nullptr){
+            Serial.println("[PATIENT EVENT] Payload pointer không hợp lệ.");
             return false;
         }
 
-        memset(packet, 0, sizeof(*packet));
+        memset(payload, 0, sizeof(*payload));
 
-        packet->device_id   = PacketMetadata_GetDeviceId();
-        packet->sequence    = PacketMetadata_NextSequence();
-        packet->session_id  = session.session_id;
-        packet->timestamp   = PacketMetadata_GetTimestamp(session.event_timestamp);
+        payload->session_id  = session.session_id;
+        payload->timestamp   = PacketMetadata_GetTimestamp(session.event_timestamp);
 
-        packet->event_type  = static_cast<uint8_t>(session.event_type);
+        payload->event_type  = static_cast<uint8_t>(session.event_type);
 
-        packet->classification  = static_cast<uint8_t>(session.classification);
-        packet->model_score     = session.model_score;
+        payload->classification  = static_cast<uint8_t>(session.classification);
+        payload->model_score     = session.model_score;
 
-        packet->audio_quality   = static_cast<uint8_t>(session.audio_quality);
+        payload->audio_quality   = static_cast<uint8_t>(session.audio_quality);
 
-        packet->vitals_valid    = session.vitals_valid;
-        packet->heart_rate      = session.vitals_valid ? session.heart_rate : 0U;
-        packet->spo2            = session.vitals_valid ? session.spo2 : 0U;
+        payload->vitals_valid    = session.vitals_valid ? 1U : 0U;
+        payload->heart_rate      = session.vitals_valid ? session.heart_rate : 0U;
+        payload->spo2            = session.vitals_valid ? session.spo2 : 0U;
 
-        packet->battery         = 0U; // Sau này thay
-
-        packet->crc32           = Crc32_Compute(packet, offsetof(Patient_Event_Packet_t, crc32));
+        payload->battery         = 0U; // Sau này lấy từ mô-đun quản lý pin.
 
         return true;
     }
@@ -331,47 +330,28 @@ namespace {
     void Handle_SessionReady(Button_Event_t event) {
         (void)event;
         
-        if(!packet_built){
-            packet_built = Build_EventPacket(current_session, &ready_packet);
+        if(!payload_built){
+            payload_built = Build_EventPayload(current_session, &ready_payload);
 
-            if(packet_built){
-                const uint32_t calculated_crc = Crc32_Compute(
-                    &ready_packet,
-                    offsetof(Patient_Event_Packet_t, crc32)
-                );
-                const bool crc_matches = calculated_crc == ready_packet.crc32;
-
+            if(payload_built){
                 Serial.printf(
-                    "[PACKET] Size=%u | Device=0x%08lX | Sequence=%lu | SessionID=0x%08lX\n",
-                    static_cast<unsigned int>(sizeof(ready_packet)),
-                    static_cast<unsigned long>(ready_packet.device_id),
-                    static_cast<unsigned long>(ready_packet.sequence),
-                    static_cast<unsigned long>(ready_packet.session_id)
+                    "[PAYLOAD] Size=%u | SessionID=0x%08lX | Timestamp=%llu%s\n",
+                    static_cast<unsigned int>(sizeof(ready_payload)),
+                    static_cast<unsigned long>(ready_payload.session_id),
+                    static_cast<unsigned long long>(ready_payload.timestamp),
+                    PacketMetadata_HasTimeSync() ? "" : " (NOT_SYNCED)"
                 );
                 Serial.printf(
-                    "[PACKET] Event=%s | Result=%s | Score=%.2f%% | Quality=%s | Vitals=%s\n",
+                    "[PAYLOAD] Event=%s | Result=%s | Score=%.2f%% | Quality=%s | Vitals=%s | Battery=%u%%\n",
                     EventTypeName(current_session.event_type),
                     ClassificationName(current_session.classification),
                     current_session.model_score * 100.0f,
                     AudioQualityName(current_session.audio_quality),
-                    current_session.vitals_valid ? "VALID" : "NOT_AVAILABLE"
+                    current_session.vitals_valid ? "VALID" : "NOT_AVAILABLE",
+                    static_cast<unsigned int>(ready_payload.battery)
                 );
-                Serial.printf(
-                    "[PACKET] Timestamp=%llu%s | CRC=0x%08lX | %s\n",
-                    static_cast<unsigned long long>(ready_packet.timestamp),
-                    PacketMetadata_HasTimeSync() ? "" : " (NOT_SYNCED)",
-                    static_cast<unsigned long>(ready_packet.crc32),
-                    crc_matches ? "CRC_MATCH" : "CRC_MISMATCH"
-                );
-                Serial.println("[PACKET READY] Đã đóng gói xong; đang chờ đưa vào hàng đợi gửi.");
+                Serial.println("[PAYLOAD READY] Đã tạo plaintext; đang chờ AES-GCM đóng gói và lưu pending.");
             }
-        }
-
-
-
-        if(packet_built && !packet_queued){
-            // Đưa vào now
-            // packet_queued = EspNow_Enqueue(ready_packet);
         }
     }
 
@@ -458,7 +438,7 @@ void StateMachine_Init(void) {
     vitals_wait_logged = false;
     abort_requested = false;
     pending_button_bits = 0;
-    packet_built = false;
+    payload_built = false;
     has_check_timestamp = false;
     has_monitor_timestamp = false;
     Reset_CurrentSession();
@@ -728,9 +708,14 @@ const Patient_Session_t* StateMachine_GetCurrentSession(void) {
     return &current_session;
 }
 
-void StateMachine_NotifyEventSent(void) {
+void StateMachine_NotifyEventQueued(void) {
     if (current_state != STATE_SESSION_READY) {
-        Serial.println("[STATE] Bỏ qua EventSent: sai state hiện tại.");
+        Serial.println("[STATE] Bỏ qua EventQueued: sai state hiện tại.");
+        return;
+    }
+
+    if (!payload_built) {
+        Serial.println("[STATE] Bỏ qua EventQueued: payload chưa sẵn sàng.");
         return;
     }
 
@@ -741,7 +726,7 @@ void StateMachine_NotifyEventSent(void) {
     if(return_to_monitor) I2S_MonitorPrepareNextCapture();
     StateMachine_StateTransition(
         return_to_monitor ? STATE_MONITOR_LISTENING : STATE_STANDBY,
-        return_to_monitor ? "SESSION_SENT_MONITOR" : "SESSION_SENT"
+        return_to_monitor ? "EVENT_QUEUED_MONITOR" : "EVENT_QUEUED"
     );
 }
 
@@ -750,10 +735,10 @@ void StateMachine_SetVitalsAvailable(bool available){
     vitals_wait_logged = false;
 }
 
-bool StateMachine_IsPacketReady(void){
-    return current_state == STATE_SESSION_READY && packet_built;
+bool StateMachine_IsEventPayloadReady(void){
+    return current_state == STATE_SESSION_READY && payload_built;
 }
 
-const Patient_Event_Packet_t* StateMachine_GetReadyPacket(void){
-    return StateMachine_IsPacketReady() ? &ready_packet : nullptr;
+const Patient_Event_Payload_t* StateMachine_GetReadyEventPayload(void){
+    return StateMachine_IsEventPayloadReady() ? &ready_payload : nullptr;
 }

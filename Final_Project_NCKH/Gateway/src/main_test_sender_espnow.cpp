@@ -4,7 +4,8 @@
 #include "crc32.h"
 
 // Cấu trúc packet dữ liệu gửi từ ESP A -> ESP B
-struct __attribute__((packed)) Patient_Event_Packet_t
+// Packet thử nghiệm CRC32 cũ; không phải Secure_EspNow_Packet_t chính thức.
+struct __attribute__((packed)) Legacy_Patient_Event_Packet_t
 {
     uint32_t device_id;
     uint32_t sequence;
@@ -49,7 +50,7 @@ void loop()
 
     if (millis() - lastSend >= 2000)
     {
-        Patient_Event_Packet_t packet{};
+        Legacy_Patient_Event_Packet_t packet{};
 
         packet.device_id = 1001;
         packet.sequence = ++sequence;

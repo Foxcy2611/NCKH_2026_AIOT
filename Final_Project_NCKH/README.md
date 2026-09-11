@@ -24,8 +24,8 @@ Final_Project_NCKH/
 | Thư mục | Vai trò trong sản phẩm cuối |
 |---|---|
 | `AI_Model/` | Lưu model và artifact cần thiết để nhúng vào Patient Node |
-| `Patient_Node/` | Thu dữ liệu bệnh nhân, xử lý DSP/TinyML và tạo `PatientEvent` |
-| `Gateway/` | Nhận sự kiện, thu context môi trường và quản lý kết nối mạng |
+| `Patient_Node/` | Thu dữ liệu bệnh nhân, xử lý DSP/TinyML, tạo `Patient_Event_Payload_t` và mã hóa thành packet AES-128-GCM |
+| `Gateway/` | Xác thực/giải mã sự kiện, phản hồi bảo mật, thu context môi trường và quản lý kết nối mạng |
 | `Dashboard_Qt6/` | Nhận dữ liệu qua MQTT và cung cấp giao diện theo dõi |
 
 ## Ranh giới với các thư mục thử nghiệm
@@ -47,8 +47,9 @@ Qt prototypes ─────┘
 ## Quan hệ giữa các thành phần
 
 ```text
-Patient_Node ── PatientEvent / ESP-NOW ──► Gateway
-Gateway      ── MQTT qua Wi-Fi/LTE ──────► Dashboard_Qt6
+Patient_Node ── AES-GCM Patient Event / ESP-NOW ─► Gateway
+Patient_Node ◄─ AES-GCM ACK/NACK / ESP-NOW ────── Gateway
+Gateway      ── MQTT qua Wi-Fi/LTE ──────────────► Dashboard_Qt6
 ```
 
 Patient Node chịu trách nhiệm xử lý tại edge. Gateway chịu trách nhiệm kết nối,
@@ -63,6 +64,8 @@ lại pipeline TinyML thay cho Patient Node.
   sản phẩm và các quyết định đã chốt.
 - [Phân công công việc](../Docs_NCKH/NCKH_PHAN_CONG_CONG_VIEC.md): trách nhiệm
   và đầu ra của từng phần.
+- [Đặc tả AES-128-GCM](../Docs_NCKH/Encrypt_AES-128-GCM.md): format packet,
+  mã hóa Event, phản hồi ACK/NACK và retry.
 - [Pipeline huấn luyện](../AI_Training_Model/README.md): dữ liệu, model và đánh
   giá phía Python.
 - [Kiểm thử deployment](../Deploy_Model/README.md): quá trình xác minh C++,

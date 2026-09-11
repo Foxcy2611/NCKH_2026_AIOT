@@ -23,9 +23,11 @@ lõi không phụ thuộc Internet và raw audio không được truyền liên 
 ## Kiến trúc hệ thống
 
 ```text
-                         ESP-NOW
-┌──────────────────┐  PatientEvent  ┌──────────────────┐    MQTT  ┌─────────────────┐
+                    AES-GCM / ESP-NOW
+┌──────────────────┐ Secure Event   ┌──────────────────┐    MQTT  ┌─────────────────┐
 │ Patient Edge Node│ ─────────────► │   IoT Gateway    │ ────────►│ Qt6 Dashboard   │
+│                  │ ◄───────────── │                  │          │                 │
+│                  │ Secure ACK/NACK│                  │          │                 │
 │ ESP32-S3         │                │ ESP32            │          │ sessions/history│
 │ INMP441          │                │ environment      │          │ status/alerts   │
 │ MAX30102 + OLED  │                │ Wi-Fi/LTE/GPS    │          └─────────────────┘
@@ -35,8 +37,8 @@ lõi không phụ thuộc Internet và raw audio không được truyền liên 
 
 | Thành phần | Trách nhiệm chính | Không đảm nhiệm |
 |---|---|---|
-| **Patient Node** | Thu audio, Quality Gate, VAD, DSP, TinyML, HR/SpO₂ theo phiên, OLED và tạo `PatientEvent` | MQTT, LTE, GPS, cảm biến môi trường |
-| **Gateway** | Nhận sự kiện, thu môi trường, ghép dữ liệu, lưu/chuyển tiếp và quản lý uplink | Chạy lại mô hình âm thanh thay Patient Node |
+| **Patient Node** | Thu audio, Quality Gate, VAD, DSP, TinyML, HR/SpO₂ theo phiên, OLED, tạo `Patient_Event_Payload_t` và mã hóa AES-128-GCM | MQTT, LTE, GPS, cảm biến môi trường |
+| **Gateway** | Nhận/xác thực/giải mã sự kiện, phản hồi bảo mật, thu môi trường, ghép dữ liệu, lưu/chuyển tiếp và quản lý uplink | Chạy lại mô hình âm thanh thay Patient Node |
 | **Dashboard** | Hiển thị phiên đo, lịch sử, trạng thái thiết bị và cảnh báo | Suy diễn chẩn đoán lâm sàng |
 
 Kiến trúc tách trách nhiệm này giúp Patient Node vẫn đo và suy luận cục bộ khi
@@ -50,23 +52,23 @@ Gateway dùng để đưa sự kiện lên hệ thống.
 
 | Trường hợp | Patient Node ở đâu? | Gateway ở đâu? | Cơ chế hoạt động |
 |---|---|---|---|
-| **Theo dõi tại nhà** | Người dùng cầm, đặt trên bàn hoặc gần đầu giường, trong vùng ESP-NOW | Đặt cố định trong nhà, cấp nguồn liên tục | Patient Node xử lý tại edge → ESP-NOW → Gateway → Wi-Fi → MQTT |
+| **Theo dõi tại nhà** | Người dùng cầm, đặt trên bàn hoặc gần đầu giường, trong vùng ESP-NOW | Đặt cố định trong nhà, cấp nguồn liên tục | Patient Node xử lý tại edge → AES-GCM/ESP-NOW → Gateway → Wi-Fi → MQTT |
 | **Mang theo, không có Gateway** | Đi cùng người dùng, ngoài vùng ESP-NOW của nhà | Vẫn ở nhà hoặc không khả dụng | Patient Node tiếp tục đo, suy luận và hiển thị cục bộ; sự kiện chưa gửi được được đánh dấu chờ đồng bộ |
-| **Mang theo và có kết nối** | Đi cùng người dùng | Cũng được mang theo và nằm trong vùng ESP-NOW của Patient Node | Patient Node → ESP-NOW → Gateway; Gateway dùng LTE làm uplink và có thể bật GPS khi cần vị trí |
+| **Mang theo và có kết nối** | Đi cùng người dùng | Cũng được mang theo và nằm trong vùng ESP-NOW của Patient Node | Patient Node → AES-GCM/ESP-NOW → Gateway; Gateway dùng LTE làm uplink và có thể bật GPS khi cần vị trí |
 
 ### 1. Theo dõi tại nhà
 
 ```text
 Patient Node trong nhà
-  → xử lý audio và tạo PatientEvent
-  → ESP-NOW
-  → Gateway đặt cố định
+  → xử lý audio và tạo Patient Event payload
+  → mã hóa AES-GCM rồi gửi ESP-NOW
+  → Gateway xác thực, giải mã và phản hồi bảo mật
   → Wi-Fi
   → MQTT / Dashboard
 ```
 
 Gateway có thể đọc cảm biến môi trường định kỳ và ghép snapshot gần thời điểm
-`PatientEvent`. Wi-Fi là uplink chính; LTE chỉ đóng vai trò dự phòng nếu được
+Patient Event đã được xác thực/giải mã. Wi-Fi là uplink chính; LTE chỉ đóng vai trò dự phòng nếu được
 bật trong cấu hình cuối. Patient Node không cần giữ kết nối Wi-Fi.
 
 ### 2. Mang theo, hoạt động độc lập
@@ -76,19 +78,19 @@ Patient Node ngoài vùng Gateway
   → CHECK hoặc MONITOR
   → Quality Gate + TinyML
   → hiển thị kết quả trên OLED
-  → lưu/đánh dấu PatientEvent chờ gửi
+  → mã hóa và lưu `Secure_EspNow_Packet_t` vào hàng đợi chờ gửi
 ```
 
 Trong trường hợp này không có dữ liệu môi trường từ Gateway tại thời điểm đo và
 không có cập nhật realtime lên Dashboard. Khi Patient Node quay lại vùng
-ESP-NOW, các sự kiện chờ có thể được gửi lại theo cơ chế sequence, ACK/retry và
-chống trùng lặp.
+ESP-NOW, các packet mã hóa đang chờ có thể được gửi lại nguyên vẹn theo cơ chế
+sequence, ACK/retry bảo mật và chống trùng lặp.
 
 ### 3. Mang theo cả Patient Node và Gateway
 
 ```text
 Patient Node mang theo
-  → ESP-NOW cự ly gần
+  → AES-GCM/ESP-NOW cự ly gần
   → Gateway mang theo
   → LTE, tùy chọn GPS
   → MQTT / Dashboard
@@ -115,7 +117,7 @@ CHECK
   → DSP + DS-CNN INT8
   → hiển thị kết quả
   → tùy chọn đo HR/SpO₂ bằng MAX30102
-  → hoàn tất PatientSession
+  → hoàn tất `Patient_Session_t`
 ```
 
 HR/SpO₂ là phép đo theo phiên. Nếu người dùng bỏ qua bước đặt ngón tay,
@@ -132,7 +134,7 @@ MONITOR
   → 1 giây pre-trigger + 4 giây post-trigger
   → kiểm tra chất lượng + DSP + TinyML
   → lặp ba chu kỳ capture/inference để bỏ phiếu
-  → tạo PatientEvent
+  → tạo Patient Event payload để mã hóa/gửi
 ```
 
 Bộ đệm pre-trigger giữ lại phần đầu của sự kiện trong lúc VAD đang chờ xác
@@ -165,9 +167,15 @@ Python. Dự án không tuyên bố bit-exact trên mọi nền tảng.
 ## Luồng dữ liệu dự kiến khi tích hợp hoàn chỉnh
 
 ```text
-PatientSession
-  → PatientEvent + sequence + CRC32
-  → ESP-NOW + ACK/retry
+Patient_Session_t
+  → Patient_Event_Payload_t 24 byte
+  → AES-128-GCM
+  → Secure_EspNow_Packet_t 64 byte
+  → ESP-NOW
+  → Gateway xác thực tag + giải mã
+  → Gateway_Response_Payload_t 24 byte
+  → AES-128-GCM + ESP-NOW phản hồi
+  → ACK/NACK + retry ở Patient Node
   → EnvironmentSnapshot tại Gateway
   → CompleteRecord
   → Wi-Fi hoặc LTE
@@ -177,6 +185,11 @@ PatientSession
 
 Raw PCM, Mel-Spectrogram và tensor nội bộ không thuộc payload vận hành bình
 thường.
+
+Hai chiều Node ↔ Gateway sử dụng chung format `Secure_EspNow_Packet_t`. Trường
+`message_type` xác định ciphertext chứa Patient Event hay Gateway Response.
+`authentication_tag` 16 byte của AES-GCM thay thế CRC32. Chi tiết nằm tại
+[Đặc tả AES-128-GCM](./Docs_NCKH/Encrypt_AES-128-GCM.md).
 
 ## Cấu trúc repository
 
@@ -206,6 +219,7 @@ NCKH_2026_AIOT/
 
 - [Đặc tả sản phẩm đã chốt](./Docs_NCKH/NCKH_PRODUCT_DEFINITION_FINAL.md)
 - [Phân công và kế hoạch công việc](./Docs_NCKH/NCKH_PHAN_CONG_CONG_VIEC.md)
+- [Đặc tả mã hóa AES-128-GCM](./Docs_NCKH/Encrypt_AES-128-GCM.md)
 - [Tổng quan Final Project](./Final_Project_NCKH/README.md)
 - [Pipeline huấn luyện AI](./AI_Training_Model/README.md)
 - [Các phase deployment](./Deploy_Model/README.md)
@@ -221,6 +235,7 @@ NCKH_2026_AIOT/
 5. **No raw streaming:** chỉ truyền sự kiện đã xử lý trong vận hành bình thường.
 6. **Evidence-based status:** chỉ gọi một phần là ổn định khi đã có phép kiểm thử tương ứng.
 7. **No medical overclaim:** output là mẫu âm thanh gợi ý, không phải chẩn đoán.
+8. **Authenticated event link:** Event và ACK/NACK đều được AES-128-GCM bảo vệ; packet sai tag không được xử lý.
 
 ## Phát triển
 
