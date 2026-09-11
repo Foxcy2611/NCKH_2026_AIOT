@@ -31,13 +31,15 @@ void OLED_Show_Recording();
 void OLED_Show_QualityError(const char* error_type);
 void OLED_Show_AudioOK();
 void OLED_Show_Processing();
-void OLED_Show_AI_Result(bool isAsthma);
-void OLED_Show_FinalResult(bool isAsthma, int hr, int spo2);
+void OLED_Show_AI_Result(int ai_status);
+void OLED_Show_FinalResult(int ai_status, int hr, int spo2);
 void OLED_Show_DataSent();
 void OLED_Show_Welcome();
 void OLED_Show_Sleep();
 void OLED_Show_Standby();
 void OLED_Show_Monitoring();
 void OLED_Show_SoundDetected();
+void OLED_Show_ReplyOK();
+void OLED_Show_NoReply();
 
 #endif
