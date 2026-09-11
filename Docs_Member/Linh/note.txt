@@ -10,10 +10,12 @@
     => hiển thị màn hình standby =====================> void OLED_Show_Standby();
   3.2. OK: màn hình hiển thị audio ok ==============================> void OLED_Show_AudioOK();
   4. màn hình hiển thị quá trình xử lý AI =======================> void OLED_Show_Processing();
-  5. màn hình hiển thị kết quả AI =================================> void OLED_Show_AI_Result(bool isAsthma); //true or false
+  5. màn hình hiển thị kết quả AI =================================> void OLED_Show_AI_Result(int ai_status);; //0: non-asthma, 1: asthma, 2: unknown
   6. màn hình hiển thị đặt tay, ấn check ===========================>  OLED_Show_PlaceFinger();
-  7. ấn check => hiển thị kết quả đo HR/SpO2 ============================> void OLED_Show_FinalResult(bool isAsthma, int hr, int spo2);
-
+  7. ấn check => hiển thị kết quả đo HR/SpO2 ============================> void OLED_Show_FinalResult(int ai_status, int hr, int spo2);
+  8. gửi data ==================================> OLED_Show_DataSent();
+  9.1. nhận reply ok ===============================> OLED_Show_ReplyOK();
+  9.2. nhận reply fail ================================> OLED_Show_NoReply();
 3. MONITER
   1. ấn nút moniter => hiển thị giao diện monitering ================> OLED_Show_Monitoring();
   2. khi phát hiện âm thanh =============================> OLED_Show_SoundDetected();
@@ -23,3 +25,6 @@
   4.2. OK: màn hình hiển thị audio ok =============================> void OLED_Show_AudioOK();
   5. màn hình hiển thị quá trình xử lý AI =======================> void OLED_Show_Processing();
   6. màn hình hiển thị kết quả AI =================================> void OLED_Show_AI_Result(bool isAsthma); //true or false
+  7. gửi data ==================================> OLED_Show_DataSent();
+  8.1. nhận reply ok ===============================> OLED_Show_ReplyOK();
+  8.2. nhận reply fail ================================> OLED_Show_NoReply();
