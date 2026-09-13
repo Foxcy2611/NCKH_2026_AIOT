@@ -5,6 +5,7 @@
 #include "Core_Logic/State_Machine.h"
 #include "DSP_Preprocessing/Mel_Scale.h"
 #include "Model_AI/Interface_Asthma.h"
+#include "Network/EspNow_Client.h"
 #include "board_pinout.h"
 
 static void Stop_OnInitError(const char* message) {
@@ -34,9 +35,30 @@ void setup(void) {
     StateMachine_Init();
     Serial.println("--> [INIT] 4. Khởi tạo State Machine thành công.");
 
+    if (!EspNow_Setup()) {
+        Serial.println("[WARNING] ESP-NOW chưa sẵn sàng; payload sẽ giữ tại SESSION_READY.");
+    } else {
+        Serial.println("--> [INIT] 5. Khởi tạo ESP-NOW và AES-GCM thành công.");
+    }
+
     Serial.println("\n=== HỆ THỐNG TINYML ASTHMA SẴN SÀNG ===");
 }
 
 void loop(void) {
     StateMachine_Run();
+
+    /**
+     * Chỉ kết thúc SESSION_READY sau khi plaintext đã được mã hóa và packet
+     * 64 byte được sao chép an toàn vào pending của EspNow_Client.
+     */
+    if (StateMachine_IsEventPayloadReady()) {
+        const Patient_Event_Payload_t* payload =
+            StateMachine_GetReadyEventPayload();
+
+        if (EspNow_QueuePatientEvent(payload)) {
+            StateMachine_NotifyEventQueued();
+        }
+    }
+
+    EspNow_Process();
 }

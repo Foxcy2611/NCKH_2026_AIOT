@@ -2,6 +2,8 @@
 #include <Wire.h>
 #include <math.h>
 
+#include "Board_Pinout.h"
+
 /* =========================================================
  * MAX30102 INTERNAL CONFIGURATION
  * ========================================================= */
@@ -674,7 +676,7 @@ bool MAX30102_Init(void)
     MAX30102_writeIndex = 0;
     MAX30102_lastSampleMillis = millis();
 
-    pinMode(INT_PIN, INPUT_PULLUP);
+    pinMode(PIN_INT_MAX, INPUT_PULLUP);
 
     /* CHECK PART ID */
     if (!MAX30102_ReadReg(REG_PART_ID, &registerValue))

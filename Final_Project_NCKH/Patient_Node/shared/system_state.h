@@ -83,21 +83,6 @@ typedef enum {
     EVENT_STATUS                // Gói tin cập nhật trạng thái định kỳ
 } Event_Type_t;
 
-// ============================
-// 6. Trạng thái tổng thể khi gửi 1 packet qua ESP-NOW
-// ============================
-typedef enum {
-    STATUS_IDLE = 0,          // Không có packet cần gửi
-    STATUS_QUEUED,            // Packet đã nằm trong hàng đợi
-    STATUS_SENDING,           // Đã gọi esp_now_send()
-    STATUS_ACK_PENDING,       // ESP-NOW báo gửi được, đang chờ Gateway phản hồi
-    STATUS_RETRY_WAIT,        // Đang chờ đến thời điểm gửi lại
-    STATUS_ACK_CONFIRMED,     // Gateway xác nhận packet hợp lệ
-    STATUS_NACK_RECEIVED,     // Gateway từ chối packet
-    STATUS_RETRY_EXCEEDED,    // Đã vượt số lần gửi lại
-    STATUS_SEND_ERROR         // Không thể gửi ở mức ESP-NOW
-} Event_Send_Status_t;
-
 // -------------------- STRUCT GÓI BẢN TIN -------------------- //
 
 // ============================
@@ -120,16 +105,5 @@ typedef struct {
     // --- Nhóm Trạng thái Hệ thống ---
     uint64_t event_timestamp;
 } Patient_Session_t;
-
-// ==========================================
-// 2. Struct hàng đợi Pending ACK khi gửi qua ESP-NOW
-// ==========================================
-typedef struct {
-    Event_Send_Status_t status;         // PENDING / CON
-    Secure_EspNow_Packet_t packet;      // Bản sao packet bảo mật đã gửi, để retry y hệt
-
-    uint8_t retry_count;                // Đã retry bao nhiêu lần ?
-    uint32_t last_sent_timestamp;       // millis() lúc gửi gần nhất 
-} Pending_ACK_Entry_t;
 
 #endif /* NCKH_SYSTEM_STATE_H */

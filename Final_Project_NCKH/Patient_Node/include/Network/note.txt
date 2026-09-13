@@ -1,0 +1,23 @@
+Patient_Event_Payload_t
+        │
+        ▼
+   SecureSender
+        │
+        ├─ build header / AAD
+        ├─ gán device_id
+        ├─ gán sequence
+        ├─ tạo nonce
+        ├─ AES-128-GCM encrypt
+        ├─ sinh ciphertext
+        ├─ sinh authentication_tag
+        │
+        ▼
+Secure_EspNow_Packet_t hoàn chỉnh
+        │
+        ▼
+   EspNow_Client
+        │
+        ├─ setup Wi-Fi / ESP-NOW
+        ├─ add Gateway peer
+        ├─ register callback
+        └─ esp_now_send(packet, 64 byte)

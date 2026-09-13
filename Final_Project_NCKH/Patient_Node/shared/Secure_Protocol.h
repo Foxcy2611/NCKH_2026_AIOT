@@ -12,25 +12,28 @@ constexpr uint16_t SECURE_PACKET_MAGIC = 0xA57A;
 
 constexpr uint8_t SECURE_PROTOCOL_VERSION = 1;
 
-constexpr size_t AES_128_KEY_SIZE    = 16;
+constexpr size_t AES_128_KEY_SIZE   = 16;
 constexpr size_t AES_GCM_NONCE_SIZE = 12;
 constexpr size_t AES_GCM_TAG_SIZE   = 16;
 
-constexpr size_t SECURE_PAYLOAD_SIZE = 24;
+constexpr size_t SECURE_AAD_SIZE      = 12;
+constexpr size_t SECURE_PAYLOAD_SIZE  = 24;
+constexpr size_t SECURE_RESPONSE_SIZE = 24;
+constexpr size_t SECURE_PACKET_SIZE   = 64;
 
 // =====================================================
-// Kiểu tin nhắn
+// 1. Kiểu tin nhắn
 // =====================================================
-typedef enum : uint8_t {
+typedef enum {
     MSG_PATIENT_EVENT = 1,
     MSG_GATEWAY_RESPONSE = 2
 
 } Secure_Message_Type_t;
 
 // =====================================================
-// Kiểu phản hồi từ Gateway
+// 4. Kiểu phản hồi từ Gateway
 // =====================================================
-typedef enum : uint8_t {
+typedef enum {
 
     RESPONSE_ACK_ACCEPTED = 0,
 
@@ -50,7 +53,6 @@ typedef enum : uint8_t {
 
 // /* VÙNG DỮ LIỆU LOGIC */ //
 #pragma pack(push, 1)
-
 typedef struct {
     uint32_t session_id;       // ID phiên đo liên kết các tập dữ liệu
     uint64_t timestamp;        // Dấu thời gian lúc đóng gói bản tin
@@ -69,6 +71,29 @@ typedef struct {
     uint8_t battery;           // Phần trăm pin hiện hành
 
 } Patient_Event_Payload_t;
+#pragma pack(pop)
+
+// =====================================================
+// GATEWAY RESPONSE PLAINTEXT
+// =====================================================
+
+#pragma pack(push, 1)
+
+typedef struct {
+
+    uint32_t target_device_id;
+
+    uint32_t session_id;
+
+    uint64_t gateway_timestamp;
+
+    uint8_t response_code;
+
+    uint8_t time_valid;
+
+    uint8_t reserved[6];
+
+} Gateway_Response_Payload_t;
 
 #pragma pack(pop)
 
@@ -96,42 +121,8 @@ typedef struct {
     // Mã xác thực AES-GCM
     uint8_t authentication_tag[AES_GCM_TAG_SIZE];
 
-} Secure_EspNow_Packet_t;
+} Secure_EspNow_Packet_t; // 64 byte
 #pragma pack(pop)
-
-
-// =====================================================
-// GATEWAY RESPONSE PLAINTEXT
-// =====================================================
-
-#pragma pack(push, 1)
-
-typedef struct {
-
-    uint32_t target_device_id;
-
-    uint32_t session_id;
-
-    uint64_t gateway_timestamp;
-
-    uint8_t response_code;
-
-    uint8_t time_valid;
-
-    uint8_t reserved[6];
-
-} Gateway_Response_Payload_t;
-
-#pragma pack(pop)
-
-
-
-constexpr size_t SECURE_AAD_SIZE =
-    offsetof(
-        Secure_EspNow_Packet_t,
-        nonce
-    );
-
 
 // =====================================================
 // COMPILE-TIME CHECK
@@ -148,8 +139,8 @@ static_assert(
 );
 
 static_assert(
-    SECURE_AAD_SIZE == 12,
-    "AAD must be 12 bytes"
+    offsetof(Secure_EspNow_Packet_t, nonce) == SECURE_AAD_SIZE,
+    "Header/AAD layout mismatch"
 );
 
 static_assert(
