@@ -20,28 +20,11 @@ typedef enum {
     STATUS_SEND_ERROR         // Không thể gửi ở mức ESP-NOW
 } Event_Send_Status_t;
 
-// ==========================================
-// Struct hàng đợi Pending ACK khi gửi qua ESP-NOW
-// ==========================================
-typedef struct {
-    Event_Send_Status_t status;         // Trạng thái của gói đang chờ ACK
-    Secure_EspNow_Packet_t packet;      // Bản sao packet bảo mật đã gửi, để retry y hệt
-
-    uint32_t session_id;
-
-    uint8_t retry_count;                // Đã retry bao nhiêu lần ?
-    uint32_t last_sent_timestamp;       // millis() lúc gửi gần nhất 
-    
-} Pending_ACK_Entry_t;
-
 // Setup cho esp-now
 bool EspNow_Setup(void);
 
 // Kiểm tra ESP-NOW sẵn sàng hay chưa
 bool EspNow_IsReady(void);
-
-// Hàm gửi packet đã mã hóa (send ciphertext)
-bool EspNow_SendSecurePacket(const Secure_EspNow_Packet_t* packet);
 
 // Đưa sự kiện vào vùng chờ
 bool EspNow_QueuePatientEvent(const Patient_Event_Payload_t* payload);

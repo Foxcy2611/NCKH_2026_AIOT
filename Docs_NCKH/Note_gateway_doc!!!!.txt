@@ -1,0 +1,3 @@
+Đọc 2 file
+- GATE_PAYLOAD_COMPLETE_PACKET_DESIGN.md
+- Data_On_Dashboard.md

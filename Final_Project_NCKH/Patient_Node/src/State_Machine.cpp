@@ -208,7 +208,7 @@ namespace {
         payload->heart_rate      = session.vitals_valid ? session.heart_rate : 0U;
         payload->spo2            = session.vitals_valid ? session.spo2 : 0U;
 
-        payload->battery         = 0U; // Sau này lấy từ mô-đun quản lý pin.
+        payload->battery_node    = 0U; // Sau này lấy từ mô-đun quản lý pin.
 
         return true;
     }
@@ -348,7 +348,7 @@ namespace {
                     current_session.model_score * 100.0f,
                     AudioQualityName(current_session.audio_quality),
                     current_session.vitals_valid ? "VALID" : "NOT_AVAILABLE",
-                    static_cast<unsigned int>(ready_payload.battery)
+                    static_cast<unsigned int>(ready_payload.battery_node)
                 );
                 Serial.println("[PAYLOAD READY] Đã tạo plaintext; đang chờ AES-GCM đóng gói và lưu pending.");
             }
