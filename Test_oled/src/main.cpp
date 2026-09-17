@@ -11,12 +11,6 @@ void setup() {
 }
 
 void loop() {
-   // Hiển thị màn hình Unknown
-OLED_Show_ReplyOK();
-delay(3000); // Giữ màn hình trong 3 giây
-// Hoặc kết quả cuối cùng là Unknown
-OLED_Show_NoReply(); 
-delay(3000); // Giữ màn hình trong 3 giây
-    
+  OLED_Show_Standby();
 
 }
