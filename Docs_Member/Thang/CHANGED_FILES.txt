@@ -1,0 +1,23 @@
+Final_Project_NCKH/Gateway/README.md
+Final_Project_NCKH/Gateway/docs/M4_TEST_AND_HANDOFF.md
+Final_Project_NCKH/Gateway/include/Config/gateway_config.h
+Final_Project_NCKH/Gateway/include/System/gateway_record.h
+Final_Project_NCKH/Gateway/include/System/gateway_runtime.h
+Final_Project_NCKH/Gateway/include/System/gateway_sensor.h
+Final_Project_NCKH/Gateway/lib/M4_BMP280/ESP32_BMP280_Lib.cpp
+Final_Project_NCKH/Gateway/lib/M4_BMP280/ESP32_BMP280_Lib.h
+Final_Project_NCKH/Gateway/lib/M4_DHT22/ESP32_DHT22_Lib.cpp
+Final_Project_NCKH/Gateway/lib/M4_DHT22/ESP32_DHT22_Lib.h
+Final_Project_NCKH/Gateway/lib/M4_SGP30/ESP32_SGP30_Lib.cpp
+Final_Project_NCKH/Gateway/lib/M4_SGP30/ESP32_SGP30_Lib.h
+Final_Project_NCKH/Gateway/platformio.ini
+Final_Project_NCKH/Gateway/src/main.cpp
+Final_Project_NCKH/Gateway/src/task_espnow.cpp
+Final_Project_NCKH/Gateway/src/task_gateway_manager.cpp
+Final_Project_NCKH/Gateway/src/task_sensor.cpp
+Final_Project_NCKH/Gateway/test/native/Arduino.h
+Final_Project_NCKH/Gateway/test/native/RESULT.txt
+Final_Project_NCKH/Gateway/test/native/test_record.cpp
+
+Wire header, AES-GCM implementation, ESP-NOW transport and Patient_Node_Test unchanged.
+Build cache .pio and editor cache .vscode omitted from delivery ZIP.
