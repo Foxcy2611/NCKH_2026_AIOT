@@ -13,12 +13,12 @@
 
 #define MQTT_CLIENT_ID "AIOT_2026"
 
-void MQTT_Init();
-void MQTT_Connect();
-bool MQTT_IsConnected();
-bool MQTT_Loop();
-void MQTT_Disconnect();
-void MQTT_Reconnect();
-bool MQTT_Publish(const char* topic, const char* payload);
+void MQTT_WIFI_Init();
+void MQTT_WIFI_Connect();
+bool MQTT_WIFI_IsConnected();
+bool MQTT_WIFI_Loop();
+void MQTT_WIFI_Disconnect();
+void MQTT_WIFI_Reconnect();
+bool MQTT_WIFI_Publish(const char* topic, const char* payload);
 
 #endif

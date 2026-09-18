@@ -1,4 +1,4 @@
-#include "Network/gateway_mqtt.h"
+#include "Network/gateway_mqtt_wifi.h"
 
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
@@ -10,7 +10,7 @@
 WiFiClientSecure espClient;
 PubSubClient mqttClient(espClient);
 
-void MQTT_Init()
+void MQTT_WIFI_Init()
 {
     // TLS client
     espClient.setInsecure();
@@ -20,7 +20,7 @@ void MQTT_Init()
     mqttClient.setBufferSize(1024);     // lựa chọn kích thước phù hợp cho dữ liệu cần gửi
 }
 
-void MQTT_Connect()
+void MQTT_WIFI_Connect()
 {
     Serial.println("Connecting to MQTT broker...");
 
@@ -37,22 +37,22 @@ void MQTT_Connect()
     }
 }
 
-bool MQTT_IsConnected()
+bool MQTT_WIFI_IsConnected()
 {
     return mqttClient.connected();
 }
 
-bool MQTT_Loop()
+bool MQTT_WIFI_Loop()
 {
     return mqttClient.loop();
 }
 
-void MQTT_Disconnect()
+void MQTT_WIFI_Disconnect()
 {
     mqttClient.disconnect();
 }
 
-void MQTT_Reconnect()
+void MQTT_WIFI_Reconnect()
 {
     static unsigned long lastAttempt = 0;
 
@@ -79,7 +79,7 @@ void MQTT_Reconnect()
     }
 }
 
-bool MQTT_Publish(const char* topic, const char* payload)
+bool MQTT_WIFI_Publish(const char* topic, const char* payload)
 {
     if (!mqttClient.connected())
     {

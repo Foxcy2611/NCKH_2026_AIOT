@@ -97,4 +97,14 @@ struct GatewayStats
     uint32_t queue_dropped;
 };
 
+enum Gateway_Response_Code_t : uint8_t
+{
+    GATEWAY_ACK = 0,
+    GATEWAY_NACK_CRC,
+    GATEWAY_NACK_SIZE,
+    GATEWAY_NACK_VERSION,
+    GATEWAY_NACK_BUSY,
+    GATEWAY_NACK_UNKNOWN
+};
+
 #endif
