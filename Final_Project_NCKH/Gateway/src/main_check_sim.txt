@@ -1,0 +1,244 @@
+#include <Arduino.h>
+#include "ESP32_A7680C_AT.h"
+
+// ================== CAU HINH CHAN UART ==================
+#define SIM_RX_PIN   16
+#define SIM_TX_PIN   17
+#define SIM_BAUDRATE 115200
+
+HardwareSerial SimSerial(2); // UART2 cua ESP32
+
+// ================== HAM PHU: GUI LENH AT THO ==================
+// Dung rieng o main.cpp vi A7680C_SendCommand trong thu vien la 'static'
+// (khong the goi truc tiep tu ngoai file ESP32_A7680C_AT.cpp)
+static bool sendRawAT(const char* cmd,
+                      const char* expResp,
+                      char* response,
+                      size_t responseCapacity,
+                      uint32_t timeoutMs){
+    response[0] = '\0';
+
+    while(SimSerial.available()){
+        SimSerial.read();
+    }
+
+    if(cmd[0] != '\0'){
+        SimSerial.println(cmd);
+    }
+
+    size_t len = 0;
+    bool found = false;
+    uint32_t start = millis();
+    uint32_t lastProgressPrint = start;
+
+    while(millis() - start < timeoutMs){
+        bool gotData = false;
+        while(SimSerial.available()){
+            if(millis() - start >= timeoutMs) break;
+            int c = SimSerial.read();
+            if(c < 0) break;
+            gotData = true;
+            if(len + 1 < responseCapacity){
+                response[len++] = (char)c;
+                response[len] = '\0';
+            }
+        }
+
+        if(strstr(response, "ERROR") != nullptr) break;
+        if(strstr(response, expResp) != nullptr){
+            found = true;
+            break;
+        }
+
+        if(millis() - lastProgressPrint > 5000){
+            lastProgressPrint = millis();
+            Serial.printf("[...] Dang cho phan hoi (%lu s, da nhan %u byte)\n",
+                          (unsigned long)((millis() - start) / 1000),
+                          (unsigned)len);
+        }
+
+        if(!gotData) vTaskDelay(pdMS_TO_TICKS(5));
+    }
+
+    vTaskDelay(pdMS_TO_TICKS(10));
+    return found;
+}
+
+static void printSection(const char* title){
+    Serial.println();
+    Serial.printf("----- %s -----\n", title);
+}
+
+static void runRaw(const char* label, const char* cmd, const char* expResp, uint32_t timeoutMs){
+    char resp[512];
+    bool ok = sendRawAT(cmd, expResp, resp, sizeof(resp), timeoutMs);
+    Serial.printf("[%s] %s -> %s\n", ok ? "OK" : "TIMEOUT/ERR", cmd, label);
+    Serial.println(resp[0] ? resp : "<EMPTY>");
+
+    delay(200);
+    while(SimSerial.available()) SimSerial.read();
+}
+
+static void tryUnlockAllBands(){
+    char resp[512];
+    bool ok = sendRawAT("AT+CNBP=?", "OK", resp, sizeof(resp), 3000);
+    if(!ok || strstr(resp, "+CNBP:") == nullptr){
+        Serial.println("[INFO] Module khong tra ve dải AT+CNBP=?, thu quet tiep...");
+        return;
+    }
+
+    // Dinh dang phan hoi thuong la: +CNBP: (0x...-0x...),(0x...-0x...)
+    char* firstDash = strchr(resp, '-');
+    if(!firstDash) return;
+    char* firstComma = strchr(firstDash, ',');
+    if(!firstComma) return;
+    char* secondDash = strchr(firstComma, '-');
+    if(!secondDash) return;
+
+    char maxGsm[32] = {0};
+    char* gsmEnd = strchr(firstDash + 1, ')');
+    if(gsmEnd && gsmEnd <= firstComma){
+        size_t gsmLen = gsmEnd - (firstDash + 1);
+        if(gsmLen >= sizeof(maxGsm)) gsmLen = sizeof(maxGsm) - 1;
+        strncpy(maxGsm, firstDash + 1, gsmLen);
+    }
+
+    char maxLte[32] = {0};
+    char* lteEnd = strchr(secondDash + 1, ')');
+    if(lteEnd){
+        size_t lteLen = lteEnd - (secondDash + 1);
+        if(lteLen >= sizeof(maxLte)) lteLen = sizeof(maxLte) - 1;
+        strncpy(maxLte, secondDash + 1, lteLen);
+    }
+
+    if(maxGsm[0] != '\0' && maxLte[0] != '\0'){
+        char setCmd[128];
+        snprintf(setCmd, sizeof(setCmd), "AT+CNBP=%s,%s", maxGsm, maxLte);
+        Serial.printf("[INFO] Phat hien band toi da tu module: %s\n", setCmd);
+        runRaw("Mo toan bo bang tan ho tro", setCmd, "OK", 5000);
+        runRaw("Kiem tra lai bang tan hien tai (AT+CNBP?)", "AT+CNBP?", "OK", 2000);
+    }
+}
+
+// ================== SETUP: KIEM TRA VA MO TOAN BO BANG TAN ==================
+void setup(){
+    Serial.begin(115200);
+    delay(1000);
+    Serial.println("===== BAT DAU KIEM TRA MODULE A7680C (CHAN DOAN & MO BAND) =====");
+
+    // ---- 1. KHOI TAO CO BAN ----
+    printSection("1. INIT");
+    bool initOk = A7680C_Init(SimSerial, SIM_RX_PIN, SIM_TX_PIN, SIM_BAUDRATE);
+    if(!initOk){
+        Serial.println("[FAIL] Khong the khoi tao module. Kiem tra day cap/UART/nguon!");
+        return;
+    }
+    Serial.println("[OK] Khoi tao module thanh cong.");
+
+    // ---- 2. SIM & THUE BAO ----
+    printSection("2. SIM & THUE BAO");
+    bool simReady = A7680C_CheckSIM();
+    Serial.println(simReady ? "[OK] SIM san sang (CPIN READY)." : "[ERR] SIM khong san sang!");
+
+    runRaw("ICCID (AT+CCID)", "AT+CCID", "OK", 2000);
+    runRaw("IMSI (dinh danh thue bao, cho biet MCC/MNC)", "AT+CIMI", "OK", 2000);
+
+    // ---- 3. NGUON, PHAN CUNG & MODEL ----
+    printSection("3. NGUON DIEN & THONG TIN PHAN CUNG");
+    runRaw("Dien ap module dang nhan (AT+CBC)", "AT+CBC", "OK", 2000);
+    runRaw("Bat full radio (AT+CFUN=1)", "AT+CFUN=1", "OK", 2000);
+    runRaw("Trang thai radio (AT+CFUN?)", "AT+CFUN?", "OK", 2000);
+    runRaw("Model module (ATI)", "ATI", "OK", 2000);
+    runRaw("Phien ban Firmware (AT+CGMR)", "AT+CGMR", "OK", 2000);
+
+    // ---- 4. TIN HIEU RF ----
+    printSection("4. CUONG DO TIN HIEU RF");
+    int csq = A7680C_GetSignalQuality();
+    Serial.printf("[INFO] CSQ = %d (0-31 cang cao cang tot, 99 = khong xac dinh duoc)\n", csq);
+
+    // ---- 5. KIEM TRA VA CAU HINH BANG TAN (BAND) ----
+    printSection("5. KIEM TRA & MO FULL BANG TAN (BAND)");
+    runRaw("Che do mang hien tai (AT+CNMP?)", "AT+CNMP?", "OK", 2000);
+    runRaw("Bang tan dang cho phep quet (AT+CNBP?)", "AT+CNBP?", "OK", 2000);
+    runRaw("Dai bang tan hop le module ho tro (AT+CNBP=?)", "AT+CNBP=?", "OK", 3000);
+
+    // Thu mo full band tu dong dua tren dai hop le
+    tryUnlockAllBands();
+
+    runRaw("Quay ve chon mang tu dong (AT+COPS=0)", "AT+COPS=0", "OK", 30000);
+    Serial.println("[INFO] Cho 5 giay de module attach mang sau khi doi band...");
+    delay(5000);
+
+    // ---- 6. TRANG THAI DANG KY MANG LAN 1 ----
+    printSection("6. KIEM TRA DANG KY MANG SAU KHI MO BAND");
+    char cereg1[128];
+    sendRawAT("AT+CEREG?", "OK", cereg1, sizeof(cereg1), 2000);
+    Serial.printf("[INFO] Ket qua CEREG: %s\n", cereg1[0] ? cereg1 : "<EMPTY>");
+
+    bool regOk = (strstr(cereg1, ",1") != nullptr || strstr(cereg1, ",5") != nullptr);
+    if(regOk){
+        Serial.println("[THÀNH CÔNG] Module da tu dong dang ky thanh cong vao mang LTE!");
+    } else {
+        Serial.println("[INFO] Chua tu dong vao mang. Thu ep thu cong vao Viettel 4G (45204, Act=7)...");
+        runRaw("Ep chon Viettel 45204 LTE (Act=7)", "AT+COPS=1,2,\"45204\",7", "OK", 35000);
+        runRaw("Kiem tra CEREG sau khi ep", "AT+CEREG?", "OK", 3000);
+        runRaw("Kiem tra CPSI sau khi ep", "AT+CPSI?", "OK", 3000);
+
+        // Neu van chua duoc, quet lai danh sach nha mang xem co thay Viettel xuat hien khong
+        printSection("6b. QUET LAI DANH SACH NHA MANG (AT+COPS=?)");
+        Serial.println("[INFO] Dang quet lai toan bo nha mang xung quanh sau khi mo band (co the mat 30-60s)...");
+        runRaw("Danh sach operator (AT+COPS=?)", "AT+COPS=?", "OK", 60000);
+    }
+
+    // ---- 7. TRANG THAI HIEN TAI ----
+    printSection("7. TRANG THAI NHA MANG & CELL HIEN TAI");
+    runRaw("CEREG (LTE)", "AT+CEREG?", "OK", 2000);
+    runRaw("CREG (2G/3G)", "AT+CREG?", "OK", 2000);
+    runRaw("COPS (Nha mang dang chon)", "AT+COPS?", "OK", 3000);
+    runRaw("CPSI (Thong tin tram phat phuc vu)", "AT+CPSI?", "OK", 3000);
+
+    // ---- 8. TONG KET ----
+    printSection("TONG KET");
+    bool networkReady = A7680C_CheckNetwork();
+    csq = A7680C_GetSignalQuality();
+    Serial.printf("SIM san sang      : %s\n", simReady ? "CO" : "KHONG");
+    Serial.printf("Tin hieu RF (CSQ)  : %d\n", csq);
+    Serial.printf("Da dang ky mang    : %s\n", networkReady ? "CO" : "CHUA");
+
+    Serial.println("===== KET THUC KIEM TRA =====");
+}
+
+// ================== LOOP: THEO DOI DINH KY ==================
+void loop(){
+    static uint32_t lastCheck = 0;
+    static uint32_t resetCount = 0;
+
+    if(millis() - lastCheck > 5000){
+        lastCheck = millis();
+
+        char cbcResp[128];
+        sendRawAT("AT+CBC", "OK", cbcResp, sizeof(cbcResp), 1500);
+
+        bool echoDetected = (strstr(cbcResp, "AT+CBC") != nullptr);
+        if(echoDetected){
+            resetCount++;
+            Serial.printf("[CANH BAO] Phat hien module tu RESET (lan thu %lu)! "
+                          "ATE0 bi mat, dang bat lai...\n",
+                          (unsigned long)resetCount);
+            char tmp[64];
+            sendRawAT("ATE0", "OK", tmp, sizeof(tmp), 1000);
+        }
+
+        bool alive = A7680C_CheckAlive();
+        int csq = A7680C_GetSignalQuality();
+        bool net = A7680C_CheckNetwork();
+
+        Serial.printf("[LOOP] Alive=%s | CSQ=%d | Network=%s | %s | So lan reset phat hien: %lu\n",
+                      alive ? "YES" : "NO",
+                      csq,
+                      net ? "OK" : "CHUA",
+                      cbcResp[0] ? cbcResp : "<CBC EMPTY>",
+                      (unsigned long)resetCount);
+    }
+    vTaskDelay(pdMS_TO_TICKS(100));
+}

@@ -21,6 +21,9 @@ void WiFi_Init()
 
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
+
+    Serial.print("Channel: ");
+    Serial.println(WiFi.channel());
 }
 
 bool WiFi_IsConnected()

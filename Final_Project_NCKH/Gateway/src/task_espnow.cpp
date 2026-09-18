@@ -1,247 +1,247 @@
-#include <Arduino.h>
+// #include <Arduino.h>
 
-#include <WiFi.h>
-#include <esp_now.h>
-#include <esp_wifi.h>
-#include "Config/gateway_config.h"
-#include "Config/gateway_types.h"
-#include "System/gateway_queue.h"
-#include "Task/gateway_tasks.h"
-
-
-// ============================================================
-// Global statistics
-// ============================================================
-
-GatewayStats gatewayStats = {
-    0,
-    0,
-    0,
-    0
-};
+// #include <WiFi.h>
+// #include <esp_now.h>
+// #include <esp_wifi.h>
+// #include "Config/gateway_config.h"
+// #include "Config/gateway_types.h"
+// #include "System/gateway_queue.h"
+// #include "Task/gateway_tasks.h"
 
 
-// ============================================================
-// ESP-NOW Receive Callback
-//
-// CỰC KỲ QUAN TRỌNG:
-//
-// Callback KHÔNG parse.
-// Callback KHÔNG aggregate.
-// Callback KHÔNG Serial.print nhiều.
-// Callback KHÔNG MQTT.
-//
-// Callback chỉ:
-//
-//     Receive
-//       ↓
-//     Copy
-//       ↓
-//     Queue
-//       ↓
-//     Return
-// ============================================================
-static void onEspNowReceive(
-    const esp_now_recv_info_t *info, 
-    const uint8_t *data, 
-    int len)
-{
-    if (data == nullptr)
-    {
-        return;
-    }
+// // ============================================================
+// // Global statistics
+// // ============================================================
 
-    if (len <= 0 || len > ESPNOW_MAX_PACKET_SIZE)
-    {
-        return;
-    }
-
-    EspNowRawPacket rawPacket{};
-
-    // Copy payload
-    memcpy(
-        rawPacket.data,
-        data,
-        len
-    );
-
-    rawPacket.length = static_cast<uint16_t>(len);
-
-    // Copy sender MAC nếu có
-    if (info != nullptr)
-    {
-        memcpy(
-            rawPacket.mac,
-            info->src_addr,
-            6
-        );
-    }
-
-    gatewayStats.espnow_received++;
-
-    // Gửi raw packet vào queue
-    BaseType_t higherPriorityTaskWoken = pdFALSE;
-
-    BaseType_t result = xQueueSendFromISR(
-        espNowRxQueue,
-        &rawPacket,
-        &higherPriorityTaskWoken
-    );
-
-    if (result != pdTRUE)
-    {
-        gatewayStats.queue_dropped++;
-    }
-
-    if (higherPriorityTaskWoken == pdTRUE)
-    {
-        portYIELD_FROM_ISR();
-    }
-}
+// GatewayStats gatewayStats = {
+//     0,
+//     0,
+//     0,
+//     0
+// };
 
 
-// ============================================================
-// Initialize ESP-NOW
-// ============================================================
+// // ============================================================
+// // ESP-NOW Receive Callback
 
-bool initEspNow()
-{
-    Serial.println("[ESP-NOW] Initializing...");
+// // CỰC KỲ QUAN TRỌNG:
 
-    WiFi.mode(WIFI_STA);
+// // Callback KHÔNG parse.
+// // Callback KHÔNG aggregate.
+// // Callback KHÔNG Serial.print nhiều.
+// // Callback KHÔNG MQTT.
 
-    // Set channel
-    esp_wifi_set_channel(
-        ESPNOW_CHANNEL,
-        WIFI_SECOND_CHAN_NONE
-    );
+// // Callback chỉ:
 
-    Serial.print("[ESP-NOW] MAC: ");
-    Serial.println(WiFi.macAddress());
+// //     Receive
+// //       ↓
+// //     Copy
+// //       ↓
+// //     Queue
+// //       ↓
+// //     Return
+// // ============================================================
+// static void onEspNowReceive(
+//     const esp_now_recv_info_t *info, 
+//     const uint8_t *data, 
+//     int len)
+// {
+//     if (data == nullptr)
+//     {
+//         return;
+//     }
 
-    if (esp_now_init() != ESP_OK)
-    {
-        Serial.println("[ESP-NOW] ERROR: esp_now_init failed");
+//     if (len <= 0 || len > ESPNOW_MAX_PACKET_SIZE)
+//     {
+//         return;
+//     }
 
-        return false;
-    }
+//     EspNowRawPacket rawPacket{};
 
-    // Register receive callback
-    esp_err_t result = esp_now_register_recv_cb(
-        onEspNowReceive
-    );
+//     // Copy payload
+//     memcpy(
+//         rawPacket.data,
+//         data,
+//         len
+//     );
 
-    if (result != ESP_OK)
-    {
-        Serial.println(
-            "[ESP-NOW] ERROR: callback registration failed"
-        );
+//     rawPacket.length = static_cast<uint16_t>(len);
 
-        return false;
-    }
+//     // Copy sender MAC nếu có
+//     if (info != nullptr)
+//     {
+//         memcpy(
+//             rawPacket.mac,
+//             info->src_addr,
+//             6
+//         );
+//     }
 
-    Serial.println("[ESP-NOW] Initialized");
+//     gatewayStats.espnow_received++;
 
-    return true;
-}
+//     // Gửi raw packet vào queue
+//     BaseType_t higherPriorityTaskWoken = pdFALSE;
 
+//     BaseType_t result = xQueueSendFromISR(
+//         espNowRxQueue,
+//         &rawPacket,
+//         &higherPriorityTaskWoken
+//     );
 
-// ============================================================
-// TaskEspNow
-//
-// Nhiệm vụ:
-//
-// 1. Lấy raw packet từ espNowRxQueue
-// 2. Kiểm tra size
-// 3. Parse thành PatientEventPacket
-// 4. Đẩy vào PatientEventQueue
-//
-// Đây mới là nơi được phép parse packet.
-// ============================================================
+//     if (result != pdTRUE)
+//     {
+//         gatewayStats.queue_dropped++;
+//     }
 
-void TaskEspNow(void *parameter)
-{
-    Serial.println("[TaskEspNow] Started");
-
-    EspNowRawPacket rawPacket;
-
-    while (true)
-    {
-        if (xQueueReceive(
-                espNowRxQueue,
-                &rawPacket,
-                portMAX_DELAY) == pdTRUE)
-        {
-            // ------------------------------------------------
-            // Validate packet size
-            // ------------------------------------------------
-
-            if (rawPacket.length != sizeof(PatientEventPacket))
-            {
-                gatewayStats.espnow_invalid++;
-
-                Serial.print(
-                    "[TaskEspNow] Invalid packet size: "
-                );
-
-                Serial.println(rawPacket.length);
-
-                continue;
-            }
+//     if (higherPriorityTaskWoken == pdTRUE)
+//     {
+//         portYIELD_FROM_ISR();
+//     }
+// }
 
 
-            // ------------------------------------------------
-            // Parse packet
-            // ------------------------------------------------
+// // ============================================================
+// // Initialize ESP-NOW
+// // ============================================================
 
-            PatientEventPacket event{};
+// bool initEspNow()
+// {
+//     Serial.println("[ESP-NOW] Initializing...");
 
-            memcpy(
-                &event,
-                rawPacket.data,
-                sizeof(PatientEventPacket)
-            );
+//     WiFi.mode(WIFI_STA);
+
+//     // Set channel
+//     esp_wifi_set_channel(
+//         ESPNOW_CHANNEL,
+//         WIFI_SECOND_CHAN_NONE
+//     );
+
+//     Serial.print("[ESP-NOW] MAC: ");
+//     Serial.println(WiFi.macAddress());
+
+//     if (esp_now_init() != ESP_OK)
+//     {
+//         Serial.println("[ESP-NOW] ERROR: esp_now_init failed");
+
+//         return false;
+//     }
+
+//     // Register receive callback
+//     esp_err_t result = esp_now_register_recv_cb(
+//         onEspNowReceive
+//     );
+
+//     if (result != ESP_OK)
+//     {
+//         Serial.println(
+//             "[ESP-NOW] ERROR: callback registration failed"
+//         );
+
+//         return false;
+//     }
+
+//     Serial.println("[ESP-NOW] Initialized");
+
+//     return true;
+// }
 
 
-            // ------------------------------------------------
-            // Packet basic validation
-            // ------------------------------------------------
+// // ============================================================
+// // TaskEspNow
+// //
+// // Nhiệm vụ:
+// //
+// // 1. Lấy raw packet từ espNowRxQueue
+// // 2. Kiểm tra size
+// // 3. Parse thành PatientEventPacket
+// // 4. Đẩy vào PatientEventQueue
+// //
+// // Đây mới là nơi được phép parse packet.
+// // ============================================================
 
-            if (event.device_id == 0)
-            {
-                gatewayStats.espnow_invalid++;
+// void TaskEspNow(void *parameter)
+// {
+//     Serial.println("[TaskEspNow] Started");
 
-                Serial.println(
-                    "[TaskEspNow] Invalid device ID"
-                );
+//     EspNowRawPacket rawPacket;
 
-                continue;
-            }
+//     while (true)
+//     {
+//         if (xQueueReceive(
+//                 espNowRxQueue,
+//                 &rawPacket,
+//                 portMAX_DELAY) == pdTRUE)
+//         {
+//             // ------------------------------------------------
+//             // Validate packet size
+//             // ------------------------------------------------
+
+//             if (rawPacket.length != sizeof(PatientEventPacket))
+//             {
+//                 gatewayStats.espnow_invalid++;
+
+//                 Serial.print(
+//                     "[TaskEspNow] Invalid packet size: "
+//                 );
+
+//                 Serial.println(rawPacket.length);
+
+//                 continue;
+//             }
 
 
-            // ------------------------------------------------
-            // Send to PatientEventQueue
-            // ------------------------------------------------
+//             // ------------------------------------------------
+//             // Parse packet
+//             // ------------------------------------------------
 
-            if (xQueueSend(
-                    patientEventQueue,
-                    &event,
-                    pdMS_TO_TICKS(100)) != pdTRUE)
-            {
-                gatewayStats.queue_dropped++;
+//             PatientEventPacket event{};
 
-                Serial.println(
-                    "[TaskEspNow] PatientEventQueue FULL"
-                );
+//             memcpy(
+//                 &event,
+//                 rawPacket.data,
+//                 sizeof(PatientEventPacket)
+//             );
 
-                continue;
-            }
 
-            gatewayStats.espnow_valid++;
+//             // ------------------------------------------------
+//             // Packet basic validation
+//             // ------------------------------------------------
 
-            Serial.println(
-                "[TaskEspNow] PatientEvent -> Queue"
-            );
-        }
-    }
-}
+//             if (event.device_id == 0)
+//             {
+//                 gatewayStats.espnow_invalid++;
+
+//                 Serial.println(
+//                     "[TaskEspNow] Invalid device ID"
+//                 );
+
+//                 continue;
+//             }
+
+
+//             // ------------------------------------------------
+//             // Send to PatientEventQueue
+//             // ------------------------------------------------
+
+//             if (xQueueSend(
+//                     patientEventQueue,
+//                     &event,
+//                     pdMS_TO_TICKS(100)) != pdTRUE)
+//             {
+//                 gatewayStats.queue_dropped++;
+
+//                 Serial.println(
+//                     "[TaskEspNow] PatientEventQueue FULL"
+//                 );
+
+//                 continue;
+//             }
+
+//             gatewayStats.espnow_valid++;
+
+//             Serial.println(
+//                 "[TaskEspNow] PatientEvent -> Queue"
+//             );
+//         }
+//     }
+// }
