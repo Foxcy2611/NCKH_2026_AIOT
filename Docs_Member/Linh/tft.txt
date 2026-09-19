@@ -5,3 +5,5 @@ SDA - 23
 A0 - 2
 RESET - 4
 CS - 15
+VCC - 3.3V
+GND - GND
