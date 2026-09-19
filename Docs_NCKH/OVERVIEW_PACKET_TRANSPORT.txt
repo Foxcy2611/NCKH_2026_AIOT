@@ -1,0 +1,37 @@
+                 PATIENT NODE
+                      │
+              Audio / AI / Vitals
+                      │
+                      ▼
+          Patient_Event_Payload
+                      │
+                   ESP-NOW
+                /             \
+             ERROR             OK
+               │                │
+               ▼                ▼
+         retry rồi bỏ        GATEWAY
+         standalone             │
+                         current_node
+                              │
+                     node_valid = true
+                     node_dirty = true
+                              │
+                              │
+Gateway Sensors ─────► current_gate
+                     gate_valid = true
+                              │
+                      ┌───────┴────────┐
+                      │                │
+                     TFT         Build Complete
+                                       │
+                                    Internet?
+                                  /           \
+                               ERROR           OK
+                                 │              │
+                          giữ current_*       MQTT
+                          dirty=true            │
+                                               ▼
+                                         publish success
+                                               │
+                                      node_dirty=false
