@@ -78,7 +78,7 @@ Là thuật toán lõi quản lý toàn bộ tiến trình của Node:
 - Kiểm tra state trước khi nhận kết quả từ mô-đun con.
 - Điều phối CHECK thủ công và MONITOR tự động.
 - Tổng hợp ba lần dự đoán trong MONITOR.
-- Tạo `Patient_Event_Payload_t` khi phiên hoàn tất.
+- Tạo `Node_Payload_t` khi phiên hoàn tất.
 - Trở về `STANDBY` hoặc tiếp tục `MONITOR_LISTENING` sau khi sự kiện đã vào pending.
 
 Các state chính:
@@ -206,12 +206,12 @@ Khi chưa có MAX30102, người dùng có thể nhấn `SLEEP` tại bước si
 
 Mã hóa sự kiện Node → Gateway:
 
-1. Nhận `Patient_Event_Payload_t` 24 byte.
+1. Nhận `Node_Payload_t` 24 byte.
 2. Tạo header/AAD gồm magic, version, message type, device ID và sequence.
 3. Sinh nonce 12 byte ngẫu nhiên cho sự kiện mới.
 4. Mã hóa payload bằng AES-128-GCM.
 5. Sinh authentication tag 16 byte.
-6. Trả về `Secure_EspNow_Packet_t` đúng 64 byte.
+6. Trả về `Secure_Packet_t` đúng 64 byte.
 
 Nonce chỉ được sinh khi tạo sự kiện mới. Khi retry, tuyệt đối không mã hóa lại; phải gửi nguyên packet đã lưu.
 
@@ -222,7 +222,7 @@ Xác thực và giải mã phản hồi Gateway → Node:
 - Kiểm tra magic, version và `MSG_GATEWAY_RESPONSE`.
 - Kiểm tra Gateway ID và sequence đang chờ.
 - Xác thực tag AES-GCM trước khi sử dụng plaintext.
-- Giải mã thành `Gateway_Response_Payload_t` 24 byte.
+- Giải mã thành `Response_Payload_t` 24 byte.
 - Kiểm tra target device ID, session ID, response code và cờ thời gian.
 - Xóa kết quả đầu ra nếu xác thực hoặc giải mã thất bại.
 
@@ -294,7 +294,7 @@ Khi tích hợp cần bảo đảm:
 
 ### Plaintext gửi đi
 
-State machine chuyển session thành `Patient_Event_Payload_t` 24 byte. Battery hiện đang để `0` vì chưa nối mô-đun nguồn.
+State machine chuyển session thành `Node_Payload_t` 24 byte. Battery hiện đang để `0` vì chưa nối mô-đun nguồn.
 
 ### Packet truyền qua ESP-NOW
 

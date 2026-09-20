@@ -28,7 +28,7 @@ namespace {
     //  * State Machine chỉ giữ dữ liệu nghiệp vụ trước mã hóa.
     //  * Packet 64 byte, sequence, nonce và tag thuộc mô-đun truyền thông.
     //  */
-    Patient_Event_Payload_t ready_payload{};
+    Node_Payload_t ready_payload{};
     bool payload_built = false;
     bool monitor_enabled = false;
     bool vitals_sensor_available = false;
@@ -185,7 +185,7 @@ namespace {
     //  */
     bool Build_EventPayload(
         const Patient_Session_t& session,
-        Patient_Event_Payload_t* payload
+        Node_Payload_t* payload
     ){
         if(payload == nullptr){
             Serial.println("[PATIENT EVENT] Payload pointer không hợp lệ.");
@@ -739,6 +739,6 @@ bool StateMachine_IsEventPayloadReady(void){
     return current_state == STATE_SESSION_READY && payload_built;
 }
 
-const Patient_Event_Payload_t* StateMachine_GetReadyEventPayload(void){
+const Node_Payload_t* StateMachine_GetReadyEventPayload(void){
     return StateMachine_IsEventPayloadReady() ? &ready_payload : nullptr;
 }

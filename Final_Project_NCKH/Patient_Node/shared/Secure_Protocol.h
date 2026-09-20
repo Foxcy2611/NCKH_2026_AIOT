@@ -70,7 +70,7 @@ typedef struct {
 
     uint8_t battery_node;           // Phần trăm pin hiện hành
 
-} Patient_Event_Payload_t;
+} Node_Payload_t;
 #pragma pack(pop)
 
 // =====================================================
@@ -93,7 +93,7 @@ typedef struct {
 
     uint8_t reserved[6];
 
-} Gateway_Response_Payload_t;
+} Response_Payload_t;
 
 #pragma pack(pop)
 
@@ -121,7 +121,7 @@ typedef struct {
     // Mã xác thực AES-GCM
     uint8_t authentication_tag[AES_GCM_TAG_SIZE];
 
-} Secure_EspNow_Packet_t; // 64 byte
+} Secure_Packet_t; // 64 byte
 #pragma pack(pop)
 
 // =====================================================
@@ -129,23 +129,23 @@ typedef struct {
 // =====================================================
 
 static_assert(
-    sizeof(Patient_Event_Payload_t) == 24,
-    "Patient_Event_Payload_t must be 24 bytes"
+    sizeof(Node_Payload_t) == 24,
+    "Node_Payload_t must be 24 bytes"
 );
 
 static_assert(
-    sizeof(Gateway_Response_Payload_t) == 24,
-    "Gateway_Response_Payload_t must be 24 bytes"
+    sizeof(Response_Payload_t) == 24,
+    "Response_Payload_t must be 24 bytes"
 );
 
 static_assert(
-    offsetof(Secure_EspNow_Packet_t, nonce) == SECURE_AAD_SIZE,
+    offsetof(Secure_Packet_t, nonce) == SECURE_AAD_SIZE,
     "Header/AAD layout mismatch"
 );
 
 static_assert(
-    sizeof(Secure_EspNow_Packet_t) == 64,
-    "Secure_EspNow_Packet_t must be 64 bytes"
+    sizeof(Secure_Packet_t) == 64,
+    "Secure_Packet_t must be 64 bytes"
 );
 
 #endif /* NCKH_SECURE_PROTOCOL_H */

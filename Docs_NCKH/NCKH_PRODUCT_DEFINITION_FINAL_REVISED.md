@@ -377,7 +377,7 @@ Stop I2S -> Stop MAX30102 -> Reset buffers/state -> OLED OFF -> ESP-NOW OFF -> E
 
 Patient Node không thu thập/gửi dữ liệu bệnh nhân liên tục. Hoạt động theo phiên/sự kiện:
 
-- Bấm CHECK → ghi âm 5s + AI + optional HR/SpO₂ → hoàn thành → tạo `Patient_Event_Payload_t` → mã hóa và gửi Gateway.
+- Bấm CHECK → ghi âm 5s + AI + optional HR/SpO₂ → hoàn thành → tạo `Node_Payload_t` → mã hóa và gửi Gateway.
 - Bật MONITOR → mic hoạt động liên tục chờ acoustic event → phát hiện & xử lý xong 1 sự kiện → mới tạo payload, mã hóa và gửi Gateway.
 - HR/SpO₂ chỉ đo khi có phiên đo, không giả định đo liên tục 24/7.
 - Không có phiên/sự kiện → không gửi dữ liệu bệnh nhân mới.
@@ -425,15 +425,15 @@ Nếu người dùng bỏ qua HR/SpO₂ → `vitals_valid = false`; đây vẫn 
 ### 10.2. Hai payload logic trước mã hóa
 
 ```text
-Node -> Gateway: Patient_Event_Payload_t      = 16 byte plaintext tạm
-Gateway -> Node: Gateway_Response_Payload_t   = 16 byte plaintext tạm
+Node -> Gateway: Node_Payload_t      = 16 byte plaintext tạm
+Gateway -> Node: Response_Payload_t   = 16 byte plaintext tạm
 ```
 
-- `Patient_Event_Payload_t` chứa `session_id`, loại sự kiện, kết quả AI, chất lượng audio, HR/SpO₂ và pin; không chứa timestamp.
-- `Gateway_Response_Payload_t` chứa Node đích, `session_id` được phản hồi, mã ACK/NACK và vùng dự phòng; không chứa timestamp hay cơ chế đồng bộ thời gian.
+- `Node_Payload_t` chứa `session_id`, loại sự kiện, kết quả AI, chất lượng audio, HR/SpO₂ và pin; không chứa timestamp.
+- `Response_Payload_t` chứa Node đích, `session_id` được phản hồi, mã ACK/NACK và vùng dự phòng; không chứa timestamp hay cơ chế đồng bộ thời gian.
 - Payload chỉ tồn tại trước mã hóa hoặc sau giải mã thành công; không gửi trực tiếp qua ESP-NOW.
 
-### 10.3. `Secure_EspNow_Packet_t` — packet bảo mật dùng chung hai chiều
+### 10.3. `Secure_Packet_t` — packet bảo mật dùng chung hai chiều
 
 ```text
 +------------------+----------+------------------+--------------------+
@@ -443,7 +443,7 @@ Gateway -> Node: Gateway_Response_Payload_t   = 16 byte plaintext tạm
                          Tổng: 56 byte
 ```
 
-Hai chiều đều truyền đúng `Secure_EspNow_Packet_t`. Trường `message_type` trong Header/AAD cho biết ciphertext chứa Patient Event hay Gateway Response. Hai chiều dùng khóa AES-128 riêng. Định nghĩa trường, cách sinh nonce và mã phản hồi nằm trong [Encrypt_AES-128-GCM.md](./Encrypt_AES-128-GCM.md).
+Hai chiều đều truyền đúng `Secure_Packet_t`. Trường `message_type` trong Header/AAD cho biết ciphertext chứa Patient Event hay Gateway Response. Hai chiều dùng khóa AES-128 riêng. Định nghĩa trường, cách sinh nonce và mã phản hồi nằm trong [Encrypt_AES-128-GCM.md](./Encrypt_AES-128-GCM.md).
 
 ---
 

@@ -36,9 +36,9 @@ Output: out_packet = packet 64 byte hoàn chỉnh
 */
 
 Secure_Sender_Result_t SecureSender_BuildPatientEvent(
-    const Patient_Event_Payload_t* payload,
+    const Node_Payload_t* payload,
     uint32_t sequence,
-    Secure_EspNow_Packet_t* out_packet
+    Secure_Packet_t* out_packet
 );
 
 #endif /* NCKH_SECURE_SENDER_H */

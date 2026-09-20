@@ -5,11 +5,11 @@
 #include "Config/gateway_config.h"
 #include <Arduino.h>
 namespace {
-void clearPayload(Patient_Event_Payload_t *p) {
+void clearPayload(Node_Payload_t *p) {
     if (p) memset(p, 0, sizeof(*p));
 }
 
-bool validPayload(const Patient_Event_Payload_t &p) {
+bool validPayload(const Node_Payload_t &p) {
     if (p.session_id == 0 || p.event_type > 2 || p.classification > 2 ||
         p.audio_quality > 3 || p.vitals_valid > 1 || p.spo2 > 100 ||
         p.battery_node > 100) return false;
@@ -20,10 +20,10 @@ bool validPayload(const Patient_Event_Payload_t &p) {
 }
 
 Secure_Event_Decrypt_Result_t SecureEvent_Decrypt(
-    const Secure_EspNow_Packet_t* packet,
+    const Secure_Packet_t* packet,
     uint32_t expected_node_id,
     const uint8_t key[AES_128_KEY_SIZE],
-    Patient_Event_Payload_t* out_payload) {
+    Node_Payload_t* out_payload) {
     clearPayload(out_payload);
     if (!packet || !key || !out_payload || expected_node_id == 0) return SECURE_EVENT_INVALID_ARGUMENT;
     if (packet->magic != SECURE_PACKET_MAGIC ||
@@ -61,9 +61,9 @@ bool SecureGateway_BuildResponse(
     uint32_t session_id,
     Gateway_Response_Code_t response_code,
     const uint8_t key[AES_128_KEY_SIZE],
-    Secure_EspNow_Packet_t* out_packet) {
+    Secure_Packet_t* out_packet) {
     if (!key || !out_packet || target_device_id == 0 || sequence == 0) return false;
-    Gateway_Response_Payload_t payload{};
+    Response_Payload_t payload{};
     payload.target_device_id = target_device_id;
     payload.session_id = session_id;
     payload.gateway_timestamp = millis();

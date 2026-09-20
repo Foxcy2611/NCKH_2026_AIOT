@@ -1,4 +1,4 @@
-Patient_Event_Payload_t
+Node_Payload_t
         │
         ▼
    SecureSender
@@ -12,7 +12,7 @@ Patient_Event_Payload_t
         ├─ sinh authentication_tag
         │
         ▼
-Secure_EspNow_Packet_t hoàn chỉnh
+Secure_Packet_t hoàn chỉnh
         │
         ▼
    EspNow_Client

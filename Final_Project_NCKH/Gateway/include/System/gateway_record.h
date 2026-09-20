@@ -2,8 +2,8 @@
 #include <math.h>
 #include "Config/gateway_config.h"
 #include "Config/gateway_types.h"
-inline Gate_Payload_t GatewayBuildPayload(const EnvironmentSnapshot &env, uint64_t now) {
-    Gate_Payload_t g{};
+inline Gateway_Payload_t GatewayBuildPayload(const EnvironmentSnapshot &env, uint64_t now) {
+    Gateway_Payload_t g{};
     g.gateway_id = GATEWAY_DEVICE_ID;
     // Monotonic uptime, NOT UTC; M5 must supply a time basis in its JSON schema.
     g.timestamp = now;

@@ -33,14 +33,14 @@ Do `authentication_tag` đã đảm nhiệm kiểm tra toàn vẹn và xác th�
 Chỉ có **một loại packet vật lý** được truyền qua ESP-NOW ở cả hai chiều:
 
 ```text
-Secure_EspNow_Packet_t
+Secure_Packet_t
 ```
 
 Packet này có thể chứa một trong hai loại dữ liệu logic:
 
 ```text
-MSG_PATIENT_EVENT       -> Patient_Event_Payload_t
-MSG_GATEWAY_RESPONSE    -> Gateway_Response_Payload_t
+MSG_PATIENT_EVENT       -> Node_Payload_t
+MSG_GATEWAY_RESPONSE    -> Response_Payload_t
 ```
 
 Hai payload chỉ là dữ liệu tạm trước mã hóa hoặc sau giải mã. Chúng không được gửi trực tiếp.
@@ -49,40 +49,40 @@ Hai payload chỉ là dữ liệu tạm trước mã hóa hoặc sau giải mã.
 Patient_Session_t
         |
         v
-Patient_Event_Payload_t (plaintext tạm)
+Node_Payload_t (plaintext tạm)
         |
         | AES-128-GCM
         v
-Secure_EspNow_Packet_t (ciphertext + tag)
+Secure_Packet_t (ciphertext + tag)
         |
         | ESP-NOW
         v
 Gateway xác thực tag và giải mã
         |
         v
-Patient_Event_Payload_t
+Node_Payload_t
 ```
 
 Chiều phản hồi hoạt động tương tự:
 
 ```text
-Gateway_Response_Payload_t
+Response_Payload_t
         |
         | AES-128-GCM
         v
-Secure_EspNow_Packet_t
+Secure_Packet_t
         |
         | ESP-NOW
         v
 Patient Node xác thực và giải mã ACK/NACK
 ```
 
-Quy ước tên của dự án: `Secure_EspNow_Packet_t` là **khung truyền bảo mật dùng chung** cho cả Patient Event và Gateway Response. Tên này giúp phân biệt rõ packet đã mã hóa với hai payload plaintext.
+Quy ước tên của dự án: `Secure_Packet_t` là **khung truyền bảo mật dùng chung** cho cả Patient Event và Gateway Response. Tên này giúp phân biệt rõ packet đã mã hóa với hai payload plaintext.
 
 | Chiều truyền | `message_type` | Plaintext trước mã hóa | Khóa sử dụng |
 |---|---|---|---|
-| Node → Gateway | `MSG_PATIENT_EVENT` | `Patient_Event_Payload_t` | `KEY_NODE_TO_GATEWAY` |
-| Gateway → Node | `MSG_GATEWAY_RESPONSE` | `Gateway_Response_Payload_t` | `KEY_GATEWAY_TO_NODE` |
+| Node → Gateway | `MSG_PATIENT_EVENT` | `Node_Payload_t` | `KEY_NODE_TO_GATEWAY` |
+| Gateway → Node | `MSG_GATEWAY_RESPONSE` | `Response_Payload_t` | `KEY_GATEWAY_TO_NODE` |
 
 Hai chiều có cùng kích thước và cùng cách phân vùng packet. Sự khác nhau nằm ở nội dung plaintext, loại message, khóa, nonce và tag.
 
@@ -222,13 +222,13 @@ typedef struct {
     uint8_t spo2;
 
     uint8_t battery;
-} Patient_Event_Payload_t;
+} Node_Payload_t;
 
 #pragma pack(pop)
 
 static_assert(
-    sizeof(Patient_Event_Payload_t) == SECURE_PAYLOAD_SIZE,
-    "Sai kich thuoc Patient_Event_Payload_t"
+    sizeof(Node_Payload_t) == SECURE_PAYLOAD_SIZE,
+    "Sai kich thuoc Node_Payload_t"
 );
 ```
 
@@ -250,13 +250,13 @@ typedef struct {
 
     uint8_t response_code;         // ACK_ACCEPTED, ACK_DUPLICATE...
     uint8_t reserved[7];           // Giữ payload phản hồi đủ 16 byte
-} Gateway_Response_Payload_t;
+} Response_Payload_t;
 
 #pragma pack(pop)
 
 static_assert(
-    sizeof(Gateway_Response_Payload_t) == 16,
-    "Sai kich thuoc Gateway_Response_Payload_t"
+    sizeof(Response_Payload_t) == 16,
+    "Sai kich thuoc Response_Payload_t"
 );
 ```
 
@@ -281,16 +281,16 @@ typedef struct {
 
     // -------- AES-GCM TAG: 16 byte --------
     uint8_t authentication_tag[AES_GCM_TAG_SIZE];
-} Secure_EspNow_Packet_t;
+} Secure_Packet_t;
 
 #pragma pack(pop)
 
 constexpr size_t SECURE_AAD_SIZE =
-    offsetof(Secure_EspNow_Packet_t, nonce);
+    offsetof(Secure_Packet_t, nonce);
 
 static_assert(
-    sizeof(Secure_EspNow_Packet_t) == 56,
-    "Sai kich thuoc Secure_EspNow_Packet_t"
+    sizeof(Secure_Packet_t) == 56,
+    "Sai kich thuoc Secure_Packet_t"
 );
 
 static_assert(
@@ -301,7 +301,7 @@ static_assert(
 #endif /* NCKH_SECURE_PROTOCOL_H */
 ```
 
-Chỉ `Secure_EspNow_Packet_t` được đưa vào `esp_now_send()`.
+Chỉ `Secure_Packet_t` được đưa vào `esp_now_send()`.
 
 ---
 
@@ -459,7 +459,7 @@ Không được sử dụng nội dung `plaintext` nếu `AES128GCM_Decrypt()` t
 ### 7.1. Chuyển Session thành payload
 
 ```cpp
-Patient_Event_Payload_t payload{};
+Node_Payload_t payload{};
 
 payload.session_id = session.session_id;
 payload.event_type = static_cast<uint8_t>(session.event_type);
@@ -475,7 +475,7 @@ payload.battery = battery_percent;
 ### 7.2. Tạo Header, nonce và mã hóa
 
 ```cpp
-Secure_EspNow_Packet_t packet{};
+Secure_Packet_t packet{};
 
 packet.magic = SECURE_PACKET_MAGIC;
 packet.protocol_version = SECURE_PROTOCOL_VERSION;
@@ -506,7 +506,7 @@ Nếu mã hóa thất bại:
 
 Nếu thành công:
 
-- Giữ toàn bộ `Secure_EspNow_Packet_t` trong một biến `tx_inflight` ở RAM.
+- Giữ toàn bộ `Secure_Packet_t` trong một biến `tx_inflight` ở RAM.
 - Gọi `esp_now_send()` với đúng 56 byte.
 - Retry gửi lại đúng 56 byte đang inflight; không lưu backlog sau khi hết retry.
 
@@ -533,8 +533,8 @@ Không giữ lại con trỏ `data` của callback vì vùng nhớ đó không c
 Trong `EspNowTask`, Gateway xử lý theo thứ tự:
 
 ```text
-1. Kiểm tra received_length == sizeof(Secure_EspNow_Packet_t)
-2. memcpy dữ liệu vào một biến Secure_EspNow_Packet_t cục bộ
+1. Kiểm tra received_length == sizeof(Secure_Packet_t)
+2. memcpy dữ liệu vào một biến Secure_Packet_t cục bộ
 3. Kiểm tra MAC nguồn có được đăng ký không
 4. Kiểm tra magic
 5. Kiểm tra protocol_version
@@ -542,7 +542,7 @@ Trong `EspNowTask`, Gateway xử lý theo thứ tự:
 7. Kiểm tra device_id khớp MAC/thiết bị đã đăng ký
 8. Chọn KEY_NODE_TO_GATEWAY tương ứng
 9. Xác thực tag và giải mã
-10. Chỉ khi thành công mới đọc Patient_Event_Payload_t
+10. Chỉ khi thành công mới đọc Node_Payload_t
 11. Kiểm tra sequence trùng/cũ/mới
 12. Đưa Event hợp lệ vào hàng đợi xử lý/MQTT
 13. Tạo phản hồi bảo mật gửi về Node
@@ -551,7 +551,7 @@ Trong `EspNowTask`, Gateway xử lý theo thứ tự:
 Code giải mã khái quát:
 
 ```cpp
-Patient_Event_Payload_t payload{};
+Node_Payload_t payload{};
 
 const bool valid = AES128GCM_Decrypt(
     KEY_NODE_TO_GATEWAY,
@@ -592,7 +592,7 @@ Packet tag sai không được nhận phản hồi chi tiết. Patient Node sẽ
 ### 9.2. Tạo payload phản hồi
 
 ```cpp
-Gateway_Response_Payload_t response{};
+Response_Payload_t response{};
 
 response.target_device_id = event_packet.device_id;
 response.session_id = event_payload.session_id;
@@ -602,7 +602,7 @@ response.response_code = RESPONSE_ACK_ACCEPTED;
 ### 9.3. Mã hóa phản hồi
 
 ```cpp
-Secure_EspNow_Packet_t response_packet{};
+Secure_Packet_t response_packet{};
 
 response_packet.magic = SECURE_PACKET_MAGIC;
 response_packet.protocol_version = SECURE_PROTOCOL_VERSION;
@@ -650,7 +650,7 @@ Thứ tự kiểm tra:
 5. device_id phải là Gateway ID dự kiến
 6. sequence phải khớp packet `tx_inflight`
 7. Xác thực tag bằng KEY_GATEWAY_TO_NODE
-8. Giải mã Gateway_Response_Payload_t
+8. Giải mã Response_Payload_t
 9. target_device_id phải là Device ID của Node
 10. session_id phải khớp Event đang inflight; sequence đã được đối chiếu ở Header/AAD
 11. Xử lý response_code
@@ -689,7 +689,7 @@ Patient Node không duy trì Pending Queue dài hạn. Mỗi thời điểm ch�
 ```cpp
 typedef struct {
     bool active;
-    Secure_EspNow_Packet_t packet;
+    Secure_Packet_t packet;
     uint8_t retry_count;
     uint32_t last_sent_millis;
 } Tx_Inflight_t;
@@ -790,9 +790,9 @@ Gateway đang kết nối Wi-Fi để MQTT thì kênh ESP-NOW phải đi theo k�
 
 ### 13.3. Điều kiện đạt
 
-- `sizeof(Patient_Event_Payload_t) == 16` ở cả hai thiết bị.
-- `sizeof(Gateway_Response_Payload_t) == 16` ở cả hai thiết bị.
-- `sizeof(Secure_EspNow_Packet_t) == 56` ở cả hai thiết bị.
+- `sizeof(Node_Payload_t) == 16` ở cả hai thiết bị.
+- `sizeof(Response_Payload_t) == 16` ở cả hai thiết bị.
+- `sizeof(Secure_Packet_t) == 56` ở cả hai thiết bị.
 - Không còn CRC32 trong packet AES-GCM.
 - Packet bị sửa không bao giờ được cập nhật vào `current_node` hoặc đưa vào MQTT.
 - Retry không tạo packet, nonce hoặc sequence mới.
@@ -804,9 +804,9 @@ Gateway đang kết nối Wi-Fi để MQTT thì kênh ESP-NOW phải đi theo k�
 ## 14. Thứ tự triển khai code
 
 1. Tạo một header giao thức chung cho Node và Gateway.
-2. Khai báo các payload và `Secure_EspNow_Packet_t` kèm `static_assert`.
+2. Khai báo các payload và `Secure_Packet_t` kèm `static_assert`.
 3. Viết và kiểm thử `AES128GCM_Encrypt()` / `AES128GCM_Decrypt()` độc lập.
-4. Patient Node: chuyển `Patient_Session_t` thành `Patient_Event_Payload_t`.
+4. Patient Node: chuyển `Patient_Session_t` thành `Node_Payload_t`.
 5. Patient Node: tạo secure packet và giữ trong một `tx_inflight` ngắn hạn.
 6. Gateway: callback nhận chỉ đẩy raw packet vào RTOS Queue.
 7. Gateway: Task xác thực, giải mã, chống trùng và tạo ACK/NACK.
@@ -821,10 +821,10 @@ Gateway đang kết nối Wi-Fi để MQTT thì kênh ESP-NOW phải đi theo k�
 Tài liệu đã được chuyển sang thiết kế AES-GCM, nhưng code hiện tại vẫn đang ở trạng thái chuyển tiếp. Khi bắt đầu sửa code phải thực hiện đồng bộ theo danh sách sau:
 
 - `[ĐÃ CHUẨN BỊ]` `Patient_Node/shared/system_state.h` đã có Patient Event payload và packet bảo mật; bước kế là đưa ba struct giao thức sang **một header dùng chung** cho cả Node và Gateway, bổ sung Gateway Response và `static_assert` kích thước.
-- `[ĐÃ SỬA]` `Patient_Node/src/State_Machine.cpp`: chỉ tạo `Patient_Event_Payload_t`; đã bỏ truy cập trường packet rõ và bỏ tính/kiểm tra CRC32.
+- `[ĐÃ SỬA]` `Patient_Node/src/State_Machine.cpp`: chỉ tạo `Node_Payload_t`; đã bỏ truy cập trường packet rõ và bỏ tính/kiểm tra CRC32.
 - `[ĐÃ SỬA]` `Patient_Node/include/Core_Logic/State_Machine.h`: API công bố payload sẵn sàng; việc chờ ACK/retry không chặn luồng đo chính và không yêu cầu persistent queue.
 - `[CẦN SỬA]` `Patient_Node/src/EspNow_Client.cpp`: bỏ PMK/LMK, đặt `peer.encrypt = false`, nhận packet phản hồi và chuyển phần xác thực/giải mã ra ngoài callback.
-- `[CẦN ĐỔI]` bỏ `Pending_ACK_Entry_t` dài hạn; thay bằng một `Tx_Inflight_t` giữ `Secure_EspNow_Packet_t` trong RAM đến khi ACK hoặc hết retry.
+- `[CẦN ĐỔI]` bỏ `Pending_ACK_Entry_t` dài hạn; thay bằng một `Tx_Inflight_t` giữ `Secure_Packet_t` trong RAM đến khi ACK hoặc hết retry.
 - `[CẦN SỬA]` `Gateway/src/main_test_sender_espnow.cpp`: bỏ struct CRC32 cũ, dùng header giao thức chung.
 - `[CẦN LÀM]` Gateway receiver: callback chỉ sao chép packet; Task xác thực tag trước khi đọc, lưu, ghép hoặc publish dữ liệu.
 - `[ĐÃ CẬP NHẬT]` README tổng thể, Product Definition và bản phân công đã dùng luồng AES-GCM + ACK/NACK bảo mật.
@@ -838,13 +838,13 @@ Không nên sửa riêng từng struct ở Node và Gateway. Hai phía phải bu
 Thiết kế cuối cùng:
 
 ```text
-Một Secure_EspNow_Packet_t cố định 56 byte
+Một Secure_Packet_t cố định 56 byte
     |
     +-- MSG_PATIENT_EVENT
-    |       chứa Patient_Event_Payload_t đã mã hóa
+    |       chứa Node_Payload_t đã mã hóa
     |
     +-- MSG_GATEWAY_RESPONSE
-            chứa Gateway_Response_Payload_t đã mã hóa
+            chứa Response_Payload_t đã mã hóa
 ```
 
 - Header được để rõ nhưng được xác thực bằng AAD.

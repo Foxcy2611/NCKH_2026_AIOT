@@ -9,7 +9,7 @@
 // Internal Gateway representation of an authenticated Patient Event.
 // The payload itself is the canonical 24-byte struct from Secure_Protocol.h.
 struct PatientEventEnvelope {
-    Patient_Event_Payload_t payload;
+    Node_Payload_t payload;
     uint32_t device_id;
     uint32_t sequence;
     uint8_t mac[6];
@@ -57,7 +57,7 @@ typedef enum : uint8_t {
 } Gate_Sensor_Valid_Bit_t;
 
 // Cloud/internal Gateway payload defined by GATE_PAYLOAD_COMPLETE_PACKET_DESIGN.md.
-struct Gate_Payload_t {
+struct Gateway_Payload_t {
     uint32_t gateway_id;
     uint64_t timestamp;
     uint8_t operating_mode;
@@ -80,8 +80,8 @@ struct Gate_Payload_t {
 
 struct Complete_Packet_t {
     uint8_t has_patient_event;
-    Gate_Payload_t gate;
-    Patient_Event_Payload_t patient_event;
+    Gateway_Payload_t gate;
+    Node_Payload_t patient_event;
 };
 
 // Compatibility name used in the M4 task/aggregator roadmap.

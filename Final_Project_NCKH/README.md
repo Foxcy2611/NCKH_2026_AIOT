@@ -24,7 +24,7 @@ Final_Project_NCKH/
 | Thư mục | Vai trò trong sản phẩm cuối |
 |---|---|
 | `AI_Model/` | Lưu model và artifact cần thiết để nhúng vào Patient Node |
-| `Patient_Node/` | Thu dữ liệu bệnh nhân, xử lý DSP/TinyML, tạo `Patient_Event_Payload_t` và mã hóa thành packet AES-128-GCM |
+| `Patient_Node/` | Thu dữ liệu bệnh nhân, xử lý DSP/TinyML, tạo `Node_Payload_t` và mã hóa thành packet AES-128-GCM |
 | `Gateway/` | Xác thực/giải mã sự kiện, phản hồi bảo mật, thu context môi trường và quản lý kết nối mạng |
 | `Dashboard_Qt6/` | Nhận dữ liệu qua MQTT và cung cấp giao diện theo dõi |
 

@@ -52,7 +52,7 @@ void loop(void) {
      * 64 byte được sao chép an toàn vào pending của EspNow_Client.
      */
     if (StateMachine_IsEventPayloadReady()) {
-        const Patient_Event_Payload_t* payload =
+        const Node_Payload_t* payload =
             StateMachine_GetReadyEventPayload();
 
         if (EspNow_QueuePatientEvent(payload)) {

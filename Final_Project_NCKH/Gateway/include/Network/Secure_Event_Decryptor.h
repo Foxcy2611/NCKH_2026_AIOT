@@ -15,10 +15,10 @@ typedef enum {
 } Secure_Event_Decrypt_Result_t;
 
 Secure_Event_Decrypt_Result_t SecureEvent_Decrypt(
-    const Secure_EspNow_Packet_t* packet,
+    const Secure_Packet_t* packet,
     uint32_t expected_node_id,
     const uint8_t key[AES_128_KEY_SIZE],
-    Patient_Event_Payload_t* out_payload
+    Node_Payload_t* out_payload
 );
 
 bool SecureGateway_BuildResponse(
@@ -27,7 +27,7 @@ bool SecureGateway_BuildResponse(
     uint32_t session_id,
     Gateway_Response_Code_t response_code,
     const uint8_t key[AES_128_KEY_SIZE],
-    Secure_EspNow_Packet_t* out_packet
+    Secure_Packet_t* out_packet
 );
 
 #endif

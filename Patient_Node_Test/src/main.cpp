@@ -16,7 +16,7 @@ uint32_t sequence_counter = 0;
 uint32_t session_id = 0x20260916UL;
 
 struct PendingEvent {
-    Secure_EspNow_Packet_t packet{};
+    Secure_Packet_t packet{};
     uint32_t session_id = 0;
     bool active = false;
     bool waiting_ack = false;
@@ -28,7 +28,7 @@ PendingEvent pending{};
 
 portMUX_TYPE callback_mux = portMUX_INITIALIZER_UNLOCKED;
 volatile bool response_ready = false;
-Secure_EspNow_Packet_t response_packet{};
+Secure_Packet_t response_packet{};
 volatile int8_t send_result = -1; // -1 none, 0 failed, 1 success
 
 uint32_t makeDeviceId() {
@@ -45,7 +45,7 @@ void printMac(const uint8_t *mac) {
     }
 }
 
-void printPacketHeader(const Secure_EspNow_Packet_t &p, const char *label) {
+void printPacketHeader(const Secure_Packet_t &p, const char *label) {
     Serial.printf(
         "[%s] magic=0x%04X ver=%u type=%u device=0x%08lX seq=%lu len=%u\n",
         label,
@@ -58,8 +58,8 @@ void printPacketHeader(const Secure_EspNow_Packet_t &p, const char *label) {
     );
 }
 
-Patient_Event_Payload_t makePayload(uint32_t seq) {
-    Patient_Event_Payload_t p{};
+Node_Payload_t makePayload(uint32_t seq) {
+    Node_Payload_t p{};
     p.session_id = session_id;
     p.timestamp = static_cast<uint64_t>(millis());
     p.event_type = 1;       // Manual/check event in the Final 2 contract.
@@ -73,9 +73,9 @@ Patient_Event_Payload_t makePayload(uint32_t seq) {
     return p;
 }
 
-bool encryptPatientEvent(const Patient_Event_Payload_t &payload,
+bool encryptPatientEvent(const Node_Payload_t &payload,
                          uint32_t seq,
-                         Secure_EspNow_Packet_t &out) {
+                         Secure_Packet_t &out) {
     memset(&out, 0, sizeof(out));
 
     out.magic = SECURE_PACKET_MAGIC;
@@ -114,8 +114,8 @@ bool encryptPatientEvent(const Patient_Event_Payload_t &payload,
     return result == 0;
 }
 
-bool decryptGatewayResponse(const Secure_EspNow_Packet_t &packet,
-                            Gateway_Response_Payload_t &out) {
+bool decryptGatewayResponse(const Secure_Packet_t &packet,
+                            Response_Payload_t &out) {
     memset(&out, 0, sizeof(out));
 
     if (packet.magic != SECURE_PACKET_MAGIC ||
@@ -172,7 +172,7 @@ void onReceive(const uint8_t *mac, const uint8_t *data, int len) {
     (void)mac;
     if (!data || len != static_cast<int>(SECURE_PACKET_SIZE)) return;
 
-    Secure_EspNow_Packet_t packet{};
+    Secure_Packet_t packet{};
     memcpy(&packet, data, sizeof(packet));
 
     // Ignore everything except a Gateway response with the expected Gateway ID.
@@ -229,13 +229,13 @@ bool initEspNow() {
     Serial.print(WiFi.macAddress());
     Serial.printf(" | channel=%u | packet=%u bytes | GatewayID=0x%08lX\n",
                   ESPNOW_TEST_CHANNEL,
-                  static_cast<unsigned>(sizeof(Secure_EspNow_Packet_t)),
+                  static_cast<unsigned>(sizeof(Secure_Packet_t)),
                   static_cast<unsigned long>(GATEWAY_DEVICE_ID));
     Serial.println("[ESP-NOW] Sending to broadcast; Gateway learns this Node MAC in learning mode.");
     return true;
 }
 
-bool sendRaw(const Secure_EspNow_Packet_t &packet, const char *label) {
+bool sendRaw(const Secure_Packet_t &packet, const char *label) {
     portENTER_CRITICAL(&callback_mux);
     send_result = -1;
     portEXIT_CRITICAL(&callback_mux);
@@ -255,10 +255,10 @@ bool sendRaw(const Secure_EspNow_Packet_t &packet, const char *label) {
     return result == ESP_OK;
 }
 
-Secure_EspNow_Packet_t last_packet{};
+Secure_Packet_t last_packet{};
 bool have_last_packet = false;
 uint32_t last_packet_session_id = 0;
-Secure_EspNow_Packet_t previous_packet{};
+Secure_Packet_t previous_packet{};
 bool have_previous_packet = false;
 uint32_t previous_packet_session_id = 0;
 
@@ -270,9 +270,9 @@ void newEvent() {
 
     ++sequence_counter;
     if (sequence_counter == 0) sequence_counter = 1;
-    Patient_Event_Payload_t payload = makePayload(sequence_counter);
+    Node_Payload_t payload = makePayload(sequence_counter);
 
-    Secure_EspNow_Packet_t packet{};
+    Secure_Packet_t packet{};
     if (!encryptPatientEvent(payload, sequence_counter, packet)) {
         Serial.println("[TX] AES-GCM encryption FAILED");
         return;
@@ -303,7 +303,7 @@ void newEvent() {
     sendRaw(packet, "new event");
 }
 
-void armPendingForPacket(const Secure_EspNow_Packet_t &packet, uint32_t packet_session_id) {
+void armPendingForPacket(const Secure_Packet_t &packet, uint32_t packet_session_id) {
     pending = {};
     pending.packet = packet;
     pending.session_id = packet_session_id;
@@ -335,7 +335,7 @@ void tamperLast() {
         return;
     }
 
-    Secure_EspNow_Packet_t bad = last_packet;
+    Secure_Packet_t bad = last_packet;
     bad.ciphertext[0] ^= 0x01;
     Serial.printf("\n[TEST] AUTH FAILURE | seq=%lu | ciphertext modified after AES-GCM\n",
                   static_cast<unsigned long>(bad.sequence));
@@ -385,7 +385,7 @@ void printHelp() {
 
 void processAck() {
     bool has_response = false;
-    Secure_EspNow_Packet_t packet{};
+    Secure_Packet_t packet{};
     int8_t radio_result = -1;
 
     portENTER_CRITICAL(&callback_mux);
@@ -409,7 +409,7 @@ void processAck() {
     }
 
     if (has_response) {
-        Gateway_Response_Payload_t response{};
+        Response_Payload_t response{};
         if (!decryptGatewayResponse(packet, response)) {
             Serial.println("[ACK] DROP: Gateway response failed AES-GCM/header/session validation");
         } else {
@@ -482,7 +482,7 @@ void setup() {
     Serial.printf("Node Device ID : 0x%08lX\n", static_cast<unsigned long>(device_id));
     Serial.printf("Gateway ID     : 0x%08lX\n", static_cast<unsigned long>(GATEWAY_DEVICE_ID));
     Serial.printf("ESP-NOW channel: %u\n", ESPNOW_TEST_CHANNEL);
-    Serial.printf("Secure packet  : %u bytes\n", static_cast<unsigned>(sizeof(Secure_EspNow_Packet_t)));
+    Serial.printf("Secure packet  : %u bytes\n", static_cast<unsigned>(sizeof(Secure_Packet_t)));
     if (!initEspNow()) {
         Serial.println("[FATAL] ESP-NOW init failed");
         while (true) delay(1000);

@@ -37,7 +37,7 @@ lõi không phụ thuộc Internet và raw audio không được truyền liên 
 
 | Thành phần | Trách nhiệm chính | Không đảm nhiệm |
 |---|---|---|
-| **Patient Node** | Thu audio, Quality Gate, VAD, DSP, TinyML, HR/SpO₂ theo phiên, OLED, tạo `Patient_Event_Payload_t` và mã hóa AES-128-GCM | MQTT, LTE, GPS, cảm biến môi trường |
+| **Patient Node** | Thu audio, Quality Gate, VAD, DSP, TinyML, HR/SpO₂ theo phiên, OLED, tạo `Node_Payload_t` và mã hóa AES-128-GCM | MQTT, LTE, GPS, cảm biến môi trường |
 | **Gateway** | Nhận/xác thực/giải mã sự kiện, phản hồi bảo mật, thu môi trường, ghép dữ liệu, lưu/chuyển tiếp và quản lý uplink | Chạy lại mô hình âm thanh thay Patient Node |
 | **Dashboard** | Hiển thị phiên đo, lịch sử, trạng thái thiết bị và cảnh báo | Suy diễn chẩn đoán lâm sàng |
 
@@ -78,7 +78,7 @@ Patient Node ngoài vùng Gateway
   → CHECK hoặc MONITOR
   → Quality Gate + TinyML
   → hiển thị kết quả trên OLED
-  → mã hóa và lưu `Secure_EspNow_Packet_t` vào hàng đợi chờ gửi
+  → mã hóa và lưu `Secure_Packet_t` vào hàng đợi chờ gửi
 ```
 
 Trong trường hợp này không có dữ liệu môi trường từ Gateway tại thời điểm đo và
@@ -168,12 +168,12 @@ Python. Dự án không tuyên bố bit-exact trên mọi nền tảng.
 
 ```text
 Patient_Session_t
-  → Patient_Event_Payload_t 24 byte
+  → Node_Payload_t 24 byte
   → AES-128-GCM
-  → Secure_EspNow_Packet_t 64 byte
+  → Secure_Packet_t 64 byte
   → ESP-NOW
   → Gateway xác thực tag + giải mã
-  → Gateway_Response_Payload_t 24 byte
+  → Response_Payload_t 24 byte
   → AES-128-GCM + ESP-NOW phản hồi
   → ACK/NACK + retry ở Patient Node
   → EnvironmentSnapshot tại Gateway
@@ -186,7 +186,7 @@ Patient_Session_t
 Raw PCM, Mel-Spectrogram và tensor nội bộ không thuộc payload vận hành bình
 thường.
 
-Hai chiều Node ↔ Gateway sử dụng chung format `Secure_EspNow_Packet_t`. Trường
+Hai chiều Node ↔ Gateway sử dụng chung format `Secure_Packet_t`. Trường
 `message_type` xác định ciphertext chứa Patient Event hay Gateway Response.
 `authentication_tag` 16 byte của AES-GCM thay thế CRC32. Chi tiết nằm tại
 [Đặc tả AES-128-GCM](./Docs_NCKH/Encrypt_AES-128-GCM.md).

@@ -345,7 +345,7 @@ DASHBOARD
 
 ## Final Design Principle
 
-- **`Gate_Payload_t`** = periodic/current telemetry
-- **`Patient_Event_Payload_t`** = event-based patient measurement
+- **`Gateway_Payload_t`** = periodic/current telemetry
+- **`Node_Payload_t`** = event-based patient measurement
 - **`Complete_Packet_t`** = transport/data model kết hợp hai loại trên
 - **`has_patient_event`** = điều kiện để Qt6 biết packet hiện tại có chứa một Patient Event MỚI hay không

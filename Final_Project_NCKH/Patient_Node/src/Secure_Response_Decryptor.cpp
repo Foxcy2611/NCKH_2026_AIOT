@@ -11,7 +11,7 @@ namespace {
 
     uint8_t gateway_to_node_key[AES_128_KEY_SIZE];
 
-    void SecureResponse_ClearResponse(Gateway_Response_Payload_t* response){
+    void SecureResponse_ClearResponse(Response_Payload_t* response){
         if(response != nullptr){
             memset(response, 0, sizeof(*response));
         }
@@ -41,10 +41,10 @@ bool SecureResponse_Init(
 }
 
 Secure_Response_Decrypt_Result_t SecureResponseDecryptor_Decrypt(
-    const Secure_EspNow_Packet_t* packet,
+    const Secure_Packet_t* packet,
     uint32_t expected_sequence,
     uint32_t expected_session_id,
-    Gateway_Response_Payload_t* out_response
+    Response_Payload_t* out_response
 ){
     if(!is_initialized){
         SecureResponse_ClearResponse(out_response);

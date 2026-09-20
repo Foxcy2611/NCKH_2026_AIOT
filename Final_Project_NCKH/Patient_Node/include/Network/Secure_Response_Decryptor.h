@@ -38,15 +38,15 @@ bool SecureResponse_Init(
 + expected_session_id: Session ID của Event đang chờ ACK/NACK.
  
 - Thành công:
--> out_response chứa Gateway_Response_Payload_t hợp lệ.
+-> out_response chứa Response_Payload_t hợp lệ.
 - Thất bại:
 -> out_response được xóa về 0 và không được sử dụng.
 */
 Secure_Response_Decrypt_Result_t SecureResponseDecryptor_Decrypt(
-    const Secure_EspNow_Packet_t* packet,
+    const Secure_Packet_t* packet,
     uint32_t expected_sequence,
     uint32_t expected_session_id,
-    Gateway_Response_Payload_t* out_response
+    Response_Payload_t* out_response
 );
 
 

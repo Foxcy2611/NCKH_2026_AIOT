@@ -5,10 +5,10 @@ ESP32-S3 NODE                                      ESP32 GATEWAY
 Patient_Session_t
       │
       ▼
-Patient_Event_Payload_t (16 byte plaintext tạm)
+Node_Payload_t (16 byte plaintext tạm)
       │
       ▼  AES-128-GCM bằng KEY_NODE_TO_GATEWAY
-Secure_EspNow_Packet_t (56 byte, SEQ=150)
+Secure_Packet_t (56 byte, SEQ=150)
       │
       ├────────────── ESP-NOW ─────────────────────►│
       │                                              ▼
@@ -29,12 +29,12 @@ Secure_EspNow_Packet_t (56 byte, SEQ=150)
       │                                         │                            │
       │                                         └──────────────┬─────────────┘
       │                                                        ▼
-      │                                      Gateway_Response_Payload_t
+      │                                      Response_Payload_t
       │                                      ACK_ACCEPTED/ACK_DUPLICATE
       │                                                        │
       │                                      AES-128-GCM bằng KEY_GATEWAY_TO_NODE
       │                                                        ▼
-      │◄──────── Secure_EspNow_Packet_t, SEQ=150 / ESP-NOW ─────┤
+      │◄──────── Secure_Packet_t, SEQ=150 / ESP-NOW ─────┤
       │
       ▼
 Kiểm MAC/Header/SEQ/tag, sau đó giải mã Response
@@ -44,7 +44,7 @@ Kiểm MAC/Header/SEQ/tag, sau đó giải mã Response
       └── Timeout/phản hồi sai -> gửi lại nguyên packet 56 byte cũ; hết retry thì clear tx_inflight, không lưu backlog
 
 GHI NHỚ:
-- Hai chiều dùng cùng format Secure_EspNow_Packet_t, nhưng plaintext và khóa khác nhau.
+- Hai chiều dùng cùng format Secure_Packet_t, nhưng plaintext và khóa khác nhau.
 - ACK/NACK cũng phải mã hóa và xác thực; ACK chỉ từ callback gửi của ESP-NOW là chưa đủ.
 - Retry không tạo nonce, sequence hoặc ciphertext mới; chỉ tồn tại trong `tx_inflight` ngắn hạn.
 - GCM tag thay CRC32 trong packet bảo mật.

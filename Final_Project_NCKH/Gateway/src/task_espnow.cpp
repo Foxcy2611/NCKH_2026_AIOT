@@ -52,7 +52,7 @@ bool configuredNodeId(uint32_t packetId) {
     return learned ? (boundDeviceId == 0 || packetId == boundDeviceId) : true;
 }
 
-void sendResponse(const EspNowRawPacket &raw, const Secure_EspNow_Packet_t &packet,
+void sendResponse(const EspNowRawPacket &raw, const Secure_Packet_t &packet,
                  uint32_t session_id, Gateway_Response_Code_t code) {
     if (ESPNow_SendSecureResponse(raw.mac, packet.device_id, packet.sequence,
                                    session_id, code)) {
@@ -73,7 +73,7 @@ void TaskEspNow(void *parameter) {
         if (xQueueReceive(espNowRxQueue, &raw, pdMS_TO_TICKS(500)) != pdTRUE) continue;
         if (raw.length != SECURE_PACKET_SIZE) { gatewayStats.espnow_invalid++; continue; }
 
-        Secure_EspNow_Packet_t packet{};
+        Secure_Packet_t packet{};
         memcpy(&packet, raw.data, sizeof(packet));
 
         if (packet.magic != SECURE_PACKET_MAGIC ||
@@ -97,7 +97,7 @@ void TaskEspNow(void *parameter) {
             continue;
         }
 
-        Patient_Event_Payload_t payload{};
+        Node_Payload_t payload{};
         auto result = SecureEvent_Decrypt(&packet, packet.device_id,
                                           KEY_NODE_TO_GATEWAY, &payload);
         if (result != SECURE_EVENT_DECRYPT_OK) {

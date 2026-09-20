@@ -31,9 +31,9 @@ bool SecureSender_Init(
 }
 
 Secure_Sender_Result_t SecureSender_BuildPatientEvent(
-    const Patient_Event_Payload_t* payload,
+    const Node_Payload_t* payload,
     uint32_t sequence,
-    Secure_EspNow_Packet_t* out_packet
+    Secure_Packet_t* out_packet
 ){
     if(!is_initialized){
         return SECURE_SENDER_NOT_INITIALIZED;
@@ -72,7 +72,7 @@ Secure_Sender_Result_t SecureSender_BuildPatientEvent(
     5. ENCRYPT + AUTHENTICATE
     
     plaintext:
-        Patient_Event_Payload_t
+        Node_Payload_t
     AAD:
         12-byte Header
     

@@ -17,6 +17,6 @@ int main() {
     e.gateway_timestamp_ms=0x100000000ULL+100; e.humidity_valid=true; e.pressure_hpa=1013.25; e.tvoc_valid=true;
     p=GatewayBuildPayload(e,e.gateway_timestamp_ms+1); assert(p.sensor_valid_mask==7 && p.timestamp>0xffffffffULL);
     CompleteRecord rec{}; rec.gate=p; assert(!rec.has_patient_event && rec.patient_event.session_id==0);
-    assert(sizeof(Patient_Event_Payload_t)==24 && sizeof(Gateway_Response_Payload_t)==24 && sizeof(Secure_EspNow_Packet_t)==64);
+    assert(sizeof(Node_Payload_t)==24 && sizeof(Response_Payload_t)==24 && sizeof(Secure_Packet_t)==64);
     puts("PASS: missing/fresh/stale/boundary/future/partial/nonfinite/gas/64-bit-time/telemetry/protocol");
 }

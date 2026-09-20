@@ -78,7 +78,7 @@ bool ESPNow_SendSecureResponse(const uint8_t *mac,
                                uint32_t sequence,
                                uint32_t session_id,
                                Gateway_Response_Code_t response_code) {
-    Secure_EspNow_Packet_t response{};
+    Secure_Packet_t response{};
     if (!SecureGateway_BuildResponse(target_device_id,
                                      sequence,
                                      session_id,

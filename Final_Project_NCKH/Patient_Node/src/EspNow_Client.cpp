@@ -36,7 +36,7 @@ constexpr uint8_t MAX_RETRY_COUNT = 3U;
 
 // Chỉ giữ một sự kiện đang chờ Gateway xác nhận.
 struct Pending_Event_t {
-    Secure_EspNow_Packet_t packet;
+    Secure_Packet_t packet;
     uint32_t session_id;
     uint32_t last_sent_ms;
     uint8_t retry_count;
@@ -55,7 +55,7 @@ constexpr int8_t CALLBACK_SUCCESS = 1;
 portMUX_TYPE callback_mux = portMUX_INITIALIZER_UNLOCKED;
 volatile int8_t send_callback_result = CALLBACK_NONE;
 volatile bool response_ready = false;
-Secure_EspNow_Packet_t response_packet{};
+Secure_Packet_t response_packet{};
 
 bool IsGatewayMac(const uint8_t* mac) {
     return mac != nullptr && memcmp(mac, GATEWAY_MAC, sizeof(GATEWAY_MAC)) == 0;
@@ -193,7 +193,7 @@ bool EspNow_IsReady(void) {
     return espnow_ready;
 }
 
-bool EspNow_QueuePatientEvent(const Patient_Event_Payload_t* payload) {
+bool EspNow_QueuePatientEvent(const Node_Payload_t* payload) {
     if (!espnow_ready || payload == nullptr || pending_active) return false;
 
     Pending_Event_t next{};
@@ -239,7 +239,7 @@ void EspNow_Process(void) {
     // Lấy một ảnh chụp mailbox rồi xử lý bên ngoài callback Wi-Fi.
     int8_t radio_send_result = CALLBACK_NONE;
     bool has_response = false;
-    Secure_EspNow_Packet_t packet{};
+    Secure_Packet_t packet{};
 
     portENTER_CRITICAL(&callback_mux);
     radio_send_result = send_callback_result;
@@ -264,7 +264,7 @@ void EspNow_Process(void) {
 
     // 2. Xác thực, giải mã và xử lý phản hồi nghiệp vụ từ Gateway.
     if (has_response && pending_active) {
-        Gateway_Response_Payload_t response{};
+        Response_Payload_t response{};
         const Secure_Response_Decrypt_Result_t decrypt_result =
             SecureResponseDecryptor_Decrypt(
                 &packet,

@@ -27,7 +27,7 @@ bool EspNow_Setup(void);
 bool EspNow_IsReady(void);
 
 // Đưa sự kiện vào vùng chờ
-bool EspNow_QueuePatientEvent(const Patient_Event_Payload_t* payload);
+bool EspNow_QueuePatientEvent(const Node_Payload_t* payload);
 
 // Hàm xử lý định kỳ
 void EspNow_Process(void);

@@ -1,4 +1,4 @@
-# THIẾT KẾ `Gate_Payload_t` VÀ `Complete_Packet_t` — REVISED
+# THIẾT KẾ `Gateway_Payload_t` VÀ `Complete_Packet_t` — REVISED
 
 ## 1. Mục tiêu
 
@@ -6,8 +6,8 @@ Gateway duy trì **latest state**, không duy trì hàng đợi lịch sử khi 
 
 Ba cấu trúc chính:
 
-- `Patient_Event_Payload_t`: Event mới nhất nhận từ Patient Node sau khi AES-GCM xác thực/giải mã thành công. Payload này **không có timestamp**.
-- `Gate_Payload_t`: snapshot mới nhất của Gateway, environment, network và GPS. Timestamp của hệ thống chỉ được giữ tại đây.
+- `Node_Payload_t`: Event mới nhất nhận từ Patient Node sau khi AES-GCM xác thực/giải mã thành công. Payload này **không có timestamp**.
+- `Gateway_Payload_t`: snapshot mới nhất của Gateway, environment, network và GPS. Timestamp của hệ thống chỉ được giữ tại đây.
 - `Complete_Packet_t`: object tạm được dựng từ `current_node` + `current_gate` khi cần publish MQTT; không phải object được queue lâu dài.
 
 ```text
@@ -56,7 +56,7 @@ Không dùng giá trị `0` của sensor để biểu diễn lỗi; dùng `senso
 
 ---
 
-## 4. `Gate_Payload_t`
+## 4. `Gateway_Payload_t`
 
 ```cpp
 typedef struct {
@@ -91,17 +91,17 @@ typedef struct {
     uint64_t gps_timestamp;
 
     uint8_t battery_gate;
-} Gate_Payload_t;
+} Gateway_Payload_t;
 ```
 
 ### Quy ước timestamp
 
-- `Patient_Event_Payload_t`: **không có timestamp**.
-- `Gateway_Response_Payload_t`: **không có timestamp**.
-- `Gate_Payload_t.timestamp`: thời điểm Gateway tạo/cập nhật snapshot `current_gate`.
-- `gps_timestamp`: thời điểm GPS fix gần nhất; vẫn là field thuộc `Gate_Payload_t`.
+- `Node_Payload_t`: **không có timestamp**.
+- `Response_Payload_t`: **không có timestamp**.
+- `Gateway_Payload_t.timestamp`: thời điểm Gateway tạo/cập nhật snapshot `current_gate`.
+- `gps_timestamp`: thời điểm GPS fix gần nhất; vẫn là field thuộc `Gateway_Payload_t`.
 
-`Gate_Payload_t.timestamp` dùng cho `Last Gateway Update`/snapshot time trên backend. Không được diễn giải nó là thời điểm chính xác Patient Event xảy ra.
+`Gateway_Payload_t.timestamp` dùng cho `Last Gateway Update`/snapshot time trên backend. Không được diễn giải nó là thời điểm chính xác Patient Event xảy ra.
 
 ---
 
@@ -110,8 +110,8 @@ typedef struct {
 Gateway giữ đúng hai snapshot mới nhất:
 
 ```cpp
-Patient_Event_Payload_t current_node{};
-Gate_Payload_t          current_gate{};
+Node_Payload_t current_node{};
+Gateway_Payload_t          current_gate{};
 
 bool current_node_valid = false;
 bool current_gate_valid = false;
@@ -158,8 +158,8 @@ current_gate_valid = true;
 ```cpp
 typedef struct {
     uint8_t has_patient_event;
-    Gate_Payload_t gate;
-    Patient_Event_Payload_t patient_event;
+    Gateway_Payload_t gate;
+    Node_Payload_t patient_event;
 } Complete_Packet_t;
 ```
 
@@ -299,10 +299,10 @@ typedef struct {
     uint16_t heart_rate;
     uint8_t spo2;
     uint8_t battery;
-} Patient_Event_Payload_t;
+} Node_Payload_t;
 #pragma pack(pop)
 
-static_assert(sizeof(Patient_Event_Payload_t) == 16);
+static_assert(sizeof(Node_Payload_t) == 16);
 ```
 
 `Complete_Packet_t` là internal Gateway/cloud data model. Khi gửi MQTT nên serialize thành JSON hoặc schema rõ ràng; không gửi raw C++ binary layout và không đưa nonce/ciphertext/tag/khóa lên MQTT.

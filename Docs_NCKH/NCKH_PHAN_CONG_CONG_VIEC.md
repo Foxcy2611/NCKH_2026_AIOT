@@ -12,8 +12,8 @@
 - **M5** — Network/Backend
 
 Yêu cầu:
-- Struct dùng chung (`Patient_Session_t`, `Patient_Event_Payload_t`, `Gateway_Response_Payload_t`, `Secure_EspNow_Packet_t`, `EnvironmentSnapshot`, `CompleteRecord`) **không ai được tự sửa** mà không báo M1 và M4 trước. Ba struct truyền thông đầu/cuối phải dùng chung đúng tên, thứ tự trường và kích thước đã khóa trong tài liệu AES-GCM.
-- `Secure_EspNow_Packet_t` là packet bảo mật 64 byte dùng ở cả hai chiều; nội dung nghiệp vụ nằm trong payload 24 byte đã mã hóa. M5 chỉ nhận dữ liệu đã được Gateway xác thực/giải mã, không dùng ciphertext làm schema MQTT.
+- Struct dùng chung (`Patient_Session_t`, `Node_Payload_t`, `Response_Payload_t`, `Secure_Packet_t`, `EnvironmentSnapshot`, `CompleteRecord`) **không ai được tự sửa** mà không báo M1 và M4 trước. Ba struct truyền thông đầu/cuối phải dùng chung đúng tên, thứ tự trường và kích thước đã khóa trong tài liệu AES-GCM.
+- `Secure_Packet_t` là packet bảo mật 64 byte dùng ở cả hai chiều; nội dung nghiệp vụ nằm trong payload 24 byte đã mã hóa. M5 chỉ nhận dữ liệu đã được Gateway xác thực/giải mã, không dùng ciphertext làm schema MQTT.
 - Mọi sự thay đổi đều trong [Final Project](../Final_Project_NCKH/), không nên tự ý push lên github kể cả nhánh `branch` cá nhân
 - Mọi layout thiết kế, state hay phần cứng, ghi rõ vào [Docs Member](../Docs_Member/)
 
@@ -29,7 +29,7 @@ Yêu cầu:
 | 4 | Nối TinyML vào Quality Gate (Phase 4) | `Audio_CheckQuality()` → DSP → DS-CNN → Voting → `AudioInferenceResult` | Quality FAIL không Invoke model; không regress kết quả |
 | 5 | PatientSession (Phase 6) | Struct + Serial print đầy đủ sau mỗi CHECK | Audio-only vẫn hợp lệ (`vitals_valid=false`) |
 | 6 | Auto Monitor vào state machine (Phase 7) | Pipeline VAD/PSRAM cũ chạy dưới state mới, dùng chung Quality Gate với Manual | Chạy lâu không crash |
-| 7 | Patient Event + AES-GCM/ESP-NOW (Phase 8–9) | Build `Patient_Event_Payload_t`; mã hóa thành `Secure_EspNow_Packet_t`; sequence/nonce; pending retry; nhận và xác thực `Gateway_Response_Payload_t` | Chỉ xóa pending khi ACK bảo mật hợp lệ; retry gửi lại nguyên packet cũ; mất Gateway vẫn lưu local; ACK trùng không tạo dữ liệu trùng |
+| 7 | Patient Event + AES-GCM/ESP-NOW (Phase 8–9) | Build `Node_Payload_t`; mã hóa thành `Secure_Packet_t`; sequence/nonce; pending retry; nhận và xác thực `Response_Payload_t` | Chỉ xóa pending khi ACK bảo mật hợp lệ; retry gửi lại nguyên packet cũ; mất Gateway vẫn lưu local; ACK trùng không tạo dữ liệu trùng |
 | 8 | Qt6/QML Dashboard (Phase 15) | Overview, Patient Session History, Respiratory Event History, HR/SpO2 History, Environment Charts, Gateway Status, Network Status, Alerts | Bắt đầu chỉ khi PatientEvent/EnvironmentSnapshot/CompleteRecord/MQTT schema đã chốt (đợi M4+M5); phân biệt rõ Current Environment vs Latest HR/SpO2 |
 | 9 | Chốt calibration threshold cuối (Phase 17) | Số threshold final dựa trên đo thực nghiệm của M3 | — |
 | 10 | Đánh giá AI metrics (Phase 18) | Accuracy/Precision/Recall/F1/Confusion Matrix | — |
@@ -73,11 +73,11 @@ Yêu cầu:
 | # | Việc | Điều kiện bắt đầu | DONE khi |
 |---|------|--------------------|----------|
 | 1 | FreeRTOS skeleton (Phase 10) | Có thể bắt đầu sớm, song song với M1 (không phụ thuộc AI) | `TaskEspNow`, `TaskSensor`, `TaskGatewayManager`, `TaskNetwork`; callback RX chỉ sao chép MAC + packet 64 byte vào `RawSecurePacketQueue`, không giải mã/aggregate trong callback |
-| 2 | AES-GCM RX/TX phía Gateway | Sau khi M1 và M4 khóa header giao thức chung | Ngoài callback: kiểm MAC/Header, xác thực tag, giải mã Event, chống trùng; tạo `Gateway_Response_Payload_t`, mã hóa ACK/NACK bằng khóa chiều Gateway → Node |
+| 2 | AES-GCM RX/TX phía Gateway | Sau khi M1 và M4 khóa header giao thức chung | Ngoài callback: kiểm MAC/Header, xác thực tag, giải mã Event, chống trùng; tạo `Response_Payload_t`, mã hóa ACK/NACK bằng khóa chiều Gateway → Node |
 | 3 | Test nhận packet từ Node giả lập | Ngay sau bước 2 | Đủ ca: packet hợp lệ, sửa ciphertext/tag, sai MAC/sequence, packet trùng, timeout và ACK giả; dữ liệu sai không lọt vào hàng đợi nghiệp vụ |
 | 4 | Sensor Layer (Phase 11) | Khi M3 giao driver DHT22/BMP280/SGP30 | `EnvironmentSnapshot`; 1 sensor lỗi không sập cả hệ |
 | 5 | Test và tích hợp TWDT | Trong cùng bước 4 | Phục hồi mạch nếu có tiến trình gây treo (dòng 1-wire và Wi-Fi) |
-| 6 | Aggregator (Phase 12) | Sau bước 4 | Ghép `Patient_Event_Payload_t` **đã xác thực/giải mã** + `EnvironmentSnapshot` gần nhất → `CompleteRecord` |
+| 6 | Aggregator (Phase 12) | Sau bước 4 | Ghép `Node_Payload_t` **đã xác thực/giải mã** + `EnvironmentSnapshot` gần nhất → `CompleteRecord` |
 | 7 | Bàn giao schema cho M5 | Sau bước 6 | `CompleteRecord` ổn định; không đưa nonce/ciphertext/tag/khóa vào MQTT |
 | 8 | Đánh giá Communication (Phase 18) | — | Tỉ lệ ESP-NOW thành công, ACK/retry, chống duplicate, Gateway loss/reconnect, packet bị sửa và phản hồi giả |
 
@@ -89,7 +89,7 @@ Yêu cầu:
 
 | # | Việc | Điều kiện bắt đầu | Ghi chú |
 |---|------|--------------------|---------|
-| 1 | Nghiên cứu MQTT client + soạn nháp schema | Ngay bây giờ, song song | Dựa trên `Patient_Event_Payload_t` đã được Gateway giải mã, `EnvironmentSnapshot` và `CompleteRecord`; không dựa trên packet mã hóa 64 byte |
+| 1 | Nghiên cứu MQTT client + soạn nháp schema | Ngay bây giờ, song song | Dựa trên `Node_Payload_t` đã được Gateway giải mã, `EnvironmentSnapshot` và `CompleteRecord`; không dựa trên packet mã hóa 64 byte |
 | 2 | Wi-Fi + MQTT (Phase 13) | Chờ M4 có `CompleteRecord` ổn định (Phase 12) | Publish CompleteRecord; schema nháp 4 nhóm: patient event / environment / gateway status / alert; README ghi rõ "chưa khóa" |
 | 3 | LTE + GPS (Phase 14) | Sau khi Wi-Fi/MQTT ổn | A7680C fallback theo policy HOME (Wi-Fi primary, LTE standby, GPS OFF) và MOBILE (LTE primary, GPS ON khi cần) |
 | 4 | Phối hợp với M1 làm Dashboard | Khi M1 bắt đầu Phase 15 | Cung cấp MQTT client mẫu/schema cuối |

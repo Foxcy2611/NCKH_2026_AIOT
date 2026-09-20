@@ -63,6 +63,6 @@ bool StateMachine_IsEventPayloadReady(void);
 // Trả con trỏ chỉ đọc tới payload sẵn sàng; trả nullptr nếu chưa sẵn sàng.
 // Lớp AES phải copy payload, mã hóa và enqueue packet thành công trước khi gọi
 // StateMachine_NotifyEventQueued().
-const Patient_Event_Payload_t* StateMachine_GetReadyEventPayload(void);
+const Node_Payload_t* StateMachine_GetReadyEventPayload(void);
 
 #endif /* NCKH_STATE_MACHINE_H */
