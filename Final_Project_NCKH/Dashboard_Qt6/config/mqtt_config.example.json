@@ -1,0 +1,8 @@
+{
+    "host": "YOUR_CLUSTER.s1.eu.hivemq.cloud",
+    "port": 8883,
+    "username": "YOUR_USERNAME",
+    "password": "CHANGE_ME",
+    "topic": "nckh/aiot2026/complete_packet",
+    "tls": true
+}

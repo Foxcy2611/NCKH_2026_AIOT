@@ -44,7 +44,7 @@ Flickable {
                 theme: root.theme
 
                 accentColor:
-                    root.dataSource.classification === "Normal"
+                    root.dataSource.classification === "Non-asthma"
                     ? root.theme.green
                     : root.theme.amber
 
@@ -65,7 +65,7 @@ Flickable {
                         text: root.dataSource.classification
 
                         color:
-                            root.dataSource.classification === "Normal"
+                            root.dataSource.classification === "Non-asthma"
                             ? root.theme.green
                             : root.theme.amber
 
@@ -105,7 +105,7 @@ Flickable {
                             radius: 4
 
                             color:
-                                root.dataSource.classification === "Normal"
+                                root.dataSource.classification === "Non-asthma"
                                 ? root.theme.green
                                 : root.theme.amber
                         }

@@ -15,6 +15,8 @@ find_package(
         Qml
         Quick
         QuickControls2
+        Mqtt
+        Network
 )
 
 qt_standard_project_setup(REQUIRES 6.8)
@@ -22,9 +24,15 @@ qt_standard_project_setup(REQUIRES 6.8)
 # Frontend executable + QML module
 add_subdirectory(ui)
 
-# Backend libraries will be enabled later.
-# add_subdirectory(libs/model)
-# add_subdirectory(libs/dashboard)
-# add_subdirectory(libs/mqtt)
-# add_subdirectory(libs/parser)
-# add_subdirectory(libs/storage)
+# Copy cấu hình ra cạnh file chạy. Có thể dùng biến môi trường NCKH_MQTT_*
+# để ghi đè mà không phải lưu mật khẩu vào source.
+set(MQTT_CONFIG_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/config/mqtt_config.json)
+if(NOT EXISTS ${MQTT_CONFIG_SOURCE})
+    set(MQTT_CONFIG_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/config/mqtt_config.example.json)
+endif()
+
+configure_file(
+    ${MQTT_CONFIG_SOURCE}
+    ${CMAKE_CURRENT_BINARY_DIR}/mqtt_config.json
+    COPYONLY
+)

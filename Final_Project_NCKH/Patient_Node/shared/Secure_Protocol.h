@@ -17,9 +17,9 @@ constexpr size_t AES_GCM_NONCE_SIZE = 12;
 constexpr size_t AES_GCM_TAG_SIZE   = 16;
 
 constexpr size_t SECURE_AAD_SIZE      = 12;
-constexpr size_t SECURE_PAYLOAD_SIZE  = 24;
-constexpr size_t SECURE_RESPONSE_SIZE = 24;
-constexpr size_t SECURE_PACKET_SIZE   = 64;
+constexpr size_t SECURE_PAYLOAD_SIZE  = 16;
+constexpr size_t SECURE_RESPONSE_SIZE = 16;
+constexpr size_t SECURE_PACKET_SIZE   = 56;
 
 // =====================================================
 // 1. Kiểu tin nhắn
@@ -55,7 +55,6 @@ typedef enum {
 #pragma pack(push, 1)
 typedef struct {
     uint32_t session_id;       // ID phiên đo liên kết các tập dữ liệu
-    uint64_t timestamp;        // Dấu thời gian lúc đóng gói bản tin
 
     uint8_t event_type;        // Phân loại mục đích gói tin 
 
@@ -85,16 +84,11 @@ typedef struct {
 
     uint32_t session_id;
 
-    uint64_t gateway_timestamp;
-
     uint8_t response_code;
 
-    uint8_t time_valid;
-
-    uint8_t reserved[6];
+    uint8_t reserved[7];
 
 } Response_Payload_t;
-
 #pragma pack(pop)
 
 // /* VÙNG DỮ LIỆU BẢO MẬT - PACKET THẬT SỰ GỬI QUA ESP-NOW */ //
@@ -115,13 +109,13 @@ typedef struct {
     // =============================
     uint8_t nonce[AES_GCM_NONCE_SIZE];
 
-    // Một trong hai payload logic 24 byte sau khi mã hóa
+    // Một trong hai payload logic 16 byte sau khi mã hóa
     uint8_t ciphertext[SECURE_PAYLOAD_SIZE];
 
     // Mã xác thực AES-GCM
     uint8_t authentication_tag[AES_GCM_TAG_SIZE];
 
-} Secure_Packet_t; // 64 byte
+} Secure_Packet_t; // 56 byte
 #pragma pack(pop)
 
 // =====================================================
@@ -129,13 +123,18 @@ typedef struct {
 // =====================================================
 
 static_assert(
-    sizeof(Node_Payload_t) == 24,
-    "Node_Payload_t must be 24 bytes"
+    sizeof(Node_Payload_t) == SECURE_PAYLOAD_SIZE,
+    "Node_Payload_t must be 16 bytes"
 );
 
 static_assert(
-    sizeof(Response_Payload_t) == 24,
-    "Response_Payload_t must be 24 bytes"
+    sizeof(Response_Payload_t) == SECURE_RESPONSE_SIZE,
+    "Response_Payload_t must be 16 bytes"
+);
+
+static_assert(
+    SECURE_RESPONSE_SIZE == SECURE_PAYLOAD_SIZE,
+    "Both directions must fit the shared ciphertext field"
 );
 
 static_assert(
@@ -144,8 +143,8 @@ static_assert(
 );
 
 static_assert(
-    sizeof(Secure_Packet_t) == 64,
-    "Secure_Packet_t must be 64 bytes"
+    sizeof(Secure_Packet_t) == SECURE_PACKET_SIZE,
+    "Secure_Packet_t must be 56 bytes"
 );
 
 #endif /* NCKH_SECURE_PROTOCOL_H */

@@ -165,11 +165,6 @@ device_id 4 byte + bộ đếm bền vững 8 byte
 
 Các enum và struct giao thức phải nằm trong **một header dùng chung cho cả Patient Node và Gateway**. Không sao chép rồi sửa độc lập ở hai dự án vì rất dễ lệch kích thước.
 
-Tên file đề xuất:
-
-```text
-Final_Project_NCKH/Common_Protocol/Secure_Protocol.h
-```
 
 ### 4.1. Hằng số và loại message
 
@@ -801,39 +796,7 @@ Gateway đang kết nối Wi-Fi để MQTT thì kênh ESP-NOW phải đi theo k�
 
 ---
 
-## 14. Thứ tự triển khai code
-
-1. Tạo một header giao thức chung cho Node và Gateway.
-2. Khai báo các payload và `Secure_Packet_t` kèm `static_assert`.
-3. Viết và kiểm thử `AES128GCM_Encrypt()` / `AES128GCM_Decrypt()` độc lập.
-4. Patient Node: chuyển `Patient_Session_t` thành `Node_Payload_t`.
-5. Patient Node: tạo secure packet và giữ trong một `tx_inflight` ngắn hạn.
-6. Gateway: callback nhận chỉ đẩy raw packet vào RTOS Queue.
-7. Gateway: Task xác thực, giải mã, chống trùng và tạo ACK/NACK.
-8. Patient Node: callback nhận phản hồi và `EspNow_Process()` xử lý.
-9. Kiểm thử timeout, retry, packet giả và mất Gateway.
-10. Sau khi hai phía ổn định mới nối Gateway current-state (`current_node/current_gate`) và MQTT.
-
----
-
-## 15. Các phần code cũ cần cập nhật khi bắt đầu triển khai
-
-Tài liệu đã được chuyển sang thiết kế AES-GCM, nhưng code hiện tại vẫn đang ở trạng thái chuyển tiếp. Khi bắt đầu sửa code phải thực hiện đồng bộ theo danh sách sau:
-
-- `[ĐÃ CHUẨN BỊ]` `Patient_Node/shared/system_state.h` đã có Patient Event payload và packet bảo mật; bước kế là đưa ba struct giao thức sang **một header dùng chung** cho cả Node và Gateway, bổ sung Gateway Response và `static_assert` kích thước.
-- `[ĐÃ SỬA]` `Patient_Node/src/State_Machine.cpp`: chỉ tạo `Node_Payload_t`; đã bỏ truy cập trường packet rõ và bỏ tính/kiểm tra CRC32.
-- `[ĐÃ SỬA]` `Patient_Node/include/Core_Logic/State_Machine.h`: API công bố payload sẵn sàng; việc chờ ACK/retry không chặn luồng đo chính và không yêu cầu persistent queue.
-- `[CẦN SỬA]` `Patient_Node/src/EspNow_Client.cpp`: bỏ PMK/LMK, đặt `peer.encrypt = false`, nhận packet phản hồi và chuyển phần xác thực/giải mã ra ngoài callback.
-- `[CẦN ĐỔI]` bỏ `Pending_ACK_Entry_t` dài hạn; thay bằng một `Tx_Inflight_t` giữ `Secure_Packet_t` trong RAM đến khi ACK hoặc hết retry.
-- `[CẦN SỬA]` `Gateway/src/main_test_sender_espnow.cpp`: bỏ struct CRC32 cũ, dùng header giao thức chung.
-- `[CẦN LÀM]` Gateway receiver: callback chỉ sao chép packet; Task xác thực tag trước khi đọc, lưu, ghép hoặc publish dữ liệu.
-- `[ĐÃ CẬP NHẬT]` README tổng thể, Product Definition và bản phân công đã dùng luồng AES-GCM + ACK/NACK bảo mật.
-
-Không nên sửa riêng từng struct ở Node và Gateway. Hai phía phải build từ cùng một định nghĩa giao thức.
-
----
-
-## 16. Kết luận thiết kế
+## 14. Kết luận thiết kế
 
 Thiết kế cuối cùng:
 
@@ -862,7 +825,7 @@ Một Secure_Packet_t cố định 56 byte
 
 ---
 
-## 17. Tài liệu tham khảo chính thức
+## 15. Tài liệu tham khảo chính thức
 
 - [ESP-IDF — ESP-NOW](https://docs.espressif.com/projects/esp-idf/en/v5.5/esp32/api-reference/network/esp_now.html)
 - [ESP-IDF — Mbed TLS](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/protocols/mbedtls.html)

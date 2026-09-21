@@ -318,6 +318,11 @@ bool I2S_MonitorListenStep(void) {
     return false;
 }
 
+bool I2S_MonitorIsBufferReady(void) {
+    return warmup_chunks_remaining == 0
+        && pre_roll_valid_samples >= kPreRollSamples;
+}
+
 bool I2S_MonitorCaptureStep(void) {
     if(audio_buffer == nullptr || sample_count < kPreRollSamples) return false;
 

@@ -69,9 +69,9 @@ typedef enum {
 // 4. Kết quả phân loại từ TinyML
 // ============================
 typedef enum {
-    INTERFACE_UNSURE = 0,    // Không chắc chắn
-    INTERFACE_ASTHMA_LIKE,
-    INTERFACE_NON_ASTHMA
+    INTERFACE_ASTHMA_LIKE = 0,
+    INTERFACE_NON_ASTHMA,
+    INTERFACE_UNSURE            // Không chắc chắn
 } Interface_TinyML_t;
 
 // ============================
@@ -102,8 +102,6 @@ typedef struct {
     uint16_t heart_rate;       // Chỉ số Nhịp tim (BPM) kéo từ MAX30102
     uint8_t spo2;              // Nồng độ Oxy trong máu (%) kéo từ MAX30102
 
-    // --- Nhóm Trạng thái Hệ thống ---
-    uint64_t event_timestamp;
 } Patient_Session_t;
 
 #endif /* NCKH_SYSTEM_STATE_H */

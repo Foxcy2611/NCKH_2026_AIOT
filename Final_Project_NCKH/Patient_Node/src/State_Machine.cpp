@@ -5,6 +5,7 @@
 #include "Core_Logic/Quality_Check.h"
 
 #include "Vitals_UI/PPG_Sensor.h"
+#include "Vitals_UI/UI_Oled.h"
 
 #include "Packet_Metadata.h"
 #include "board_pinout.h"
@@ -26,25 +27,25 @@ namespace {
 
     // /** AES-GCM MIGRATION:
     //  * State Machine chỉ giữ dữ liệu nghiệp vụ trước mã hóa.
-    //  * Packet 64 byte, sequence, nonce và tag thuộc mô-đun truyền thông.
+    //  * Packet 56 byte, sequence, nonce và tag thuộc mô-đun truyền thông.
     //  */
     Node_Payload_t ready_payload{};
     bool payload_built = false;
     bool monitor_enabled = false;
+    bool monitor_buffer_ready_displayed = false;
     bool vitals_sensor_available = false;
     bool vitals_wait_logged = false;
-    bool has_check_timestamp = false;
-    bool has_monitor_timestamp = false;
-    uint32_t last_check_timestamp = 0;
-    uint32_t last_monitor_timestamp = 0;
+    bool has_check_press = false;
+    bool has_monitor_press = false;
+    uint32_t last_check_press_ms = 0;
+    uint32_t last_monitor_press_ms = 0;
 
-    uint8_t monitor_vote_round = 0;
-    uint8_t asthma_votes = 0;
-    uint8_t non_asthma_votes = 0;
-    uint8_t unsure_votes = 0;
-    float asthma_score_sum = 0.0f;
-    float non_asthma_score_sum = 0.0f;
-    float unsure_score_sum = 0.0f;
+    // Gom toàn bộ dữ liệu vote Monitor vào một chỗ thay vì dùng 7 biến rời.
+    struct Monitor_Votes_t {
+        uint8_t round = 0;
+        uint8_t count[3] = {0, 0, 0};
+        float score_sum[3] = {0.0f, 0.0f, 0.0f};
+    } monitor_votes;
 
     void IRAM_ATTR ISR_BTN_Sleep(void) {
         abort_requested = true;
@@ -58,48 +59,69 @@ namespace {
         pending_button_bits |= kMonitorEventBit;
     }
 
-    const char* StateName(Patient_State_t state) {
+    const char* const kStateNames[] = {
+        "STANDBY", "MANUAL_CAPTURE", "AUDIO_QUALITY", "AI_PROCESSING",
+        "AUDIO_RESULT", "VITAL_CHECK", "SESSION_READY", "MONITOR_LISTENING",
+        "MONITOR_CAPTURE", "ERROR"
+    };
+    const char* const kEventNames[] = {"MANUAL_CHECK", "MONITOR_EVENT", "STATUS"};
+    const char* const kQualityNames[] = {
+        "AUDIO_OK", "AUDIO_TOO_WEAK", "AUDIO_TOO_LOUD", "AUDIO_INACTIVE"
+    };
+    const char* const kClassificationNames[] = {"ASTHMA", "NON_ASTHMA", "UNSURE"};
+
+    template <size_t N>
+    const char* EnumName(int value, const char* const (&names)[N], const char* fallback) {
+        return value >= 0 && value < static_cast<int>(N) ? names[value] : fallback;
+    }
+
+    const char* StateName(Patient_State_t value) {
+        return EnumName(value, kStateNames, "UNKNOWN");
+    }
+
+    const char* EventTypeName(Event_Type_t value) {
+        return EnumName(value, kEventNames, "EVENT_UNKNOWN");
+    }
+
+    const char* AudioQualityName(Audio_Quality_t value) {
+        return EnumName(value, kQualityNames, "AUDIO_UNKNOWN");
+    }
+
+    const char* ClassificationName(Interface_TinyML_t value) {
+        return EnumName(value, kClassificationNames, "CLASS_UNKNOWN");
+    }
+
+    int UiClassificationCode(Interface_TinyML_t value) {
+        return value >= INTERFACE_ASTHMA_LIKE && value <= INTERFACE_UNSURE
+            ? static_cast<int>(value)
+            : static_cast<int>(INTERFACE_UNSURE);
+    }
+
+    void RenderStateOnOled(Patient_State_t state) {
         switch (state) {
-            case STATE_STANDBY:           return "STANDBY";
-            case STATE_MANUAL_CAPTURE:    return "MANUAL_CAPTURE";
-            case STATE_AUDIO_QUALITY:     return "AUDIO_QUALITY";
-            case STATE_AI_PROCESSING:     return "AI_PROCESSING";
-            case STATE_AUDIO_RESULT:      return "AUDIO_RESULT";
-            case STATE_VITAL_CHECK:       return "VITAL_CHECK";
-            case STATE_SESSION_READY:     return "SESSION_READY";
-            case STATE_MONITOR_LISTENING: return "MONITOR_LISTENING";
-            case STATE_MONITOR_CAPTURE:   return "MONITOR_CAPTURE";
-            case STATE_ERROR:             return "ERROR";
-            default:                      return "UNKNOWN";
-        }
-    }
-
-    /** Bổ sung tên dễ đọc để log không chỉ hiện giá trị enum dạng số. */
-    const char* EventTypeName(Event_Type_t event_type) {
-        switch (event_type) {
-            case EVENT_MANUAL_CHECK:  return "MANUAL_CHECK";
-            case EVENT_MONITOR_EVENT: return "MONITOR_EVENT";
-            case EVENT_STATUS:        return "STATUS";
-            default:                  return "EVENT_UNKNOWN";
-        }
-    }
-
-    const char* AudioQualityName(Audio_Quality_t quality) {
-        switch (quality) {
-            case AUDIO_OK:       return "AUDIO_OK";
-            case AUDIO_TOO_WEAK: return "AUDIO_TOO_WEAK";
-            case AUDIO_TOO_LOUD: return "AUDIO_TOO_LOUD";
-            case AUDIO_INACTIVE: return "AUDIO_INACTIVE";
-            default:             return "AUDIO_UNKNOWN";
-        }
-    }
-
-    const char* ClassificationName(Interface_TinyML_t classification) {
-        switch (classification) {
-            case INTERFACE_ASTHMA_LIKE: return "ASTHMA";
-            case INTERFACE_NON_ASTHMA:  return "NON_ASTHMA";
-            case INTERFACE_UNSURE:      return "UNSURE";
-            default:                    return "CLASS_UNKNOWN";
+            case STATE_STANDBY:
+                OLED_Show_Standby();
+                break;
+            case STATE_MANUAL_CAPTURE:
+                OLED_Show_Recording();
+                break;
+            case STATE_AI_PROCESSING:
+                OLED_Show_Processing();
+                break;
+            case STATE_AUDIO_RESULT:
+                OLED_Show_AI_Result(UiClassificationCode(current_session.classification));
+                break;
+            case STATE_VITAL_CHECK:
+                OLED_Show_PlaceFinger();
+                break;
+            case STATE_MONITOR_LISTENING:
+                // Màn này được điều khiển theo trạng thái thật của bộ đệm I2S.
+                break;
+            case STATE_MONITOR_CAPTURE:
+                OLED_Show_SoundDetected();
+                break;
+            default:
+                break;
         }
     }
 
@@ -113,16 +135,11 @@ namespace {
             StateName(next_state)
         );
         current_state = next_state;
+        RenderStateOnOled(current_state);
     }
 
     void Reset_MonitorVotes(void) {
-        monitor_vote_round = 0;
-        asthma_votes = 0;
-        non_asthma_votes = 0;
-        unsure_votes = 0;
-        asthma_score_sum = 0.0f;
-        non_asthma_score_sum = 0.0f;
-        unsure_score_sum = 0.0f;
+        monitor_votes = {};
     }
 
     void Reset_CurrentSession(void) {
@@ -136,18 +153,107 @@ namespace {
         Reset_MonitorVotes();
     }
 
+    void PrepareNextMonitorCapture(void) {
+        I2S_MonitorPrepareNextCapture();
+        monitor_buffer_ready_displayed = false;
+        OLED_Show_MonitorPreparing();
+    }
+
     void Begin_NewSession(Event_Type_t event_type) {
         Reset_CurrentSession();
         current_session.session_id = PacketMetadata_NewSessionId();
         current_session.event_type = event_type;
-        current_session.event_timestamp = static_cast<uint64_t>(millis());
 
         Serial.printf(
-            "[SESSION] Bắt đầu %s | SessionID=0x%08lX | LocalMillis=%llu\n",
+            "[SESSION] Bắt đầu %s | SessionID=0x%08lX\n",
             EventTypeName(event_type),
-            static_cast<unsigned long>(current_session.session_id),
-            static_cast<unsigned long long>(current_session.event_timestamp)
+            static_cast<unsigned long>(current_session.session_id)
         );
+    }
+
+    uint8_t MonitorVoteIndex(Interface_TinyML_t classification) {
+        return classification >= INTERFACE_ASTHMA_LIKE
+            && classification <= INTERFACE_UNSURE
+            ? static_cast<uint8_t>(classification)
+            : static_cast<uint8_t>(INTERFACE_UNSURE);
+    }
+
+    void AddMonitorVote(Interface_TinyML_t classification, float score) {
+        const uint8_t index = MonitorVoteIndex(classification);
+        ++monitor_votes.round;
+        ++monitor_votes.count[index];
+        monitor_votes.score_sum[index] += score;
+    }
+
+    void FinishMonitorVoting(void) {
+        uint8_t winner = 0;
+        bool tied = false;
+
+        for (uint8_t index = 1; index < 3; ++index) {
+            if (monitor_votes.count[index] > monitor_votes.count[winner]) {
+                winner = index;
+                tied = false;
+            } else if (monitor_votes.count[index] == monitor_votes.count[winner]) {
+                tied = true;
+            }
+        }
+
+        if (tied) {
+            current_session.classification = INTERFACE_UNSURE;
+            current_session.model_score = 0.0f;
+            Serial.println("[RESULT] Ba vote không tạo được đa số, cần kiểm tra lại.");
+            return;
+        }
+
+        current_session.classification = static_cast<Interface_TinyML_t>(winner);
+        current_session.model_score =
+            monitor_votes.score_sum[winner] / monitor_votes.count[winner];
+
+        switch (current_session.classification) {
+            case INTERFACE_ASTHMA_LIKE:
+                Serial.println("[RESULT] Cảnh báo phát hiện âm thanh giống mẫu hen.");
+                break;
+            case INTERFACE_NON_ASTHMA:
+                Serial.println("[RESULT] Không phát hiện âm thanh giống mẫu hen.");
+                break;
+            case INTERFACE_UNSURE:
+            default:
+                Serial.println("[RESULT] Không chắc chắn, cần kiểm tra lại.");
+                break;
+        }
+    }
+
+    void HandleMonitorAudioResult(
+        Interface_TinyML_t classification,
+        float safe_score
+    ) {
+        AddMonitorVote(classification, safe_score);
+
+        Serial.printf(
+            "[VOTE] %u/%u | Lần này=%s (%.2f%%) | ASTHMA=%u | NON_ASTHMA=%u | UNSURE=%u\n",
+            monitor_votes.round,
+            kMonitorVoteRounds,
+            ClassificationName(classification),
+            safe_score * 100.0f,
+            monitor_votes.count[INTERFACE_ASTHMA_LIKE],
+            monitor_votes.count[INTERFACE_NON_ASTHMA],
+            monitor_votes.count[INTERFACE_UNSURE]
+        );
+
+        OLED_Show_AI_Result(UiClassificationCode(classification));
+        delay(1000);
+
+        if (monitor_votes.round < kMonitorVoteRounds) {
+            PrepareNextMonitorCapture();
+            StateMachine_StateTransition(STATE_MONITOR_LISTENING, "MONITOR_NEXT_VOTE");
+            return;
+        }
+
+        FinishMonitorVoting();
+        current_session.vitals_valid = false;
+        OLED_Show_AI_Result(UiClassificationCode(current_session.classification));
+        delay(1200);
+        StateMachine_StateTransition(STATE_SESSION_READY, "MONITOR_VOTE_DONE");
     }
 
     Button_Event_t Consume_ButtonEvent(void) {
@@ -160,19 +266,19 @@ namespace {
 
         // Nếu hai nút đến cùng lúc, CHECK được ưu tiên và sự kiện MONITOR bị bỏ.
         if ((bits & kCheckEventBit) != 0U) {
-            if (!has_check_timestamp
-                || static_cast<uint32_t>(now - last_check_timestamp) >= kButtonDebounceMs) {
-                has_check_timestamp = true;
-                last_check_timestamp = now;
+            if (!has_check_press
+                || static_cast<uint32_t>(now - last_check_press_ms) >= kButtonDebounceMs) {
+                has_check_press = true;
+                last_check_press_ms = now;
                 return BTN_CHECK_PRESSED;
             }
         }
 
         if ((bits & kMonitorEventBit) != 0U) {
-            if (!has_monitor_timestamp
-                || static_cast<uint32_t>(now - last_monitor_timestamp) >= kButtonDebounceMs) {
-                has_monitor_timestamp = true;
-                last_monitor_timestamp = now;
+            if (!has_monitor_press
+                || static_cast<uint32_t>(now - last_monitor_press_ms) >= kButtonDebounceMs) {
+                has_monitor_press = true;
+                last_monitor_press_ms = now;
                 return BTN_MONITOR_PRESSED;
             }
         }
@@ -180,7 +286,7 @@ namespace {
         return BTN_NONE;
     }
 
-    // /** Chuyển Session cục bộ thành plaintext 24 byte.
+    // /** Chuyển Session cục bộ thành plaintext 16 byte.
     //  * Hàm này không sinh sequence/nonce và không thực hiện AES-GCM.
     //  */
     bool Build_EventPayload(
@@ -195,7 +301,6 @@ namespace {
         memset(payload, 0, sizeof(*payload));
 
         payload->session_id  = session.session_id;
-        payload->timestamp   = PacketMetadata_GetTimestamp(session.event_timestamp);
 
         payload->event_type  = static_cast<uint8_t>(session.event_type);
 
@@ -217,19 +322,20 @@ namespace {
         if (event == BTN_CHECK_PRESSED) {
             monitor_enabled = false;
             Begin_NewSession(EVENT_MANUAL_CHECK);
+            OLED_Show_PlaceNearMouth();
             StateMachine_StateTransition(STATE_MANUAL_CAPTURE, "CHECK");
         } else if (event == BTN_MONITOR_PRESSED) {
             monitor_enabled = true;
             Reset_CurrentSession();
             I2S_MonitorReset();
+            monitor_buffer_ready_displayed = false;
+            OLED_Show_MonitorPreparing();
             Serial.println("[MONITOR] Đã bật; đang ổn định micro và tạo bộ đệm 1 giây.");
             StateMachine_StateTransition(STATE_MONITOR_LISTENING, "MONITOR_ON");
         }
     }
 
-    void Handle_ManualCapture(Button_Event_t event) {
-        (void)event;
-        
+    void Handle_ManualCapture(void) {
         if(I2S_RecordSamples()){
             StateMachine_NotifyCaptureDone();
             return;
@@ -240,8 +346,7 @@ namespace {
         }
     }
 
-    void Handle_AudioQuality(Button_Event_t event) {
-        (void)event;
+    void Handle_AudioQuality(void) {
         Audio_Quality_Metrics_t metrics = {};
 
         Serial.printf(
@@ -259,9 +364,7 @@ namespace {
         StateMachine_SubmitAudioQuality(quality);
     }
 
-    void Handle_AIProcessing(Button_Event_t event) {
-        (void)event;
-
+    void Handle_AIProcessing(void) {
         Interface_TinyML_t classification = INTERFACE_UNSURE;
         float model_score = 0.0f;
 
@@ -290,9 +393,7 @@ namespace {
         }
     }
 
-    void Handle_VitalCheck(Button_Event_t event) {
-        (void)event;
-
+    void Handle_VitalCheck(void) {
         if(!vitals_sensor_available){
             if(!vitals_wait_logged){
                 Serial.println("[VITALS] MAX30102 chưa sẵn sàng; nhấn SLEEP để bỏ qua.");
@@ -327,38 +428,34 @@ namespace {
         // Chờ mô-đun MAX30102 gọi StateMachine_SubmitVitals().
     }
 
-    void Handle_SessionReady(Button_Event_t event) {
-        (void)event;
-        
-        if(!payload_built){
-            payload_built = Build_EventPayload(current_session, &ready_payload);
+    void Handle_SessionReady(void) {
+        if (payload_built) return;
 
-            if(payload_built){
-                Serial.printf(
-                    "[PAYLOAD] Size=%u | SessionID=0x%08lX | Timestamp=%llu%s\n",
-                    static_cast<unsigned int>(sizeof(ready_payload)),
-                    static_cast<unsigned long>(ready_payload.session_id),
-                    static_cast<unsigned long long>(ready_payload.timestamp),
-                    PacketMetadata_HasTimeSync() ? "" : " (NOT_SYNCED)"
-                );
-                Serial.printf(
-                    "[PAYLOAD] Event=%s | Result=%s | Score=%.2f%% | Quality=%s | Vitals=%s | Battery=%u%%\n",
-                    EventTypeName(current_session.event_type),
-                    ClassificationName(current_session.classification),
-                    current_session.model_score * 100.0f,
-                    AudioQualityName(current_session.audio_quality),
-                    current_session.vitals_valid ? "VALID" : "NOT_AVAILABLE",
-                    static_cast<unsigned int>(ready_payload.battery_node)
-                );
-                Serial.println("[PAYLOAD READY] Đã tạo plaintext; đang chờ AES-GCM đóng gói và lưu pending.");
-            }
-        }
+        payload_built = Build_EventPayload(current_session, &ready_payload);
+        if (!payload_built) return;
+
+        Serial.printf(
+            "[PAYLOAD] Size=%u | SessionID=0x%08lX\n",
+            static_cast<unsigned int>(sizeof(ready_payload)),
+            static_cast<unsigned long>(ready_payload.session_id)
+        );
+        Serial.printf(
+            "[PAYLOAD] Event=%s | Result=%s | Score=%.2f%% | Quality=%s | Vitals=%s | Battery=%u%%\n",
+            EventTypeName(current_session.event_type),
+            ClassificationName(current_session.classification),
+            current_session.model_score * 100.0f,
+            AudioQualityName(current_session.audio_quality),
+            current_session.vitals_valid ? "VALID" : "NOT_AVAILABLE",
+            static_cast<unsigned int>(ready_payload.battery_node)
+        );
+        Serial.println("[PAYLOAD READY] Đã tạo plaintext; đang chờ AES-GCM đóng gói và lưu pending.");
     }
 
     void Handle_MonitorListening(Button_Event_t event) {
         if (event == BTN_MONITOR_PRESSED) {
             monitor_enabled = false;
             I2S_MonitorReset();
+            monitor_buffer_ready_displayed = false;
             Reset_CurrentSession();
             Serial.println("[MONITOR] Đã tắt; đã xóa session, vote và buffer tạm.");
             StateMachine_StateTransition(STATE_STANDBY, "MONITOR_OFF");
@@ -366,14 +463,20 @@ namespace {
             return;
         }
 
-        if(I2S_MonitorListenStep()){
+        const bool triggered = I2S_MonitorListenStep();
+
+        if(!monitor_buffer_ready_displayed && I2S_MonitorIsBufferReady()){
+            monitor_buffer_ready_displayed = true;
+            OLED_Show_Monitoring();
+            Serial.println("[MONITOR] Bộ đệm 1 giây đã sẵn sàng; đang chờ âm vượt ngưỡng.");
+        }
+
+        if(triggered){
             StateMachine_NotifyMonitorTriggered();
         }
     }
 
-    void Handle_MonitorCapture(Button_Event_t event) {
-        (void)event;
-
+    void Handle_MonitorCapture(void) {
         if(I2S_MonitorCaptureStep()){
             StateMachine_NotifyCaptureDone();
         }
@@ -434,13 +537,14 @@ void StateMachine_Init(void) {
     PacketMetadata_Init();
     current_state = STATE_STANDBY;
     monitor_enabled = false;
+    monitor_buffer_ready_displayed = false;
     vitals_sensor_available = false;
     vitals_wait_logged = false;
     abort_requested = false;
     pending_button_bits = 0;
     payload_built = false;
-    has_check_timestamp = false;
-    has_monitor_timestamp = false;
+    has_check_press = false;
+    has_monitor_press = false;
     Reset_CurrentSession();
 
     pinMode(PIN_BTN_SLEEP, INPUT_PULLUP);
@@ -464,28 +568,28 @@ void StateMachine_Run(void) {
             Handle_Standby(event);
             break;
         case STATE_MANUAL_CAPTURE:
-            Handle_ManualCapture(event);
+            Handle_ManualCapture();
             break;
         case STATE_AUDIO_QUALITY:
-            Handle_AudioQuality(event);
+            Handle_AudioQuality();
             break;
         case STATE_AI_PROCESSING:
-            Handle_AIProcessing(event);
+            Handle_AIProcessing();
             break;
         case STATE_AUDIO_RESULT:
             Handle_AudioResult(event);
             break;
         case STATE_VITAL_CHECK:
-            Handle_VitalCheck(event);
+            Handle_VitalCheck();
             break;
         case STATE_SESSION_READY:
-            Handle_SessionReady(event);
+            Handle_SessionReady();
             break;
         case STATE_MONITOR_LISTENING:
             Handle_MonitorListening(event);
             break;
         case STATE_MONITOR_CAPTURE:
-            Handle_MonitorCapture(event);
+            Handle_MonitorCapture();
             break;
         case STATE_ERROR:
             Handle_Error(event);
@@ -530,7 +634,7 @@ void StateMachine_NotifyMonitorTriggered(void) {
         return;
     }
 
-    // Vote đầu tiên mở session. Các vote sau giữ nguyên session_id/timestamp.
+    // Vote đầu tiên mở session. Các vote sau giữ nguyên session_id.
     if(current_session.session_id == 0U){
         Begin_NewSession(EVENT_MONITOR_EVENT);
     }
@@ -560,10 +664,12 @@ void StateMachine_SubmitAudioQuality(Audio_Quality_t quality) {
         Serial.printf(
             "[MONITOR] Bỏ đoạn thu do %s; vote vẫn là %u/%u và tiếp tục lắng nghe.\n",
             AudioQualityName(quality),
-            monitor_vote_round,
+            monitor_votes.round,
             kMonitorVoteRounds
         );
-        I2S_MonitorPrepareNextCapture();
+        OLED_Show_QualityError(AudioQualityName(quality));
+        delay(700);
+        PrepareNextMonitorCapture();
         StateMachine_StateTransition(
             STATE_MONITOR_LISTENING,
             "MONITOR_AUDIO_REJECTED"
@@ -573,18 +679,23 @@ void StateMachine_SubmitAudioQuality(Audio_Quality_t quality) {
 
     if(quality == AUDIO_INACTIVE){
         Serial.println("[QUALITY FAIL] Âm thanh gần như không có hoạt động. Yêu cầu thu lại.");
+        OLED_Show_QualityError("AUDIO INACTIVE");
         StateMachine_StateTransition(STATE_ERROR, "AUDIO_INACTIVE");
 
     } else if(quality == AUDIO_TOO_LOUD){
         Serial.println("[QUALITY FAIL] Âm thanh quá lớn hoặc bị clipping. Vui lòng thu lại.");
+        OLED_Show_QualityError("AUDIO TOO LOUD");
         StateMachine_StateTransition(STATE_ERROR, "AUDIO_TOO_LOUD");
 
     } else if(quality == AUDIO_TOO_WEAK){
         Serial.println("[QUALITY FAIL] Âm thanh quá yếu. Vui lòng thu lại.");
+        OLED_Show_QualityError("AUDIO TOO WEAK");
         StateMachine_StateTransition(STATE_ERROR, "AUDIO_TOO_WEAK");
 
     } else {
         Serial.println("[QUALITY OK] Âm thanh đạt yêu cầu. Tiến hành xử lý.");
+        OLED_Show_AudioOK();
+        delay(700);
         StateMachine_StateTransition(STATE_AI_PROCESSING, "AUDIO_OK");
 
     }
@@ -604,71 +715,13 @@ void StateMachine_SubmitAudioResult(
     current_session.audio_quality = quality;
 
     if (current_session.event_type == EVENT_MONITOR_EVENT) {
-        ++monitor_vote_round;
-
-        switch(classification){
-            case INTERFACE_ASTHMA_LIKE:
-                ++asthma_votes;
-                asthma_score_sum += safe_score;
-                break;
-            case INTERFACE_NON_ASTHMA:
-                ++non_asthma_votes;
-                non_asthma_score_sum += safe_score;
-                break;
-            case INTERFACE_UNSURE:
-            default:
-                ++unsure_votes;
-                unsure_score_sum += safe_score;
-                break;
-        }
-
-        Serial.printf(
-            "[VOTE] %u/%u | Lần này=%s (%.2f%%) | ASTHMA=%u | NON_ASTHMA=%u | UNSURE=%u\n",
-            monitor_vote_round,
-            kMonitorVoteRounds,
-            ClassificationName(classification),
-            safe_score * 100.0f,
-            asthma_votes,
-            non_asthma_votes,
-            unsure_votes
-        );
-
-        if(monitor_vote_round < kMonitorVoteRounds){
-            I2S_MonitorPrepareNextCapture();
-            StateMachine_StateTransition(
-                STATE_MONITOR_LISTENING,
-                "MONITOR_NEXT_VOTE"
-            );
-            return;
-        }
-
-        if(asthma_votes > non_asthma_votes && asthma_votes > unsure_votes){
-            current_session.classification = INTERFACE_ASTHMA_LIKE;
-            current_session.model_score = asthma_score_sum / asthma_votes;
-            Serial.println("[RESULT] Cảnh báo phát hiện âm thanh giống mẫu hen.");
-        } else if(non_asthma_votes > asthma_votes
-            && non_asthma_votes > unsure_votes){
-            current_session.classification = INTERFACE_NON_ASTHMA;
-            current_session.model_score = non_asthma_score_sum / non_asthma_votes;
-            Serial.println("[RESULT] Không phát hiện âm thanh giống mẫu hen.");
-        } else if(unsure_votes > asthma_votes && unsure_votes > non_asthma_votes){
-            current_session.classification = INTERFACE_UNSURE;
-            current_session.model_score = unsure_score_sum / unsure_votes;
-            Serial.println("[RESULT] Không chắc chắn, cần kiểm tra lại.");
-        } else {
-            // Trường hợp 1-1-1: không có kết quả chiếm đa số.
-            current_session.classification = INTERFACE_UNSURE;
-            current_session.model_score = 0.0f;
-            Serial.println("[RESULT] Ba vote không tạo được đa số, cần kiểm tra lại.");
-        }
-
-        current_session.vitals_valid = false;
-        StateMachine_StateTransition(STATE_SESSION_READY, "MONITOR_VOTE_DONE");
-    } else {
-        current_session.classification = classification;
-        current_session.model_score = safe_score;
-        StateMachine_StateTransition(STATE_AUDIO_RESULT, "AI_RESULT_SUBMITTED");
+        HandleMonitorAudioResult(classification, safe_score);
+        return;
     }
+
+    current_session.classification = classification;
+    current_session.model_score = safe_score;
+    StateMachine_StateTransition(STATE_AUDIO_RESULT, "AI_RESULT_SUBMITTED");
 }
 
 void StateMachine_SubmitVitals(
@@ -686,6 +739,12 @@ void StateMachine_SubmitVitals(
     current_session.spo2 = vitals_valid
         ? static_cast<uint8_t>(constrain(spo2, static_cast<uint16_t>(0), static_cast<uint16_t>(100)))
         : 0;
+    OLED_Show_FinalResult(
+        UiClassificationCode(current_session.classification),
+        current_session.heart_rate,
+        current_session.spo2
+    );
+    delay(1200);
     StateMachine_StateTransition(STATE_SESSION_READY, "VITALS_SUBMITTED");
 }
 
@@ -701,6 +760,7 @@ void StateMachine_ReportError(const char* reason) {
         StateName(current_state),
         safe_reason
     );
+    OLED_Show_QualityError(safe_reason);
     StateMachine_StateTransition(STATE_ERROR, safe_reason);
 }
 
@@ -722,8 +782,10 @@ void StateMachine_NotifyEventQueued(void) {
     const bool return_to_monitor =
         monitor_enabled && current_session.event_type == EVENT_MONITOR_EVENT;
 
+    OLED_Show_DataSent();
+    delay(700);
     Reset_CurrentSession();
-    if(return_to_monitor) I2S_MonitorPrepareNextCapture();
+    if(return_to_monitor) PrepareNextMonitorCapture();
     StateMachine_StateTransition(
         return_to_monitor ? STATE_MONITOR_LISTENING : STATE_STANDBY,
         return_to_monitor ? "EVENT_QUEUED_MONITOR" : "EVENT_QUEUED"

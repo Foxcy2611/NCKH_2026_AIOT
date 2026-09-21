@@ -1,6 +1,10 @@
 qt_add_executable(
     appDashboard_Qt6
     ../app/main.cpp
+    ../app/DashboardData.h
+    ../app/DashboardData.cpp
+    ../app/MqttBackend.h
+    ../app/MqttBackend.cpp
 )
 
 qt_add_qml_module(
@@ -40,6 +44,8 @@ target_link_libraries(
         Qt6::Qml
         Qt6::Quick
         Qt6::QuickControls2
+        Qt6::Mqtt
+        Qt6::Network
 )
 
 set_target_properties(

@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <stdint.h>
 
-#include "system_state.h"
+#include "System_State.h"
 
 // Khởi tạo trạng thái, phiên dữ liệu và ngắt của ba nút vật lý.
 void StateMachine_Init(void);
@@ -53,11 +53,11 @@ void StateMachine_ReportError(const char* reason);
 // Chỉ đọc phiên hiện tại để hiển thị hoặc đóng gói truyền tin.
 const Patient_Session_t* StateMachine_GetCurrentSession(void);
 
-// Mô-đun truyền tin chỉ gọi sau khi payload đã được mã hóa và packet 64 byte
+// Mô-đun truyền tin chỉ gọi sau khi payload đã được mã hóa và packet 56 byte
 // đã được sao chép an toàn vào hàng đợi Pending ACK.
 void StateMachine_NotifyEventQueued(void);
 
-// Chỉ true khi SESSION_READY đã được chuyển thành plaintext payload 24 byte.
+// Chỉ true khi SESSION_READY đã được chuyển thành plaintext payload 16 byte.
 bool StateMachine_IsEventPayloadReady(void);
 
 // Trả con trỏ chỉ đọc tới payload sẵn sàng; trả nullptr nếu chưa sẵn sàng.

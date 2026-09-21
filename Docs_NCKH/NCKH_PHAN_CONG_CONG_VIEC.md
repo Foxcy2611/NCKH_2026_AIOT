@@ -13,7 +13,7 @@
 
 Yêu cầu:
 - Struct dùng chung (`Patient_Session_t`, `Node_Payload_t`, `Response_Payload_t`, `Secure_Packet_t`, `EnvironmentSnapshot`, `CompleteRecord`) **không ai được tự sửa** mà không báo M1 và M4 trước. Ba struct truyền thông đầu/cuối phải dùng chung đúng tên, thứ tự trường và kích thước đã khóa trong tài liệu AES-GCM.
-- `Secure_Packet_t` là packet bảo mật 64 byte dùng ở cả hai chiều; nội dung nghiệp vụ nằm trong payload 24 byte đã mã hóa. M5 chỉ nhận dữ liệu đã được Gateway xác thực/giải mã, không dùng ciphertext làm schema MQTT.
+- `Secure_Packet_t` là packet bảo mật 56 byte dùng ở cả hai chiều; nội dung nghiệp vụ nằm trong payload 16 byte đã mã hóa. M5 chỉ nhận dữ liệu đã được Gateway xác thực/giải mã, không dùng ciphertext làm schema MQTT.
 - Mọi sự thay đổi đều trong [Final Project](../Final_Project_NCKH/), không nên tự ý push lên github kể cả nhánh `branch` cá nhân
 - Mọi layout thiết kế, state hay phần cứng, ghi rõ vào [Docs Member](../Docs_Member/)
 
@@ -34,7 +34,7 @@ Yêu cầu:
 | 9 | Chốt calibration threshold cuối (Phase 17) | Số threshold final dựa trên đo thực nghiệm của M3 | — |
 | 10 | Đánh giá AI metrics (Phase 18) | Accuracy/Precision/Recall/F1/Confusion Matrix | — |
 
-**Việc cần làm ngay:** Bước 7 — phối hợp M4 khóa header giao thức chung, kiểm tra kích thước `24/24/64 byte`, rồi triển khai AES-GCM và luồng ESP-NOW phía Node. Chưa nối vào Session thật cho đến khi test mã hóa/giải mã độc lập đạt.
+**Việc cần làm ngay:** Bước 7 — phối hợp M4 khóa header giao thức chung, kiểm tra kích thước `16/16/56 byte`, rồi triển khai AES-GCM và luồng ESP-NOW phía Node. Chưa nối vào Session thật cho đến khi test mã hóa/giải mã độc lập đạt.
 
 ---
 
@@ -72,7 +72,7 @@ Yêu cầu:
 
 | # | Việc | Điều kiện bắt đầu | DONE khi |
 |---|------|--------------------|----------|
-| 1 | FreeRTOS skeleton (Phase 10) | Có thể bắt đầu sớm, song song với M1 (không phụ thuộc AI) | `TaskEspNow`, `TaskSensor`, `TaskGatewayManager`, `TaskNetwork`; callback RX chỉ sao chép MAC + packet 64 byte vào `RawSecurePacketQueue`, không giải mã/aggregate trong callback |
+| 1 | FreeRTOS skeleton (Phase 10) | Có thể bắt đầu sớm, song song với M1 (không phụ thuộc AI) | `TaskEspNow`, `TaskSensor`, `TaskGatewayManager`, `TaskNetwork`; callback RX chỉ sao chép MAC + packet 56 byte vào `RawSecurePacketQueue`, không giải mã/aggregate trong callback |
 | 2 | AES-GCM RX/TX phía Gateway | Sau khi M1 và M4 khóa header giao thức chung | Ngoài callback: kiểm MAC/Header, xác thực tag, giải mã Event, chống trùng; tạo `Response_Payload_t`, mã hóa ACK/NACK bằng khóa chiều Gateway → Node |
 | 3 | Test nhận packet từ Node giả lập | Ngay sau bước 2 | Đủ ca: packet hợp lệ, sửa ciphertext/tag, sai MAC/sequence, packet trùng, timeout và ACK giả; dữ liệu sai không lọt vào hàng đợi nghiệp vụ |
 | 4 | Sensor Layer (Phase 11) | Khi M3 giao driver DHT22/BMP280/SGP30 | `EnvironmentSnapshot`; 1 sensor lỗi không sập cả hệ |
@@ -89,7 +89,7 @@ Yêu cầu:
 
 | # | Việc | Điều kiện bắt đầu | Ghi chú |
 |---|------|--------------------|---------|
-| 1 | Nghiên cứu MQTT client + soạn nháp schema | Ngay bây giờ, song song | Dựa trên `Node_Payload_t` đã được Gateway giải mã, `EnvironmentSnapshot` và `CompleteRecord`; không dựa trên packet mã hóa 64 byte |
+| 1 | Nghiên cứu MQTT client + soạn nháp schema | Ngay bây giờ, song song | Dựa trên `Node_Payload_t` đã được Gateway giải mã, `EnvironmentSnapshot` và `CompleteRecord`; không dựa trên packet mã hóa 56 byte |
 | 2 | Wi-Fi + MQTT (Phase 13) | Chờ M4 có `CompleteRecord` ổn định (Phase 12) | Publish CompleteRecord; schema nháp 4 nhóm: patient event / environment / gateway status / alert; README ghi rõ "chưa khóa" |
 | 3 | LTE + GPS (Phase 14) | Sau khi Wi-Fi/MQTT ổn | A7680C fallback theo policy HOME (Wi-Fi primary, LTE standby, GPS OFF) và MOBILE (LTE primary, GPS ON khi cần) |
 | 4 | Phối hợp với M1 làm Dashboard | Khi M1 bắt đầu Phase 15 | Cung cấp MQTT client mẫu/schema cuối |

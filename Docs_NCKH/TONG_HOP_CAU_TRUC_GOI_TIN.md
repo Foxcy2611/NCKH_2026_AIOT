@@ -289,6 +289,46 @@ static_assert(sizeof(Secure_Packet_t) == 56);
 
 Là snapshot mới nhất về Gateway, môi trường, mạng và GPS. Cấu trúc này thuộc tầng Gateway/cloud, không thuộc packet ESP-NOW 56 byte.
 
+### Cấu trúc
+
+```cpp
+#pragma pack(pop)
+typedef struct {
+    // Identity / time
+    uint32_t gateway_id;
+    uint64_t timestamp;          // thời điểm tạo current_gate
+
+    // Operating state
+    uint8_t operating_mode;
+    uint8_t uplink_type;
+
+    // Environment
+    float temperature;
+    float humidity;
+    float pressure;
+    uint16_t tvoc;
+    uint16_t eco2;
+
+    // Sensor health
+    uint8_t sensor_valid_mask;
+
+    // Network status
+    uint8_t wifi_connected;
+    int16_t wifi_rssi_dbm;
+    uint8_t lte_registered;
+    int16_t lte_rssi_dbm;
+    uint8_t mqtt_connected;
+
+    // Location
+    double latitude;
+    double longitude;
+    uint64_t gps_timestamp;
+
+    uint8_t battery_gate;
+} Gateway_Payload_t;
+#pragma pack(pop)
+```
+
 ### Thành phần
 
 | Nhóm | Trường |

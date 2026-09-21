@@ -61,7 +61,6 @@ void printPacketHeader(const Secure_Packet_t &p, const char *label) {
 Node_Payload_t makePayload(uint32_t seq) {
     Node_Payload_t p{};
     p.session_id = session_id;
-    p.timestamp = static_cast<uint64_t>(millis());
     p.event_type = 1;       // Manual/check event in the Final 2 contract.
     p.classification = 1;   // Fake asthma-like result.
     p.model_score = 0.91f;
@@ -157,8 +156,7 @@ bool decryptGatewayResponse(const Secure_Packet_t &packet,
 
     return out.target_device_id == device_id &&
            out.session_id == pending.session_id &&
-           out.response_code <= RESPONSE_NACK_INTERNAL &&
-           out.time_valid <= 1;
+           out.response_code <= RESPONSE_NACK_INTERNAL;
 }
 
 void onSend(const uint8_t *mac, esp_now_send_status_t status) {

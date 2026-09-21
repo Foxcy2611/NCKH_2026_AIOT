@@ -168,12 +168,12 @@ Python. Dự án không tuyên bố bit-exact trên mọi nền tảng.
 
 ```text
 Patient_Session_t
-  → Node_Payload_t 24 byte
+  → Node_Payload_t 16 byte
   → AES-128-GCM
-  → Secure_Packet_t 64 byte
+  → Secure_Packet_t 56 byte
   → ESP-NOW
   → Gateway xác thực tag + giải mã
-  → Response_Payload_t 24 byte
+  → Response_Payload_t 16 byte
   → AES-128-GCM + ESP-NOW phản hồi
   → ACK/NACK + retry ở Patient Node
   → EnvironmentSnapshot tại Gateway

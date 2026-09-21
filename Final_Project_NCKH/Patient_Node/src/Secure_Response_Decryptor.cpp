@@ -86,7 +86,7 @@ Secure_Response_Decrypt_Result_t SecureResponseDecryptor_Decrypt(
     // 3. Xác thực tag và giải mã ciphertext
     result = mbedtls_gcm_auth_decrypt(
         &ctx, 
-        SECURE_PAYLOAD_SIZE,
+        SECURE_RESPONSE_SIZE,
 
         // NONCE
         packet->nonce, AES_GCM_NONCE_SIZE,
@@ -114,8 +114,7 @@ Secure_Response_Decrypt_Result_t SecureResponseDecryptor_Decrypt(
     // 4. Kiểm tra nội dung sau khi tag hợp lệ
     if(out_response->target_device_id != local_node_id ||
         out_response->session_id != expected_session_id ||
-        out_response->response_code > static_cast<uint8_t>(RESPONSE_NACK_INTERNAL) ||
-        out_response->time_valid > 1
+        out_response->response_code > static_cast<uint8_t>(RESPONSE_NACK_INTERNAL)
     ){
         SecureResponse_ClearResponse(out_response);
         return SECURE_RESPONSE_INVALID_PAYLOAD;

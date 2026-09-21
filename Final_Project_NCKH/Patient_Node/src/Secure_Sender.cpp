@@ -44,7 +44,7 @@ Secure_Sender_Result_t SecureSender_BuildPatientEvent(
     }
 
     // Clean packet
-    memset(out_packet, 0, SECURE_PACKET_SIZE);
+    memset(out_packet, 0, sizeof(*out_packet));
 
     // 1. Build HEADER / AAD
     out_packet->magic = SECURE_PACKET_MAGIC;                // MAGIC
@@ -77,7 +77,7 @@ Secure_Sender_Result_t SecureSender_BuildPatientEvent(
         12-byte Header
     
     output:
-        ciphertext[24]
+        ciphertext[16]
         authentication_tag[16]
     */
     if(result == 0){
@@ -109,7 +109,7 @@ Secure_Sender_Result_t SecureSender_BuildPatientEvent(
 
     // 7. If Fail
     if(result != 0){
-        memset(out_packet, 0, SECURE_PACKET_SIZE);
+        memset(out_packet, 0, sizeof(*out_packet));
 
         return SECURE_SENDER_CRYPTO_ERROR;
     }

@@ -2,7 +2,7 @@
 #define NCKH_QUALITY_CHECK_H
 
 #include <stdint.h>
-#include "system_state.h"
+#include "System_State.h"
 
 /*
 - Với 3 state fail chia như sau

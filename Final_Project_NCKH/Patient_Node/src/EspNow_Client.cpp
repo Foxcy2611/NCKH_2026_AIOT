@@ -279,13 +279,6 @@ void EspNow_Process(void) {
                 static_cast<unsigned int>(decrypt_result)
             );
         } else {
-            if (response.time_valid != 0U && response.gateway_timestamp != 0U) {
-                const int64_t offset_ms =
-                    static_cast<int64_t>(response.gateway_timestamp)
-                    - static_cast<int64_t>(millis());
-                PacketMetadata_SetTimeOffset(offset_ms);
-            }
-
             switch (static_cast<Gateway_Response_Code_t>(response.response_code)) {
                 case RESPONSE_ACK_ACCEPTED:
                     Serial.println("[ESP-NOW] Gateway đã nhận và chấp nhận sự kiện.");

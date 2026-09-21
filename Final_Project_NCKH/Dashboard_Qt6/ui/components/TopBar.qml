@@ -43,7 +43,7 @@ Rectangle {
             }
 
             Text {
-                text: "Respiratory edge monitoring • Frontend demo"
+                text: "Respiratory edge monitoring • Live MQTT"
                 color: root.theme.text3
                 font.pixelSize: 10
             }

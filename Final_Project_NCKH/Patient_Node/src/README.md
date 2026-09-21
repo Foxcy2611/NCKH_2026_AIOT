@@ -206,12 +206,12 @@ Khi chưa có MAX30102, người dùng có thể nhấn `SLEEP` tại bước si
 
 Mã hóa sự kiện Node → Gateway:
 
-1. Nhận `Node_Payload_t` 24 byte.
+1. Nhận `Node_Payload_t` 16 byte.
 2. Tạo header/AAD gồm magic, version, message type, device ID và sequence.
 3. Sinh nonce 12 byte ngẫu nhiên cho sự kiện mới.
 4. Mã hóa payload bằng AES-128-GCM.
 5. Sinh authentication tag 16 byte.
-6. Trả về `Secure_Packet_t` đúng 64 byte.
+6. Trả về `Secure_Packet_t` đúng 56 byte.
 
 Nonce chỉ được sinh khi tạo sự kiện mới. Khi retry, tuyệt đối không mã hóa lại; phải gửi nguyên packet đã lưu.
 
@@ -222,8 +222,8 @@ Xác thực và giải mã phản hồi Gateway → Node:
 - Kiểm tra magic, version và `MSG_GATEWAY_RESPONSE`.
 - Kiểm tra Gateway ID và sequence đang chờ.
 - Xác thực tag AES-GCM trước khi sử dụng plaintext.
-- Giải mã thành `Response_Payload_t` 24 byte.
-- Kiểm tra target device ID, session ID, response code và cờ thời gian.
+- Giải mã thành `Response_Payload_t` 16 byte.
+- Kiểm tra target device ID, session ID và response code.
 - Xóa kết quả đầu ra nếu xác thực hoặc giải mã thất bại.
 
 ### `EspNow_Client.cpp`
@@ -290,21 +290,20 @@ Khi tích hợp cần bảo đảm:
 - Chất lượng âm thanh.
 - Kết luận và điểm mô hình.
 - Nhịp tim, SpO₂ và cờ hợp lệ.
-- Thời điểm bắt đầu sự kiện.
 
 ### Plaintext gửi đi
 
-State machine chuyển session thành `Node_Payload_t` 24 byte. Battery hiện đang để `0` vì chưa nối mô-đun nguồn.
+State machine chuyển session thành `Node_Payload_t` 16 byte. Battery hiện đang để `0` vì chưa nối mô-đun nguồn.
 
 ### Packet truyền qua ESP-NOW
 
 ```text
 Header/AAD      12 byte, không mã hóa nhưng được xác thực
 Nonce           12 byte
-Ciphertext      24 byte
+Ciphertext      16 byte
 Authentication  16 byte
 --------------------------------
-Tổng            64 byte
+Tổng            56 byte
 ```
 
 AES-GCM đã cung cấp kiểm tra toàn vẹn và xác thực packet. `Checksum_CRC32` hiện không tham gia luồng packet bảo mật này.
@@ -357,8 +356,8 @@ Nhấn SLEEP tại AUDIO_RESULT/VITAL_CHECK
 Cuối phiên:
 
 ```text
-Tạo plaintext 24 byte
-→ AES-GCM tạo packet 64 byte
+Tạo plaintext 16 byte
+→ AES-GCM tạo packet 56 byte
 → lưu pending
 → gửi ESP-NOW
 → state machine trở về STANDBY
@@ -424,13 +423,8 @@ Gửi RF thành công không đồng nghĩa Gateway đã chấp nhận dữ li�
 
 Nếu mất phản hồi, Node gửi lại nguyên packet, cùng nonce, sequence, ciphertext và tag. Hiện packet được giữ trong RAM; reset hoặc mất nguồn khi đang chờ ACK sẽ làm mất pending.
 
-Nếu Gateway gửi thời gian hợp lệ, Node lưu:
-
-```text
-time_offset = gateway_timestamp - millis()
-```
-
-Các timestamp tiếp theo được tính từ `millis()` cộng offset. Trước lần đồng bộ đầu tiên, timestamp gửi đi bằng `0`.
+Phản hồi không mang thời gian và Node không đồng bộ Unix time qua ACK/NACK.
+Gateway tự đóng dấu thời gian khi nhận dữ liệu hợp lệ để tạo bản ghi hoàn chỉnh.
 
 ---
 
@@ -441,7 +435,6 @@ Các timestamp tiếp theo được tính từ `millis()` cộng offset. Trướ
 - `device_id`: rút gọn từ MAC/eFuse của ESP32-S3.
 - `session_id`: số ngẫu nhiên mới cho mỗi phiên.
 - `sequence`: tăng cho mỗi packet mới và lưu trong NVS.
-- `timestamp`: Unix time theo offset Gateway cung cấp.
 
 Sequence chỉ tăng khi tạo packet mới. Retry không được gọi `PacketMetadata_NextSequence()` lần nữa.
 

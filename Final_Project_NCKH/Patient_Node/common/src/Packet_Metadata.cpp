@@ -10,8 +10,6 @@ namespace {
 
     uint32_t device_id = 0;
     uint32_t next_sequence = 0;
-    int64_t time_offset_ms = 0;
-    bool time_is_synced = false;
 }  // namespace
 
 void PacketMetadata_Init(void) {
@@ -25,8 +23,6 @@ void PacketMetadata_Init(void) {
         ? preferences.getUInt(NVS_SEQUENCE_KEY, 0U)
         : 0U;
     preferences.end();
-    time_offset_ms = 0;
-    time_is_synced = false;
 }
 
 uint32_t PacketMetadata_GetDeviceId(void) {
@@ -50,26 +46,4 @@ uint32_t PacketMetadata_NextSequence(void) {
     }
 
     return next_sequence;
-}
-
-void PacketMetadata_SetTimeOffset(int64_t offset_ms) {
-    time_offset_ms = offset_ms;
-    time_is_synced = true;
-}
-
-void PacketMetadata_ClearTimeOffset(void) {
-    time_offset_ms = 0;
-    time_is_synced = false;
-}
-
-bool PacketMetadata_HasTimeSync(void) {
-    return time_is_synced;
-}
-
-uint64_t PacketMetadata_GetTimestamp(uint64_t local_millis) {
-    if (!time_is_synced) return 0U;
-
-    const int64_t unix_time_ms = static_cast<int64_t>(local_millis)
-        + time_offset_ms;
-    return unix_time_ms > 0 ? static_cast<uint64_t>(unix_time_ms) : 0U;
 }

@@ -32,7 +32,7 @@ bool SecureSender_Init(
 INPUT: + payload = plaintext Patient Event
        + sequence = sequence của Event mới
 
-Output: out_packet = packet 64 byte hoàn chỉnh
+Output: out_packet = packet 56 byte hoàn chỉnh
 */
 
 Secure_Sender_Result_t SecureSender_BuildPatientEvent(

@@ -55,6 +55,10 @@ void I2S_MonitorPrepareNextCapture(void);
 // STATE_MONITOR_LISTENING. Trả true đúng một lần khi VAD kích hoạt.
 bool I2S_MonitorListenStep(void);
 
+// True sau khi đã bỏ warmup và bộ đệm trước kích hoạt đã đủ đúng 1 giây.
+// Dùng để UI đổi từ màn PREPARING sang màn chờ phát hiện âm thanh.
+bool I2S_MonitorIsBufferReady(void);
+
 // Đọc từng chunk còn lại sau pre-roll; phải gọi liên tục tại
 // STATE_MONITOR_CAPTURE. Trả true khi buffer đã đủ 80000 sample (5 giây).
 bool I2S_MonitorCaptureStep(void);

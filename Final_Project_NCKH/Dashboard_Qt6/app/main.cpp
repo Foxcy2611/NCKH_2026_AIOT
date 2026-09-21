@@ -1,6 +1,11 @@
 #include <QGuiApplication>
+#include <QCoreApplication>
 #include <QQmlApplicationEngine>
+#include <QQmlContext>
 #include <QQuickStyle>
+
+#include "DashboardData.h"
+#include "MqttBackend.h"
 
 int main(int argc, char *argv[])
 {
@@ -9,7 +14,11 @@ int main(int argc, char *argv[])
     // Custom dashboard controls use background/contentItem overrides.
     QQuickStyle::setStyle("Basic");
 
+    DashboardData dashboardData;
+    MqttBackend mqttBackend(&dashboardData);
+
     QQmlApplicationEngine engine;
+    engine.rootContext()->setContextProperty("dashboardBackend", &dashboardData);
 
     QObject::connect(
         &engine,
@@ -25,6 +34,10 @@ int main(int argc, char *argv[])
         "Dashboard_Qt6",
         "Main"
     );
+
+    const QString mqttConfigPath = QCoreApplication::applicationDirPath()
+                                   + QStringLiteral("/mqtt_config.json");
+    mqttBackend.start(mqttConfigPath);
 
     return app.exec();
 }
