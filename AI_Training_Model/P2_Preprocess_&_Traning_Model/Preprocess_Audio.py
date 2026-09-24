@@ -75,10 +75,10 @@ def butter_bandpass(lowcut, highcut, fs, order):
     nyquist = 0.5 * fs
     return butter(
         order,
-        [lowcut / nyquist, highcut / nyquist],
-        btype="band",
-        analog=False,
-        output="ba"
+        [lowcut / nyquist, highcut / nyquist], # Yêu cầu tần số nằm trong [0 , 1]
+        btype="band", # || low || high
+        analog=False, # False dàng cho tín hiệu rời rạc
+        output="ba" # Output dạng phân số 
     )
 
 
@@ -96,43 +96,46 @@ def preprocess_audio_file(file_path):
     audio, _ = librosa.load(
         file_path,
         sr=SR,
-        mono=True,
-        offset=0.0,
+        mono=True,  # Chuyển âm thanh nhiều kênh về đơn kênh
+        offset=0.0, # Bắt đầu lọc dữ liệu từ 0.0
         duration=None,
         dtype=LOAD_DTYPE,
         res_type=RESAMPLE_TYPE
     )
+
     audio = librosa.util.fix_length(
         audio,
         size=SAMPLES,
-        axis=-1,
-        mode="constant"
+        axis=-1,        # Áp dụng trên trục chứa data time
+        mode="constant" # Auto pad 0 nếu length < mặc định
     )
+
     audio = librosa.util.normalize(
         audio,
-        norm=np.inf,
+        norm=np.inf,    # Chia về cho gttd max, đảm bảo biên độ về [-1.0, 1.0]
         axis=0,
         threshold=None,
         fill=None
     )
+
     audio = apply_bandpass_filter(audio)
     audio = pre_emphasis(audio)
 
     mel = librosa.feature.melspectrogram(
         y=audio,
         sr=SR,
-        n_fft=N_FFT,
+        n_fft=N_FFT,            # Kích thước cửa sổ FFT
         hop_length=HOP_LENGTH,
-        win_length=N_FFT,
-        n_mels=N_MELS,
+        win_length=N_FFT,       # Kích thước cửa sổ phân tích
+        n_mels=N_MELS,          # Số lượng dải tần MELS
         fmin=LOW_CUT,
         fmax=HIGH_CUT,
         center=True,
         htk=False,
+        norm="slaney",          # Sử dụng chuẩn hóa Slaney thay vì HTK
         window="hann",
         pad_mode="constant",
         power=2.0,
-        norm="slaney",
         dtype=MEL_DTYPE
     )
 
