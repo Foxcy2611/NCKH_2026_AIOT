@@ -197,11 +197,14 @@ Rectangle {
 
                     Text {
                         text:
-                            root.dataSource.batteryGate
-                            + "%"
+                            root.dataSource.batteryGateAvailable
+                            ? root.dataSource.batteryGate + "%"
+                            : "N/A"
 
                         color:
-                            root.dataSource.batteryGate > 20
+                            !root.dataSource.batteryGateAvailable
+                            ? root.theme.text3
+                            : root.dataSource.batteryGate > 20
                             ? root.theme.text2
                             : root.theme.red
 
@@ -244,7 +247,9 @@ Rectangle {
                         width:
                             parent.width
                             * Math.min(
-                                root.dataSource.batteryGate,
+                                root.dataSource.batteryGateAvailable
+                                ? root.dataSource.batteryGate
+                                : 0,
                                 100
                             )
                             / 100
@@ -253,7 +258,8 @@ Rectangle {
                         radius: 3
 
                         color:
-                            root.dataSource.batteryGate > 20
+                            root.dataSource.batteryGateAvailable
+                            && root.dataSource.batteryGate > 20
                             ? root.theme.green
                             : root.theme.red
                     }

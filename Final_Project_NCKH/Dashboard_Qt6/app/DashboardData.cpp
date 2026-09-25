@@ -5,6 +5,8 @@
 #include <QJsonObject>
 #include <QJsonParseError>
 #include <QTime>
+#include <QUrl>
+#include <QUrlQuery>
 #include <QVariantList>
 
 namespace {
@@ -24,11 +26,13 @@ quint64 jsonUnsigned(const QJsonValue &value)
 
 DashboardData::DashboardData(QObject *parent)
     : QQmlPropertyMap(this, parent)
+    , m_googleMapsApiKey(qEnvironmentVariable("NCKH_GOOGLE_MAPS_API_KEY"))
 {
     insert("gatewayId", 0);
     insert("operatingMode", "OFFLINE");
     insert("uplinkType", "NONE");
     insert("batteryGate", 0);
+    insert("batteryGateAvailable", false);
 
     insert("temperature", 0.0);
     insert("humidity", 0.0);
@@ -51,6 +55,10 @@ DashboardData::DashboardData(QObject *parent)
     insert("latitude", 0.0);
     insert("longitude", 0.0);
     insert("gpsTime", "N/A");
+    insert("hasMapLocation", false);
+    insert("googleMapsConfigured", !m_googleMapsApiKey.isEmpty());
+    insert("googleStaticMapUrl", QString{});
+    insert("googleMapsUrl", QString{});
 
     insert("hasPatientEvent", false);
     insert("sessionId", 0);
@@ -83,30 +91,52 @@ bool DashboardData::applyCompletePacketJson(const QByteArray &json, QString *err
     }
 
     const QJsonObject root = document.object();
-    if (root.value("schema_version").toInt(-1) != 1
-        || root.value("message_type").toString() != "complete_packet") {
+    const int schemaVersion = root.value("schema_version").toInt(-1);
+    const QString messageType = root.value("message_type").toString();
+    const bool dashboardSnapshot = schemaVersion == 2
+                                   && messageType == QStringLiteral("dashboard_snapshot");
+    const bool legacyCompletePacket = schemaVersion == 1
+                                      && messageType == QStringLiteral("complete_packet");
+    if (!dashboardSnapshot && !legacyCompletePacket) {
         if (errorMessage) {
-            *errorMessage = QStringLiteral("Sai schema_version hoặc message_type");
+            *errorMessage = QStringLiteral("Không hỗ trợ schema_version=%1, message_type=%2")
+                                .arg(schemaVersion)
+                                .arg(messageType);
         }
         return false;
     }
 
-    if (!root.value("gateway").isObject()) {
+    const QString gateKey = dashboardSnapshot
+                                ? QStringLiteral("gate")
+                                : QStringLiteral("gateway");
+    const QString patientKey = dashboardSnapshot
+                                   ? QStringLiteral("patient_event")
+                                   : QStringLiteral("node");
+
+    if (!root.value(gateKey).isObject()) {
         if (errorMessage) {
-            *errorMessage = QStringLiteral("Thiếu object gateway");
+            *errorMessage = QStringLiteral("Thiếu object %1").arg(gateKey);
         }
         return false;
     }
 
-    const QJsonObject gate = root.value("gateway").toObject();
+    const QJsonObject gate = root.value(gateKey).toObject();
     const int sensorMask = gate.value("sensor_valid_mask").toInt(0);
-    const QString timestampBasis = gate.value("timestamp_basis").toString("uptime_ms");
+    const QString timestampBasis = dashboardSnapshot
+                                       ? gate.value("time_basis").toString("uptime_ms")
+                                       : gate.value("timestamp_basis").toString("uptime_ms");
     const quint64 gateTimestamp = jsonUnsigned(gate.value("timestamp"));
 
     insert("gatewayId", jsonUnsigned(gate.value("gateway_id")));
     insert("operatingMode", operatingModeName(gate.value("operating_mode").toInt(-1)));
     insert("uplinkType", uplinkTypeName(gate.value("uplink_type").toInt(-1)));
-    insert("batteryGate", gate.value("battery_gate").toInt(0));
+    // Schema 2 hiện chưa truyền pin Gateway; không ghi đè giá trị cũ thành 0.
+    if (gate.contains("battery_gate") && !gate.value("battery_gate").isNull()) {
+        insert("batteryGate", gate.value("battery_gate").toInt(0));
+        insert("batteryGateAvailable", true);
+    } else {
+        insert("batteryGateAvailable", false);
+    }
 
     const bool dhtValid = (sensorMask & SensorDht22Valid) != 0;
     const bool bmpValid = (sensorMask & SensorBmp280Valid) != 0;
@@ -136,22 +166,53 @@ bool DashboardData::applyCompletePacketJson(const QByteArray &json, QString *err
     insert("lteRssi", gate.value("lte_rssi_dbm").toInt(-127));
     insert("gatewayMqttConnected", gate.value("mqtt_connected").toBool(false));
 
-    insert("latitude", gpsValid ? gate.value("latitude").toDouble() : 0.0);
-    insert("longitude", gpsValid ? gate.value("longitude").toDouble() : 0.0);
-    insert("gpsTime", gpsValid
-               ? formatTimestamp(jsonUnsigned(gate.value("gps_timestamp")), timestampBasis)
-               : QStringLiteral("N/A"));
+    if (gpsValid) {
+        const double latitude = gate.value("latitude").toDouble();
+        const double longitude = gate.value("longitude").toDouble();
+        const bool coordinateValid = latitude >= -90.0 && latitude <= 90.0
+                                     && longitude >= -180.0 && longitude <= 180.0
+                                     && !(qFuzzyIsNull(latitude) && qFuzzyIsNull(longitude));
+        if (coordinateValid) {
+            insert("latitude", latitude);
+            insert("longitude", longitude);
+            insert("hasMapLocation", true);
+            updateGoogleMap(latitude, longitude);
+        }
+    }
+    if (gpsValid && !gate.value("gps_timestamp").isNull()) {
+        const quint64 gpsTimestamp = jsonUnsigned(gate.value("gps_timestamp"));
+        const QString gpsBasis = gpsTimestamp >= 1000000000000ULL
+                                     ? QStringLiteral("epoch_ms")
+                                     : timestampBasis;
+        insert("gpsTime", formatTimestamp(gpsTimestamp, gpsBasis));
+    } else {
+        insert("gpsTime", QStringLiteral("N/A"));
+    }
 
     const bool hasPatientEvent = root.value("has_patient_event").toBool(false);
     insert("hasPatientEvent", hasPatientEvent);
 
-    // Gate-only packet chỉ cập nhật Gateway. Không xóa Patient Event gần nhất.
-    if (hasPatientEvent && root.value("node").isObject()) {
-        const QJsonObject node = root.value("node").toObject();
+    // Không có Patient Event thì chỉ cập nhật Gateway, không xóa kết quả Node gần nhất.
+    if (hasPatientEvent && root.value(patientKey).isObject()) {
+        const QJsonObject node = root.value(patientKey).toObject();
         const bool vitalsValid = node.value("vitals_valid").toBool(false);
+        const quint64 sessionId = jsonUnsigned(node.value("session_id"));
+        QString eventId = root.value("event_id").toString();
+        if (eventId.isEmpty()) {
+            eventId = QStringLiteral("legacy-session-%1").arg(sessionId);
+        }
+        const bool isNewPatientEvent = eventId != m_lastPatientEventId;
 
-        insert("sessionId", jsonUnsigned(node.value("session_id")));
-        insert("eventTime", formatTimestamp(gateTimestamp, timestampBasis));
+        quint64 eventTimestamp = gateTimestamp;
+        QString eventTimestampBasis = timestampBasis;
+        if (dashboardSnapshot && root.value("source").isObject()) {
+            eventTimestamp = jsonUnsigned(
+                root.value("source").toObject().value("received_uptime_ms"));
+            eventTimestampBasis = QStringLiteral("uptime_ms");
+        }
+
+        insert("sessionId", sessionId);
+        insert("eventTime", formatTimestamp(eventTimestamp, eventTimestampBasis));
         insert("eventType", eventTypeName(node.value("event_type").toInt(-1)));
         insert("classification", classificationName(node.value("classification").toInt(-1)));
         insert("modelScore", node.value("model_score").toDouble(0.0));
@@ -161,9 +222,10 @@ bool DashboardData::applyCompletePacketJson(const QByteArray &json, QString *err
         insert("spo2", vitalsValid ? node.value("spo2").toInt() : 0);
         insert("batteryNode", node.value("battery_node").toInt(0));
 
-        if (vitalsValid) {
+        if (isNewPatientEvent && vitalsValid) {
             appendHistory("hrHistory", node.value("heart_rate").toDouble());
         }
+        m_lastPatientEventId = eventId;
     }
 
     insert("lastMessageTime", QDateTime::currentDateTime().toString("HH:mm:ss"));
@@ -252,4 +314,36 @@ void DashboardData::appendHistory(const QString &key, double number)
         history.removeFirst();
     }
     insert(key, history);
+}
+
+void DashboardData::updateGoogleMap(double latitude, double longitude)
+{
+    const QString coordinate = QStringLiteral("%1,%2")
+                                   .arg(latitude, 0, 'f', 6)
+                                   .arg(longitude, 0, 'f', 6);
+
+    QUrl interactiveUrl(QStringLiteral("https://www.google.com/maps/search/"));
+    QUrlQuery interactiveQuery;
+    interactiveQuery.addQueryItem(QStringLiteral("api"), QStringLiteral("1"));
+    interactiveQuery.addQueryItem(QStringLiteral("query"), coordinate);
+    interactiveUrl.setQuery(interactiveQuery);
+    insert("googleMapsUrl", interactiveUrl.toString(QUrl::FullyEncoded));
+
+    if (m_googleMapsApiKey.isEmpty()) {
+        insert("googleStaticMapUrl", QString{});
+        return;
+    }
+
+    QUrl staticMapUrl(QStringLiteral("https://maps.googleapis.com/maps/api/staticmap"));
+    QUrlQuery staticMapQuery;
+    staticMapQuery.addQueryItem(QStringLiteral("center"), coordinate);
+    staticMapQuery.addQueryItem(QStringLiteral("zoom"), QStringLiteral("16"));
+    staticMapQuery.addQueryItem(QStringLiteral("size"), QStringLiteral("640x480"));
+    staticMapQuery.addQueryItem(QStringLiteral("scale"), QStringLiteral("2"));
+    staticMapQuery.addQueryItem(QStringLiteral("maptype"), QStringLiteral("roadmap"));
+    staticMapQuery.addQueryItem(QStringLiteral("markers"),
+                                QStringLiteral("color:blue|label:G|%1").arg(coordinate));
+    staticMapQuery.addQueryItem(QStringLiteral("key"), m_googleMapsApiKey);
+    staticMapUrl.setQuery(staticMapQuery);
+    insert("googleStaticMapUrl", staticMapUrl.toString(QUrl::FullyEncoded));
 }

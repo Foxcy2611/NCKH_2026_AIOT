@@ -1,0 +1,370 @@
+#include "Sensor/ESP32_A7680C_AT.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <freertos/semphr.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+static HardwareSerial* sim_serial = nullptr;
+static SemaphoreHandle_t a7680c_mutex = nullptr;
+const char* const A7680C_ALERT_MESSAGE = "Canh bao thu nghiem he thong.";
+static const size_t A7680C_RESPONSE_CAPACITY = 256;
+static const size_t A7680C_COMMAND_CAPACITY = 32;
+#ifndef A7680C_DEBUG_DIAGNOSTICS
+#define A7680C_DEBUG_DIAGNOSTICS 1
+#endif
+
+bool A7680C_Lock(uint32_t timeoutMs){
+    if(a7680c_mutex == nullptr){
+        a7680c_mutex = xSemaphoreCreateRecursiveMutex();
+        if(a7680c_mutex == nullptr) return false;
+    }
+    return xSemaphoreTakeRecursive(a7680c_mutex, pdMS_TO_TICKS(timeoutMs)) == pdTRUE;
+}
+
+void A7680C_Unlock(void){
+    if(a7680c_mutex != nullptr){
+        xSemaphoreGiveRecursive(a7680c_mutex);
+    }
+}
+
+// Gửi lệnh và chờ phản hồi
+bool A7680C_SendCommand(const char* cmd,
+                               const char* exp_resp,
+                               char* response,
+                               size_t responseCapacity,
+                               uint32_t timeout){
+    if(response == nullptr || responseCapacity == 0) return false;
+    response[0] = '\0';
+
+    if(sim_serial == nullptr || cmd == nullptr || exp_resp == nullptr) return false;
+
+    if(!A7680C_Lock(timeout + 2000)){
+        return false;
+    }
+
+    // Chuỗi rỗng chỉ dùng để chờ phản hồi; không gửi CRLF thừa sau Ctrl+Z.
+    if(cmd[0] != '\0'){
+        // Xóa sạch bộ đệm nhận (RX buffer) trước khi gửi lệnh mới để tránh đọc dính URC hoặc ERROR cũ
+        while(sim_serial->available()){
+            sim_serial->read();
+        }
+        sim_serial->println(cmd);
+    }
+
+    size_t responseLength = 0;
+    bool expectedResponseFound = false;
+    bool responseOverflow = false;
+    uint32_t timeStart = millis();
+    while((millis() - timeStart) < timeout){
+        bool receivedData = false;
+        while(sim_serial->available()){
+            int value = sim_serial->read();
+            if(value < 0) break;
+
+            receivedData = true;
+            if(responseLength + 1 >= responseCapacity){
+                responseOverflow = true;
+                continue;
+            }
+
+            response[responseLength++] = static_cast<char>(value);
+            response[responseLength] = '\0';
+        }
+        if(responseOverflow){
+            break;
+        }
+        // Module đã báo lỗi thì thoát ngay, tránh giữ task đến hết timeout dài.
+        if(strstr(response, "ERROR") != nullptr){
+            break;
+        }
+        if(strstr(response, exp_resp) != nullptr){
+            expectedResponseFound = true;
+            break;
+        }
+        // Nhường CPU cho IDLE task khi UART chưa có dữ liệu, tránh watchdog reset.
+        if(!receivedData){
+            vTaskDelay(pdMS_TO_TICKS(1));
+        }
+    }
+    
+    vTaskDelay(pdMS_TO_TICKS(10));
+    A7680C_Unlock();
+    return expectedResponseFound;
+}
+
+static void A7680C_LogResponse(const char* command,
+                               const char* response){
+#if A7680C_DEBUG_DIAGNOSTICS
+    Serial.printf("[SIM-AT] %s\n", command);
+    if(response[0] == '\0'){
+        Serial.println("<EMPTY>");
+        return;
+    }
+
+    Serial.print(response);
+    size_t length = strlen(response);
+    if(response[length - 1] != '\n'){
+        Serial.println();
+    }
+#else
+    (void)command;
+    (void)response;
+#endif
+}
+
+static bool A7680C_HasConfiguredSMSC(const char* response){
+    const char* csca = strstr(response, "+CSCA:");
+    if(csca == nullptr) return false;
+
+    const char* firstQuote = strchr(csca, '"');
+    if(firstQuote == nullptr) return false;
+
+    const char* secondQuote = strchr(firstQuote + 1, '"');
+    return secondQuote != nullptr && secondQuote > firstQuote + 1;
+}
+
+static void A7680C_ConfigureSMS(){
+    char response[A7680C_RESPONSE_CAPACITY];
+    bool charsetReady = A7680C_SendCommand("AT+CSCS=\"GSM\"",
+                                           "OK",
+                                           response,
+                                           sizeof(response),
+                                           2000);
+    A7680C_LogResponse("AT+CSCS=\"GSM\"", response);
+    if(!charsetReady){
+        Serial.println("[WARN] Khong the dat charset GSM!");
+    }
+
+    bool smscRead = A7680C_SendCommand("AT+CSCA?",
+                                       "OK",
+                                       response,
+                                       sizeof(response),
+                                       2000);
+    A7680C_LogResponse("AT+CSCA?", response);
+    if(!smscRead || !A7680C_HasConfiguredSMSC(response)){
+        Serial.println("[WARN] SMSC rong, SMS co the khong duoc gui!");
+    }
+}
+
+bool A7680C_Init(HardwareSerial& serialPort, uint8_t rxPin, uint8_t txPin, uint32_t baudrate){
+    if(!A7680C_Lock(15000)){
+        return false;
+    }
+
+    sim_serial = &serialPort;
+    sim_serial->begin(baudrate, SERIAL_8N1, rxPin, txPin);
+
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
+    char response[A7680C_RESPONSE_CAPACITY];
+    bool isAlive = false;
+    for(int i = 0 ; i < 5 ; i++){
+        if(A7680C_SendCommand("AT",
+                              "OK",
+                              response,
+                              sizeof(response),
+                              1000)){
+            isAlive = true;
+            break;
+        }
+        
+        vTaskDelay(pdMS_TO_TICKS(500));
+    }
+
+    if(! isAlive){
+        A7680C_Unlock();
+        return false;
+    }
+
+    // Tắt chế độ nhại lệnh
+    A7680C_SendCommand("ATE0",
+                       "OK",
+                       response,
+                       sizeof(response),
+                       1000);
+    // Bật báo lỗi chi tiết (verbose error)
+    A7680C_SendCommand("AT+CMEE=2",
+                       "OK",
+                       response,
+                       sizeof(response),
+                       1000);
+    // Kích hoạt toàn bộ chức năng RF (Full Functionality - bật sóng vô tuyến và tự động dò mạng)
+    A7680C_SendCommand("AT+CFUN=1",
+                       "OK",
+                       response,
+                       sizeof(response),
+                       3000);
+    A7680C_ConfigureSMS();
+    A7680C_Unlock();
+    return true;
+}
+
+// Ping kiểm tra kết nối
+bool A7680C_CheckAlive(){
+    char response[A7680C_RESPONSE_CAPACITY];
+    return A7680C_SendCommand("AT",
+                              "OK",
+                              response,
+                              sizeof(response),
+                              1000);
+}
+
+// Kiểm tra SIM sẵn sàng hay khóa (thử tối đa 3 lần cách nhau 1s)
+bool A7680C_CheckSIM(){
+    char response[A7680C_RESPONSE_CAPACITY];
+    for (int i = 0; i < 3; i++) {
+        if(A7680C_SendCommand("AT+CPIN?",
+                               "OK",
+                               response,
+                               sizeof(response),
+                               2000)){
+            if (strstr(response, "READY") != nullptr) {
+                return true;
+            }
+        }
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+    return false;
+}
+
+int A7680C_GetSignalQuality(){
+    // +CSQ: 20,0
+    char response[A7680C_RESPONSE_CAPACITY];
+    if(!A7680C_SendCommand("AT+CSQ",
+                           "OK",
+                           response,
+                           sizeof(response),
+                           2000)){
+        return 0;
+    }
+
+    const char* csq = strstr(response, "+CSQ: ");
+    if(csq == nullptr) return 0;
+
+    char* end = nullptr;
+    long value = strtol(csq + 6, &end, 10);
+    return end != csq + 6 && end != nullptr && *end == ','
+               ? static_cast<int>(value)
+               : 0;
+}
+
+bool A7680C_CheckNetwork(){
+    // 1. Kiem tra va in cuong do song (CSQ)
+    int csq = A7680C_GetSignalQuality();
+    Serial.printf("[SIM-AT] CSQ: %d (0-31; 99=Khong co song/Chua cam ang-ten)\n", csq);
+
+    char response[A7680C_RESPONSE_CAPACITY];
+    // 2. Kiem tra dang ky mang LTE (EPS)
+    bool ceregRead = A7680C_SendCommand("AT+CEREG?",
+                                        "OK",
+                                        response,
+                                        sizeof(response),
+                                        2000);
+    A7680C_LogResponse("AT+CEREG?", response);
+    bool ceregRegistered = ceregRead &&
+        (strstr(response, ",1") != nullptr ||
+         strstr(response, ",5") != nullptr);
+
+    // 3. Kiem tra dang ky mang GSM/3G/Circuit Switched fallback
+    bool cregRead = A7680C_SendCommand("AT+CREG?",
+                                       "OK",
+                                       response,
+                                       sizeof(response),
+                                       2000);
+    A7680C_LogResponse("AT+CREG?", response);
+    bool cregRegistered = cregRead &&
+        (strstr(response, ",1") != nullptr ||
+         strstr(response, ",5") != nullptr);
+
+    bool networkRegistered = ceregRegistered || cregRegistered;
+
+    // 4. Neu chua dang ky, kiem tra nha mang va dam bao CFUN=1
+    if (!networkRegistered) {
+        A7680C_SendCommand("AT+CFUN=1", "OK", response, sizeof(response), 2000);
+        A7680C_SendCommand("AT+COPS?", "OK", response, sizeof(response), 5000);
+        A7680C_LogResponse("AT+COPS?", response);
+    }
+
+    return networkRegistered;
+}
+
+bool A7680C_InitAndDiagnose(HardwareSerial& serialPort,
+                            uint8_t rxPin,
+                            uint8_t txPin,
+                            uint32_t baudrate){
+    if(!A7680C_Init(serialPort, rxPin, txPin, baudrate)){
+        Serial.println("[ERR] Loi khoi tao. Kiem tra phan cung!");
+        return false;
+    }
+    Serial.println("[OK] Khoi tao module thanh cong!");
+
+    bool simReady = A7680C_CheckSIM();
+    Serial.println(simReady ? "[OK] Da nhan SIM."
+                            : "[ERR] Khong nhan SIM.");
+
+    Serial.printf("[INFO] Chat luong song (CSQ): %d\n",
+                  A7680C_GetSignalQuality());
+
+    bool networkReady = A7680C_CheckNetwork();
+    Serial.println(networkReady
+                       ? "[OK] Da dang ky mang LTE. San sang hoat dong!"
+                       : "[WARN] Chua dang ky vao mang 4G.");
+
+    return simReady && networkReady;
+}
+
+
+bool A7680C_SendSMS(const char* phoneNumber, const char* message){
+    if(phoneNumber == nullptr || message == nullptr) return false;
+
+    char response[A7680C_RESPONSE_CAPACITY];
+    if(!A7680C_SendCommand("AT+CMGF=1",
+                           "OK",
+                           response,
+                           sizeof(response),
+                           2000)){
+        return false;
+    }
+
+    // Ký tử \": Làm trong chuỗi xuất hiện dấu ""
+    char command[A7680C_COMMAND_CAPACITY];
+    int written = snprintf(command,
+                           sizeof(command),
+                           "AT+CMGS=\"%s\"",
+                           phoneNumber);
+    if(written < 0 || static_cast<size_t>(written) >= sizeof(command)){
+        return false;
+    }
+
+    if(!A7680C_SendCommand(command,
+                           ">",
+                           response,
+                           sizeof(response),
+                           2000)){
+        return false;
+    }
+
+    sim_serial->print(message);
+    sim_serial->write(26);
+    return A7680C_SendCommand("",
+                              "+CMGS",
+                              response,
+                              sizeof(response),
+                              10000);
+}
+
+HardwareSerial* A7680C_GetSerial(){
+    return sim_serial;
+}
+
+bool A7680C_SendRawData(const uint8_t* data, size_t length){
+    if(sim_serial == nullptr || data == nullptr || length == 0) return false;
+    if(!A7680C_Lock(5000)){
+        return false;
+    }
+    bool ok = (sim_serial->write(data, length) == length);
+    A7680C_Unlock();
+    return ok;
+}

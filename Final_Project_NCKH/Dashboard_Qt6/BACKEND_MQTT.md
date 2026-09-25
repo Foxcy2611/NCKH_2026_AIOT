@@ -28,9 +28,28 @@ Có thể ghi đè mà không sửa file bằng các biến môi trường:
 - `NCKH_MQTT_PASSWORD`
 - `NCKH_MQTT_TOPIC`
 
+## Google Maps
+
+Trang Location hiển thị bản đồ thật bằng Google Maps Static API. Tọa độ đầu vào phải là
+độ thập phân có dấu (`latitude`, `longitude`); driver NEO-M8N đã đổi từ NMEA
+`ddmm.mmmm`/`dddmm.mmmm` sang định dạng này nên Qt không cần đổi thêm.
+
+Trước khi chạy dashboard, đặt biến môi trường `NCKH_GOOGLE_MAPS_API_KEY` bằng khóa của
+Google Cloud đã bật Maps Static API. Không ghi khóa trực tiếp vào source. Nếu chưa có khóa,
+dashboard vẫn hiện tọa độ và cho phép bấm vùng bản đồ để mở vị trí bằng Google Maps trên
+trình duyệt.
+
+Khi GPS hiện tại không hợp lệ, dashboard giữ lại vị trí hợp lệ gần nhất và không đưa tọa độ
+`0,0` lên bản đồ.
+
 ## Quy tắc xử lý
 
-- Chỉ nhận `schema_version = 1` và `message_type = complete_packet`.
+- Schema chính từ Gateway: `schema_version = 2`, `message_type = dashboard_snapshot`,
+  object `gate` và `patient_event`.
+- Vẫn nhận schema thử nghiệm cũ: `schema_version = 1`,
+  `message_type = complete_packet`, object `gateway` và `node`.
+- Với schema 2, `event_id` được dùng để tránh cộng lặp cùng một Patient Event vào
+  lịch sử mỗi lần Gateway gửi snapshot định kỳ 5 giây.
 - Tự kết nối lại sau 5 giây nếu mất MQTT.
 - `has_patient_event = false`: chỉ cập nhật Gateway, không xóa Patient Event gần nhất.
 - Trường cảm biến chỉ được dùng khi bit tương ứng trong `sensor_valid_mask` hợp lệ.

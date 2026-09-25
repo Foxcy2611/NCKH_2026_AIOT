@@ -45,83 +45,90 @@ Flickable {
                 accentColor: root.theme.blue
 
                 Rectangle {
+                    id: mapFrame
+
                     anchors.fill: parent
                     anchors.margins: 18
                     radius: 14
                     color: root.theme.surface2
+                    clip: true
 
-                    Canvas {
+                    Image {
+                        id: googleMap
+
                         anchors.fill: parent
+                        source: root.dataSource.googleStaticMapUrl
+                        fillMode: Image.PreserveAspectCrop
+                        asynchronous: true
+                        retainWhileLoading: true
+                        smooth: true
+                    }
 
-                        onPaint: {
-                            var ctx = getContext("2d")
+                    BusyIndicator {
+                        anchors.centerIn: parent
+                        running: googleMap.status === Image.Loading
+                        visible: running
+                    }
 
-                            ctx.clearRect(
-                                0,
-                                0,
-                                width,
-                                height
-                            )
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: Math.min(parent.width - 48, 390)
+                        height: mapMessage.implicitHeight + 34
+                        radius: 12
+                        color: root.theme.surface
+                        border.color: root.theme.line
+                        visible: googleMap.status === Image.Error
+                                 || !root.dataSource.hasMapLocation
+                                 || !root.dataSource.googleMapsConfigured
 
-                            ctx.strokeStyle =
-                                root.theme.dark
-                                ? "#22324D"
-                                : "#DCE6F2"
-
-                            ctx.lineWidth = 1
-
-                            for (
-                                var x = 30;
-                                x < width;
-                                x += 55
-                            ) {
-                                ctx.beginPath()
-                                ctx.moveTo(x, 0)
-                                ctx.lineTo(x, height)
-                                ctx.stroke()
-                            }
-
-                            for (
-                                var y = 30;
-                                y < height;
-                                y += 55
-                            ) {
-                                ctx.beginPath()
-                                ctx.moveTo(0, y)
-                                ctx.lineTo(width, y)
-                                ctx.stroke()
-                            }
+                        Text {
+                            id: mapMessage
+                            anchors.centerIn: parent
+                            width: parent.width - 30
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.WordWrap
+                            color: root.theme.text2
+                            font.pixelSize: 12
+                            text: !root.dataSource.hasMapLocation
+                                  ? "Chưa có tọa độ GPS hợp lệ"
+                                  : !root.dataSource.googleMapsConfigured
+                                    ? "Chưa cấu hình NCKH_GOOGLE_MAPS_API_KEY"
+                                    : "Không tải được Google Maps. Kiểm tra Internet và quyền Maps Static API."
                         }
                     }
 
                     Rectangle {
-                        width: 46
-                        height: 46
-                        radius: 23
-                        color: root.theme.blue
-                        anchors.centerIn: parent
+                        anchors.left: parent.left
+                        anchors.bottom: parent.bottom
+                        anchors.margins: 12
+                        width: coordinateText.implicitWidth + 22
+                        height: 30
+                        radius: 9
+                        color: root.theme.surface
+                        opacity: 0.92
+                        visible: root.dataSource.hasMapLocation
 
-                        Rectangle {
-                            width: 14
-                            height: 14
-                            radius: 7
-                            color: "white"
+                        Text {
+                            id: coordinateText
                             anchors.centerIn: parent
+                            text: root.dataSource.latitude.toFixed(6)
+                                  + ", "
+                                  + root.dataSource.longitude.toFixed(6)
+                            color: root.theme.text
+                            font.pixelSize: 10
+                            font.weight: Font.DemiBold
                         }
                     }
 
-                    Text {
-                        text: "Map preview placeholder"
-                        color: root.theme.text3
-                        font.pixelSize: 11
+                    MouseArea {
+                        anchors.fill: parent
+                        enabled: root.dataSource.hasMapLocation
+                        hoverEnabled: true
+                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                        onClicked: Qt.openUrlExternally(root.dataSource.googleMapsUrl)
 
-                        anchors.horizontalCenter:
-                            parent.horizontalCenter
-
-                        anchors.bottom:
-                            parent.bottom
-
-                        anchors.bottomMargin: 18
+                        ToolTip.visible: containsMouse
+                        ToolTip.text: "Mở vị trí này trên Google Maps"
                     }
                 }
             }

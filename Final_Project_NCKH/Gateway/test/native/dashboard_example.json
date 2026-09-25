@@ -1,0 +1,71 @@
+{
+  "schema_version": 2,
+  "record_id": "47575431-00000001-00000001",
+  "synthetic": false,
+  "has_patient_event": true,
+  "source": {
+    "device_id": 123,
+    "sequence": 19,
+    "received_uptime_ms": 9000
+  },
+  "gate": {
+    "gateway_id": 1196905521,
+    "timestamp": 10000,
+    "time_basis": "uptime_ms",
+    "operating_mode": 0,
+    "uplink_type": 1,
+    "sensor_valid_mask": 0,
+    "temperature": null,
+    "humidity": null,
+    "pressure": null,
+    "tvoc": null,
+    "eco2": null,
+    "wifi_connected": true,
+    "wifi_rssi_dbm": -55,
+    "lte_registered": false,
+    "lte_rssi_dbm": null,
+    "mqtt_connected": true,
+    "latitude": null,
+    "longitude": null,
+    "gps_timestamp": null
+  },
+  "patient_event": {
+    "session_id": 42,
+    "timestamp": null,
+    "time_basis": "unsynced",
+    "event_type": 0,
+    "classification": 2,
+    "model_score": 0.9,
+    "audio_quality": 0,
+    "vitals_valid": true,
+    "heart_rate": 72,
+    "spo2": 98,
+    "battery_node": 0
+  },
+  "transport": "wifi",
+  "message_type": "dashboard_snapshot",
+  "event_id": "0000007b-0000002a-00000013",
+  "patient_age_ms": 1000,
+  "status": {
+    "schema_version": 1,
+    "message_type": "gateway_status",
+    "gateway_id": 1196905521,
+    "uptime_ms": 10000,
+    "wifi_connected": true,
+    "mqtt_connected": true,
+    "wifi_rssi_dbm": -55,
+    "lte_enabled": true,
+    "gps_enabled": true,
+    "node_valid": true,
+    "node_dirty": true,
+    "node_revision": 9,
+    "free_heap_bytes": 180000,
+    "synthetic": false
+  },
+  "alert": {
+    "active": true,
+    "event_id": "0000007b-0000002a-00000013",
+    "severity": "warning",
+    "alert_type": "abnormal_classification"
+  }
+}

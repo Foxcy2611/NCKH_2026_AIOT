@@ -3,8 +3,9 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <esp_now.h>
-#include <string.h>
 #include <esp_wifi.h>
+#include <string.h>
+
 #include "Network/Secure_Response_Decryptor.h"
 #include "Network/Secure_Sender.h"
 #include "Packet_Metadata.h"
@@ -12,11 +13,11 @@
 namespace {
 
 // /** Cấu hình tạm; thay bằng thông tin Gateway thật khi ghép hai bo mạch. */
-constexpr uint8_t ESP_NOW_CHANNEL = 4;
+constexpr uint8_t ESP_NOW_CHANNEL = 6;
 constexpr uint32_t GATEWAY_DEVICE_ID = 0x47575431UL;
 
 const uint8_t GATEWAY_MAC[6] = {
-    0xD4, 0xE9, 0xF4, 0xE7, 0x37, 0x20
+    0xD4, 0xE9, 0xF4, 0xE9, 0xE8, 0x80
 };
 
 const uint8_t KEY_NODE_TO_GATEWAY[AES_128_KEY_SIZE] = {
@@ -57,15 +58,15 @@ volatile int8_t send_callback_result = CALLBACK_NONE;
 volatile bool response_ready = false;
 Secure_Packet_t response_packet{};
 
-bool IsGatewayMac(const uint8_t* mac) {
+bool IsGatewayMac(const uint8_t* mac){
     return mac != nullptr && memcmp(mac, GATEWAY_MAC, sizeof(GATEWAY_MAC)) == 0;
 }
 
-void OnEspNowSent(const uint8_t* mac, esp_now_send_status_t result) {
-    if (!IsGatewayMac(mac)) return;
+void OnEspNowSent(const uint8_t* mac, esp_now_send_status_t result){
+    if(!IsGatewayMac(mac)) return;
 
     portENTER_CRITICAL(&callback_mux);
-    if (pending_active && send_status == STATUS_SENDING) {
+    if(pending_active && send_status == STATUS_SENDING){
         send_callback_result = result == ESP_NOW_SEND_SUCCESS
             ? CALLBACK_SUCCESS
             : CALLBACK_FAILED;
@@ -73,9 +74,9 @@ void OnEspNowSent(const uint8_t* mac, esp_now_send_status_t result) {
     portEXIT_CRITICAL(&callback_mux);
 }
 
-void OnEspNowReceived(const uint8_t* mac, const uint8_t* data, int length) {
-    if (!IsGatewayMac(mac) || data == nullptr ||
-        length != static_cast<int>(SECURE_PACKET_SIZE)) {
+void OnEspNowReceived(const uint8_t* mac, const uint8_t* data, int length){
+    if(!IsGatewayMac(mac) || data == nullptr ||
+        length != static_cast<int>(SECURE_PACKET_SIZE)){
         return;
     }
 
@@ -85,16 +86,16 @@ void OnEspNowReceived(const uint8_t* mac, const uint8_t* data, int length) {
     portEXIT_CRITICAL(&callback_mux);
 }
 
-void ClearPending(Event_Send_Status_t final_status) {
+void ClearPending(Event_Send_Status_t final_status){
     memset(&pending, 0, sizeof(pending));
     pending_active = false;
     send_status = final_status;
 }
 
-void ScheduleRetry(const char* reason) {
-    if (!pending_active) return;
+void ScheduleRetry(const char* reason){
+    if(!pending_active) return;
 
-    if (pending.retry_count >= MAX_RETRY_COUNT) {
+    if(pending.retry_count >= MAX_RETRY_COUNT){
         Serial.printf(
             "[ESP-NOW] Vượt quá %u lần retry. Lý do: %s\n",
             static_cast<unsigned int>(MAX_RETRY_COUNT),
@@ -114,8 +115,8 @@ void ScheduleRetry(const char* reason) {
     );
 }
 
-void SendPending(void) {
-    if (!espnow_ready || !pending_active) return;
+void SendPending(void){
+    if(!espnow_ready || !pending_active) return;
 
     // Retry luôn gửi lại chính packet cũ, không sinh sequence/nonce mới.
     send_status = STATUS_SENDING;
@@ -131,7 +132,7 @@ void SendPending(void) {
         sizeof(pending.packet)
     );
 
-    if (result != ESP_OK) {
+    if(result != ESP_OK){
         send_status = STATUS_SEND_ERROR;
         ScheduleRetry("ESP_NOW_SEND_CALL_FAILED");
     }
@@ -139,31 +140,46 @@ void SendPending(void) {
 
 } // namespace
 
-bool EspNow_Setup(void) {
-    if (espnow_ready) return true;
+bool EspNow_Setup(void){
+    if(espnow_ready) return true;
 
     const uint32_t node_id = PacketMetadata_GetDeviceId();
-    if (node_id == 0U ||
+    if(node_id == 0U ||
         !SecureSender_Init(node_id, KEY_NODE_TO_GATEWAY) ||
-        !SecureResponse_Init(node_id, GATEWAY_DEVICE_ID, KEY_GATEWAY_TO_NODE)) {
+        !SecureResponse_Init(node_id, GATEWAY_DEVICE_ID, KEY_GATEWAY_TO_NODE)){
         Serial.println("[ESP-NOW] Không khởi tạo được lớp bảo mật.");
         return false;
     }
 
     WiFi.mode(WIFI_STA);
 
-    esp_err_t channel_result =
-    esp_wifi_set_channel(ESP_NOW_CHANNEL, WIFI_SECOND_CHAN_NONE);
-    if (channel_result != ESP_OK) {
-        Serial.printf("[ESP-NOW] Set channel failed: %d\n", channel_result);
+    const esp_err_t set_channel_result = esp_wifi_set_channel(ESP_NOW_CHANNEL, WIFI_SECOND_CHAN_NONE);
+
+    if(set_channel_result != ESP_OK){
+        Serial.printf("[ESP-NOW] Khong dat duoc kenh Wi-Fi %u. Loi=%d\n",
+                      static_cast<unsigned int>(ESP_NOW_CHANNEL),
+                      static_cast<int>(set_channel_result));
         return false;
     }
-    Serial.printf("[ESP-NOW] Node channel: %d\n", WiFi.channel());
 
-    if (esp_now_init() != ESP_OK) return false;
+    uint8_t actual_channel = 0;
+    wifi_second_chan_t secondary_channel = WIFI_SECOND_CHAN_NONE;
+    const esp_err_t get_channel_result = esp_wifi_get_channel(&actual_channel, &secondary_channel);
 
-    if (esp_now_register_send_cb(OnEspNowSent) != ESP_OK ||
-        esp_now_register_recv_cb(OnEspNowReceived) != ESP_OK) {
+    if(get_channel_result != ESP_OK || actual_channel != ESP_NOW_CHANNEL){
+        Serial.printf("[ESP-NOW] Kenh Wi-Fi khong khop: can=%u, thuc te=%u, loi=%d\n",
+                      static_cast<unsigned int>(ESP_NOW_CHANNEL),
+                      static_cast<unsigned int>(actual_channel),
+                      static_cast<int>(get_channel_result));
+        return false;
+    }
+    Serial.printf("[ESP-NOW] Kenh Wi-Fi thuc te: %u\n",
+                  static_cast<unsigned int>(actual_channel));
+
+    if(esp_now_init() != ESP_OK) return false;
+
+    if(esp_now_register_send_cb(OnEspNowSent) != ESP_OK ||
+        esp_now_register_recv_cb(OnEspNowReceived) != ESP_OK){
         esp_now_deinit();
         return false;
     }
@@ -174,7 +190,7 @@ bool EspNow_Setup(void) {
     peer.ifidx = WIFI_IF_STA;
     peer.encrypt = false; // Payload đã được bảo vệ bằng AES-128-GCM.
 
-    if (!esp_now_is_peer_exist(GATEWAY_MAC) && esp_now_add_peer(&peer) != ESP_OK) {
+    if(!esp_now_is_peer_exist(GATEWAY_MAC) && esp_now_add_peer(&peer) != ESP_OK){
         esp_now_deinit();
         return false;
     }
@@ -198,12 +214,12 @@ bool EspNow_Setup(void) {
     return true;
 }
 
-bool EspNow_IsReady(void) {
+bool EspNow_IsReady(void){
     return espnow_ready;
 }
 
-bool EspNow_QueuePatientEvent(const Node_Payload_t* payload) {
-    if (!espnow_ready || payload == nullptr || pending_active) return false;
+bool EspNow_QueuePatientEvent(const Node_Payload_t* payload){
+    if(!espnow_ready || payload == nullptr || pending_active) return false;
 
     Pending_Event_t next{};
     next.session_id = payload->session_id;
@@ -215,7 +231,7 @@ bool EspNow_QueuePatientEvent(const Node_Payload_t* payload) {
         &next.packet
     );
 
-    if (result != SECURE_SENDER_OK) {
+    if(result != SECURE_SENDER_OK){
         Serial.printf(
             "[ESP-NOW] Không mã hóa được sự kiện. SecureSenderResult=%u\n",
             static_cast<unsigned int>(result)
@@ -242,8 +258,8 @@ bool EspNow_QueuePatientEvent(const Node_Payload_t* payload) {
     return true; // Packet vẫn nằm trong pending nếu lần gửi đầu thất bại.
 }
 
-void EspNow_Process(void) {
-    if (!espnow_ready) return;
+void EspNow_Process(void){
+    if(!espnow_ready) return;
 
     // Lấy một ảnh chụp mailbox rồi xử lý bên ngoài callback Wi-Fi.
     int8_t radio_send_result = CALLBACK_NONE;
@@ -253,26 +269,26 @@ void EspNow_Process(void) {
     portENTER_CRITICAL(&callback_mux);
     radio_send_result = send_callback_result;
     send_callback_result = CALLBACK_NONE;
-    if (response_ready) {
+    if(response_ready){
         memcpy(&packet, &response_packet, sizeof(packet));
         response_ready = false;
         has_response = true;
     }
     portEXIT_CRITICAL(&callback_mux);
 
-    if (!pending_active) return;
+    if(!pending_active) return;
 
     // 1. Kết quả gửi ở tầng sóng; thành công vẫn phải chờ ACK của Gateway.
-    if (radio_send_result == CALLBACK_SUCCESS) {
+    if(radio_send_result == CALLBACK_SUCCESS){
         send_status = STATUS_ACK_PENDING;
         Serial.println("[ESP-NOW] RF send thành công; đang chờ ACK/NACK từ Gateway.");
-    } else if (radio_send_result == CALLBACK_FAILED) {
+    } else if(radio_send_result == CALLBACK_FAILED){
         send_status = STATUS_SEND_ERROR;
         ScheduleRetry("ESP_NOW_SEND_CALLBACK_FAILED");
     }
 
     // 2. Xác thực, giải mã và xử lý phản hồi nghiệp vụ từ Gateway.
-    if (has_response && pending_active) {
+    if(has_response && pending_active){
         Response_Payload_t response{};
         const Secure_Response_Decrypt_Result_t decrypt_result =
             SecureResponseDecryptor_Decrypt(
@@ -282,20 +298,13 @@ void EspNow_Process(void) {
                 &response
             );
 
-        if (decrypt_result != SECURE_RESPONSE_DECRYPT_OK) {
+        if(decrypt_result != SECURE_RESPONSE_DECRYPT_OK){
             Serial.printf(
                 "[ESP-NOW] Bỏ phản hồi không hợp lệ. DecryptResult=%u\n",
                 static_cast<unsigned int>(decrypt_result)
             );
         } else {
-            if (response.time_valid != 0U && response.gateway_timestamp != 0U) {
-                const int64_t offset_ms =
-                    static_cast<int64_t>(response.gateway_timestamp)
-                    - static_cast<int64_t>(millis());
-                PacketMetadata_SetTimeOffset(offset_ms);
-            }
-
-            switch (static_cast<Gateway_Response_Code_t>(response.response_code)) {
+            switch (static_cast<Gateway_Response_Code_t>(response.response_code)){
                 case RESPONSE_ACK_ACCEPTED:
                     Serial.println("[ESP-NOW] Gateway đã nhận và chấp nhận sự kiện.");
                     ClearPending(STATUS_ACK_CONFIRMED);
@@ -325,16 +334,16 @@ void EspNow_Process(void) {
         }
     }
 
-    if (!pending_active) return;
+    if(!pending_active) return;
 
     // 3. Timeout và retry theo trạng thái hiện tại.
     const uint32_t elapsed = millis() - pending.last_sent_ms;
 
-    if (send_status == STATUS_SENDING && elapsed >= SEND_CALLBACK_TIMEOUT_MS) {
+    if(send_status == STATUS_SENDING && elapsed >= SEND_CALLBACK_TIMEOUT_MS){
         ScheduleRetry("SEND_CALLBACK_TIMEOUT");
-    } else if (send_status == STATUS_ACK_PENDING && elapsed >= ACK_TIMEOUT_MS) {
+    } else if(send_status == STATUS_ACK_PENDING && elapsed >= ACK_TIMEOUT_MS){
         ScheduleRetry("GATEWAY_RESPONSE_TIMEOUT");
-    } else if (send_status == STATUS_RETRY_WAIT && elapsed >= RETRY_DELAY_MS) {
+    } else if(send_status == STATUS_RETRY_WAIT && elapsed >= RETRY_DELAY_MS){
         ++pending.retry_count;
         Serial.printf(
             "[ESP-NOW] Retry %u/%u | Sequence=%lu\n",
@@ -346,10 +355,10 @@ void EspNow_Process(void) {
     }
 }
 
-bool EspNow_HasPendingEvent(void) {
+bool EspNow_HasPendingEvent(void){
     return pending_active;
 }
 
-Event_Send_Status_t EspNow_GetStatus(void) {
+Event_Send_Status_t EspNow_GetStatus(void){
     return send_status;
 }

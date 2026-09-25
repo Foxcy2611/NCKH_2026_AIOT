@@ -335,7 +335,9 @@ Flickable {
                                 }
 
                                 Text {
-                                    text: root.dataSource.batteryGate + "%"
+                                    text: root.dataSource.batteryGateAvailable
+                                          ? root.dataSource.batteryGate + "%"
+                                          : "N/A"
                                     color: root.theme.text
                                     font.pixelSize: 18
                                     font.weight: Font.DemiBold
@@ -348,7 +350,9 @@ Flickable {
                                 radius: 12
 
                                 color:
-                                    root.dataSource.batteryGate > 20
+                                    !root.dataSource.batteryGateAvailable
+                                    ? root.theme.surface2
+                                    : root.dataSource.batteryGate > 20
                                     ? root.theme.greenSoft
                                     : root.theme.redSoft
 
@@ -357,7 +361,9 @@ Flickable {
                                     text: "⚡"
 
                                     color:
-                                        root.dataSource.batteryGate > 20
+                                        !root.dataSource.batteryGateAvailable
+                                        ? root.theme.text3
+                                        : root.dataSource.batteryGate > 20
                                         ? root.theme.green
                                         : root.theme.red
 

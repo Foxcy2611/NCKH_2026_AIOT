@@ -2,6 +2,7 @@
 #define DASHBOARD_DATA_H
 
 #include <QQmlPropertyMap>
+#include <QString>
 
 class DashboardData final : public QQmlPropertyMap
 {
@@ -22,6 +23,10 @@ private:
     static QString formatTimestamp(quint64 timestampMs, const QString &basis);
 
     void appendHistory(const QString &key, double value);
+    void updateGoogleMap(double latitude, double longitude);
+
+    QString m_googleMapsApiKey;
+    QString m_lastPatientEventId;
 };
 
 #endif

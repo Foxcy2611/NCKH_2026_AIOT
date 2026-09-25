@@ -83,8 +83,11 @@ Flickable {
                         Layout.fillWidth: true
                         theme: root.theme
                         label: "Gateway battery"
-                        value: root.dataSource.batteryGate + "%"
-                        good: root.dataSource.batteryGate > 20
+                        value: root.dataSource.batteryGateAvailable
+                               ? root.dataSource.batteryGate + "%"
+                               : "N/A"
+                        good: root.dataSource.batteryGateAvailable
+                              && root.dataSource.batteryGate > 20
                     }
 
                     StatusLine {
