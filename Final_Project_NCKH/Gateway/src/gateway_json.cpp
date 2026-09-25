@@ -120,33 +120,31 @@ bool GatewaySerializeAlertJson(const UplinkRecord &item, char *out, size_t capac
 
 
 bool GatewaySerializeDashboardJson(const UplinkRecord &item,
-    const NetworkSnapshot &network, bool node_dirty, uint64_t node_revision,
+    const NetworkSnapshot &network, bool node_valid, bool node_dirty,
+    uint64_t node_revision,
     uint64_t uptime_ms, uint32_t free_heap, char *out, size_t capacity) {
     if (!GatewaySerializeJson(item, out, capacity)) return false;
-    // Base serializer starts with schema_version:1. This envelope is schema 2.
-    char *version = strstr(out, "\"schema_version\":1");
-    if (!version) { out[0] = '\0'; return false; }
-    version[strlen("\"schema_version\":")] = '2';
     size_t used = 0;
     while (out[used]) ++used;
     Writer w{out, capacity, used - 1, true}; // replace the closing brace
-    w.add(",\"message_type\":\"dashboard_snapshot\",\"event_id\":");
-    const bool valid = item.record.has_patient_event != 0;
+    w.add(",\"message_type\":\"complete_packet\",\"event_id\":");
+    const bool includesPatientEvent = item.record.has_patient_event != 0;
     const auto &p = item.record.patient_event;
-    if (valid) w.add("\"%08lx-%08lx-%08lx\"", (unsigned long)item.source_device_id,
+    if (includesPatientEvent) w.add("\"%08lx-%08lx-%08lx\"", (unsigned long)item.source_device_id,
         (unsigned long)p.session_id, (unsigned long)item.source_sequence);
     else w.add("null");
     w.add(",\"patient_age_ms\":");
-    if (valid && uptime_ms >= item.received_uptime_ms)
+    if (includesPatientEvent && uptime_ms >= item.received_uptime_ms)
         w.add("%llu", (unsigned long long)(uptime_ms - item.received_uptime_ms));
     else w.add("null");
     w.add(",\"status\":");
-    if (!w.ok || !GatewaySerializeStatusJson(network, valid, node_dirty,
+    if (!w.ok || !GatewaySerializeStatusJson(network, node_valid, node_dirty,
             node_revision, uptime_ms, free_heap, out + w.used, capacity - w.used)) {
         out[0] = '\0'; return false;
     }
     while (out[w.used]) ++w.used;
-    const bool active = valid && p.classification != GATEWAY_ALERT_NORMAL_CLASS
+    const bool active = includesPatientEvent
+        && p.classification != GATEWAY_ALERT_NORMAL_CLASS
         && p.model_score >= GATEWAY_ALERT_MIN_SCORE;
     w.add(",\"alert\":{\"active\":%s,\"event_id\":", active ? "true" : "false");
     if (active) w.add("\"%08lx-%08lx-%08lx\"", (unsigned long)item.source_device_id,

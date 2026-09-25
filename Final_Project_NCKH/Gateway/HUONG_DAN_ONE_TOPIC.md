@@ -4,7 +4,7 @@
 - Dữ liệu thật: aiot/2026/gateway/data
 - Chế độ gateway_synthetic: aiot/2026/test/gateway/data
 - Mỗi chế độ chỉ gửi một topic. Publisher không còn gửi telemetry, patient/event, status, alert riêng.
-- Gửi snapshot khi kết nối MQTT lại, khi có Node dirty và định kỳ 5 giây tính từ lần gửi thành công gần nhất. Cần có snapshot Gateway hợp lệ. Thất bại sẽ thử lại theo GATEWAY_MQTT_RETRY_MS.
+- Gửi Complete Packet khi kết nối MQTT lại, khi có Node dirty và định kỳ 5 giây tính từ lần gửi thành công gần nhất. Cần có snapshot Gateway hợp lệ. Thất bại sẽ thử lại theo GATEWAY_MQTT_RETRY_MS.
 - ESP-NOW vẫn dùng giao thức 16/16/56 byte đã sửa trước đó.
 
 ## Áp dụng bản vá (khuyên dùng cho dự án đang chạy)
@@ -17,15 +17,17 @@
 Bản đầy đủ Gateway_OneTopic_Full.zip xuất phát từ Gateway.rar, nên các cấu hình mạng/kênh vẫn theo bản RAR. Đối chiếu trước khi dùng: Gateway.rar có kênh 10, Patient_Node.rar có kênh 6. Giữ router, Gateway và Node cùng kênh theo cấu hình thực tế.
 
 ## Cấu trúc JSON đã triển khai
-Đây là schema_version=2, message_type=dashboard_snapshot. Giữ tên gate và patient_event để kế thừa trường dữ liệu cũ; không dùng các tên gateway/environment/patient trong ví dụ thiết kế sơ bộ trước đó.
+Đây là `schema_version=1`, `message_type=complete_packet`. Giữ tên `gate` và
+`patient_event`; không dùng các tên `gateway`/`environment`/`patient` trong ví dụ
+thiết kế sơ bộ trước đó.
 
 | Đường dẫn | Dùng cho Qt6 |
 |---|---|
 | record_id | ID snapshot, thay đổi theo mỗi lần thử gửi; không dùng chống trùng sự kiện Node |
-| event_id | ID sự kiện Node theo device/session/sequence, giữ nguyên khi gửi lại dữ liệu cũ; null khi chưa có Node |
-| patient_age_ms | Tuổi sự kiện tính từ lúc Gateway nhận, không phải tuổi phép đo ở Node; null khi chưa có hoặc thời gian không hợp lệ |
+| event_id | ID sự kiện Node theo device/session/sequence, giữ nguyên khi retry; null khi Complete Packet không đính kèm Node |
+| patient_age_ms | Tuổi sự kiện tính từ lúc Gateway nhận, không phải tuổi phép đo ở Node; null khi không đính kèm Node hoặc thời gian không hợp lệ |
 | synthetic | Phân biệt dữ liệu thử |
-| has_patient_event | Có dữ liệu Node trong snapshot, không có nghĩa là sự kiện mới |
+| has_patient_event | Lần publish này có đính kèm Node Event mới/chưa publish thành công; bằng false thì `patient_event=null` |
 | source.device_id, sequence | Định danh và số thứ tự gói Node |
 | source.received_uptime_ms | Thời điểm Gateway nhận theo uptime, không phải UTC |
 | gate.temperature, humidity, pressure | Nhiệt độ °C, độ ẩm %, áp suất hPa |
@@ -49,8 +51,10 @@ Bản đầy đủ Gateway_OneTopic_Full.zip xuất phát từ Gateway.rar, nên
 
 ## Quy tắc dashboard
 - Cập nhật thẻ trạng thái và môi trường mỗi snapshot.
-- Chỉ thêm một bản ghi bệnh nhân hoặc phát thông báo khi event_id mới. Cùng event_id chỉ cập nhật tuổi dữ liệu, tránh ghi lặp mỗi 5 giây.
-- alert.active thể hiện sự kiện gần nhất, không chứng minh tình trạng hiện tại. Nó giữ true đến khi có sự kiện mới không cảnh báo hoặc Gateway khởi động lại. Hiển thị kèm patient_age_ms; không tự coi sự kiện cũ là phép đo mới.
+- Chỉ thêm một bản ghi bệnh nhân hoặc phát thông báo khi `event_id` mới. Cùng
+  `event_id` là retry và không được ghi lặp.
+- `alert.active` chỉ có ý nghĩa trong Complete Packet đang đính kèm Patient Event;
+  Qt6 tự giữ kết quả gần nhất khi các packet định kỳ sau có `has_patient_event=false`.
 - null là chưa có/không hợp lệ, không chuyển thành 0.
 - node_valid là đã có dữ liệu, không phải bằng chứng Node đang online. node_dirty là trạng thái trước lần gửi hiện tại, không phải ACK từ backend.
 - Theo dõi thời điểm nhận tại Qt6 để đánh dấu mất kết nối. Bản tin cũ có mqtt_connected=true không chứng minh Gateway còn online.

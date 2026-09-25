@@ -93,11 +93,11 @@ bool DashboardData::applyCompletePacketJson(const QByteArray &json, QString *err
     const QJsonObject root = document.object();
     const int schemaVersion = root.value("schema_version").toInt(-1);
     const QString messageType = root.value("message_type").toString();
-    const bool dashboardSnapshot = schemaVersion == 2
-                                   && messageType == QStringLiteral("dashboard_snapshot");
-    const bool legacyCompletePacket = schemaVersion == 1
-                                      && messageType == QStringLiteral("complete_packet");
-    if (!dashboardSnapshot && !legacyCompletePacket) {
+    const bool completePacket = schemaVersion == 1
+                                && messageType == QStringLiteral("complete_packet");
+    const bool legacyDashboardSnapshot = schemaVersion == 2
+                                         && messageType == QStringLiteral("dashboard_snapshot");
+    if (!completePacket && !legacyDashboardSnapshot) {
         if (errorMessage) {
             *errorMessage = QStringLiteral("Không hỗ trợ schema_version=%1, message_type=%2")
                                 .arg(schemaVersion)
@@ -106,10 +106,12 @@ bool DashboardData::applyCompletePacketJson(const QByteArray &json, QString *err
         return false;
     }
 
-    const QString gateKey = dashboardSnapshot
+    // Schema chính dùng gate/patient_event. Vẫn nhận gateway/node của dữ liệu
+    // thử nghiệm cũ để không làm hỏng file JSON đã lưu trước khi chốt schema.
+    const QString gateKey = root.value(QStringLiteral("gate")).isObject()
                                 ? QStringLiteral("gate")
                                 : QStringLiteral("gateway");
-    const QString patientKey = dashboardSnapshot
+    const QString patientKey = root.contains(QStringLiteral("patient_event"))
                                    ? QStringLiteral("patient_event")
                                    : QStringLiteral("node");
 
@@ -122,15 +124,14 @@ bool DashboardData::applyCompletePacketJson(const QByteArray &json, QString *err
 
     const QJsonObject gate = root.value(gateKey).toObject();
     const int sensorMask = gate.value("sensor_valid_mask").toInt(0);
-    const QString timestampBasis = dashboardSnapshot
-                                       ? gate.value("time_basis").toString("uptime_ms")
-                                       : gate.value("timestamp_basis").toString("uptime_ms");
+    const QString timestampBasis = gate.value("time_basis").toString(
+        gate.value("timestamp_basis").toString("uptime_ms"));
     const quint64 gateTimestamp = jsonUnsigned(gate.value("timestamp"));
 
     insert("gatewayId", jsonUnsigned(gate.value("gateway_id")));
     insert("operatingMode", operatingModeName(gate.value("operating_mode").toInt(-1)));
     insert("uplinkType", uplinkTypeName(gate.value("uplink_type").toInt(-1)));
-    // Schema 2 hiện chưa truyền pin Gateway; không ghi đè giá trị cũ thành 0.
+    // Schema hiện chưa truyền pin Gateway; không ghi đè giá trị cũ thành 0.
     if (gate.contains("battery_gate") && !gate.value("battery_gate").isNull()) {
         insert("batteryGate", gate.value("battery_gate").toInt(0));
         insert("batteryGateAvailable", true);
@@ -205,7 +206,7 @@ bool DashboardData::applyCompletePacketJson(const QByteArray &json, QString *err
 
         quint64 eventTimestamp = gateTimestamp;
         QString eventTimestampBasis = timestampBasis;
-        if (dashboardSnapshot && root.value("source").isObject()) {
+        if (root.value("source").isObject()) {
             eventTimestamp = jsonUnsigned(
                 root.value("source").toObject().value("received_uptime_ms"));
             eventTimestampBasis = QStringLiteral("uptime_ms");

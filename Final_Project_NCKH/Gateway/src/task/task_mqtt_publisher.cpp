@@ -142,8 +142,11 @@ void TaskMqttPublisher(void *) {
             GatewaySensor_GetLatest(&env);
             item.record.gate = GatewayBuildPayload(env, GatewayNowMs());
             GatewayApplyNetwork(item.record.gate, net);
-            item.record.has_patient_event = snapshot.current_node_valid ? 1 : 0;
-            if (snapshot.current_node_valid) {
+            // Chỉ đính kèm Node Payload khi có Event mới/chưa publish thành công.
+            // current_node_valid vẫn được truyền riêng để status cho biết Gateway
+            // còn giữ kết quả Node gần nhất sau khi node_dirty đã được xóa.
+            item.record.has_patient_event = dirty ? 1 : 0;
+            if (dirty) {
                 item.record.patient_event = snapshot.current_node.payload;
                 item.source_device_id = snapshot.current_node.device_id;
                 item.source_sequence = snapshot.current_node.sequence;
@@ -154,7 +157,8 @@ void TaskMqttPublisher(void *) {
             // Chuyển gói tin tổng hợp sang Task Display trước khi gửi lên Cloud
             GatewayTFT_PostPacket(item.record);
 
-            const bool serialized = GatewaySerializeDashboardJson(item, net, dirty,
+            const bool serialized = GatewaySerializeDashboardJson(
+                item, net, snapshot.current_node_valid, dirty,
                 snapshot.node_revision, item.record.gate.timestamp,
                 ESP.getFreeHeap(), json, sizeof(json));
             const bool sent = serialized && MqttPublishUnified(uplink, topic, json);

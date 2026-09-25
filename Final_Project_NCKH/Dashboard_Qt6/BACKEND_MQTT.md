@@ -44,14 +44,16 @@ Khi GPS hiện tại không hợp lệ, dashboard giữ lại vị trí hợp l�
 
 ## Quy tắc xử lý
 
-- Schema chính từ Gateway: `schema_version = 2`, `message_type = dashboard_snapshot`,
+- Schema chính từ Gateway: `schema_version = 1`, `message_type = complete_packet`,
   object `gate` và `patient_event`.
-- Vẫn nhận schema thử nghiệm cũ: `schema_version = 1`,
-  `message_type = complete_packet`, object `gateway` và `node`.
-- Với schema 2, `event_id` được dùng để tránh cộng lặp cùng một Patient Event vào
-  lịch sử mỗi lần Gateway gửi snapshot định kỳ 5 giây.
+- Vẫn nhận schema chuyển tiếp cũ: `schema_version = 2`,
+  `message_type = dashboard_snapshot`; dữ liệu thử nghiệm rất cũ dùng object
+  `gateway` và `node` cũng được nhận khi có đúng schema/type hỗ trợ.
+- `event_id` được dùng để tránh cộng lặp cùng một Patient Event khi Gateway retry
+  sau lỗi MQTT.
 - Tự kết nối lại sau 5 giây nếu mất MQTT.
-- `has_patient_event = false`: chỉ cập nhật Gateway, không xóa Patient Event gần nhất.
+- `has_patient_event = false`: `patient_event` phải là `null`; chỉ cập nhật Gateway
+  và không xóa Patient Event gần nhất mà Qt6 đang giữ.
 - Trường cảm biến chỉ được dùng khi bit tương ứng trong `sensor_valid_mask` hợp lệ.
 - `vitals_valid = false`: HR và SpO2 được đánh dấu không hợp lệ.
 - Classification: `0 = Asthma-like`, `1 = Non-asthma`, `2 = Unsure`.

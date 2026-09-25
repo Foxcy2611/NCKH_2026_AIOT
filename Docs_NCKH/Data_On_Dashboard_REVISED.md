@@ -2,7 +2,10 @@
 
 **Source:** `Complete_Packet_t`
 
-> Kiến trúc revised: Gateway giữ `current_node` + `current_gate`. `Complete_Packet_t` chỉ được dựng khi publish; `node_dirty` cho biết Latest Patient Event đã được cloud nhận hay chưa. Patient Event không còn timestamp riêng.
+> Kiến trúc revised: Gateway giữ `current_node` + `current_gate`. `Complete_Packet_t`
+> chỉ được dựng khi publish; `node_dirty` cho biết Latest Patient Event đã được hàm
+> publish MQTT của Gateway báo thành công hay chưa. Đây không phải ACK từ Cloud.
+> Patient Event không còn timestamp riêng.
 
 ---
 
@@ -11,13 +14,14 @@
 ### `has_patient_event`
 
 **Ý nghĩa:**
-- `0`: packet chỉ chứa dữ liệu Gateway.
-- `1`: packet chứa Gateway + một Patient Event mới.
+- `0`: packet chỉ chứa dữ liệu Gateway và JSON phải có `patient_event = null`.
+- `1`: packet chứa Gateway + một Patient Event mới/chưa publish thành công.
 
 **Quy tắc Dashboard:**
 - `Gate_Payload` luôn được cập nhật.
 - `Patient_Event` chỉ được cập nhật khi `has_patient_event == 1`.
-- Khi `has_patient_event == 0`, **KHÔNG** lấy lại `patient_event` trong packet để giả làm dữ liệu realtime mới.
+- Khi `has_patient_event == 0`, **KHÔNG** lấy lại `patient_event` trong packet để giả làm dữ liệu realtime mới; giữ trạng thái Patient Event gần nhất đã có trên Qt6.
+- Khi `has_patient_event == 1`, chỉ thêm lịch sử nếu `event_id` chưa được xử lý; một lần retry có thể mang lại cùng `event_id`.
 
 ---
 
@@ -220,7 +224,9 @@ Hiển thị: Map, Latitude, Longitude, Last GPS Update, GPS Status
 
 ### 7. Patient Event History
 
-Mỗi khi `has_patient_event == 1`, Backend thêm một Event mới vào history/database.
+Khi `has_patient_event == 1`, Backend kiểm tra `event_id` và chỉ thêm Event vào
+history/database nếu ID đó chưa được xử lý. Retry MQTT giữ nguyên `event_id` nên
+không được tạo bản ghi lặp.
 
 Mỗi record có thể chứa: Gateway snapshot/receive time, Session ID, Event Type, Classification, Confidence, Audio Quality, HR, SpO2, Node Battery. Thời gian này không được gắn nhãn là Patient Event Time chính xác.
 
@@ -254,7 +260,7 @@ Mỗi `Complete_Packet` nhận được:
 - Update Latest Patient Event
 - Update HR/SpO2 nếu `vitals_valid`
 - Update Node Battery
-- Add Event History
+- Add Event History nếu `event_id` mới
 - Update AI result
 - Không có Patient Event timestamp riêng; dùng `gate.timestamp` cho Last Gateway Update/snapshot time
 
@@ -348,4 +354,5 @@ DASHBOARD
 - **`Gateway_Payload_t`** = periodic/current telemetry
 - **`Node_Payload_t`** = event-based patient measurement
 - **`Complete_Packet_t`** = transport/data model kết hợp hai loại trên
-- **`has_patient_event`** = điều kiện để Qt6 biết packet hiện tại có chứa một Patient Event MỚI hay không
+- **`has_patient_event`** = packet hiện tại có đính kèm Patient Event cần gửi hay không
+- **`event_id`** = điều kiện để Qt6 xác định Event đó mới hay là retry

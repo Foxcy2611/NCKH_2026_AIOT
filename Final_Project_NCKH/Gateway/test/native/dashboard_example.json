@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 1,
   "record_id": "47575431-00000001-00000001",
   "synthetic": false,
   "has_patient_event": true,
@@ -43,7 +43,7 @@
     "battery_node": 0
   },
   "transport": "wifi",
-  "message_type": "dashboard_snapshot",
+  "message_type": "complete_packet",
   "event_id": "0000007b-0000002a-00000013",
   "patient_age_ms": 1000,
   "status": {

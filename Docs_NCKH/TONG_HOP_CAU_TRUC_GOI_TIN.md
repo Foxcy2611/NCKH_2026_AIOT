@@ -375,9 +375,23 @@ Tên field thực tế có thể là `gate` và `patient_event`, nhưng kiểu d
 
 | Trường | Vai trò |
 |---|---|
-| `has_patient_event` | Cho biết packet có chứa Event mới cần cập nhật hay không |
+| `has_patient_event` | Cho biết lần publish này có đính kèm Node Event mới/chưa được Gateway publish MQTT thành công hay không |
 | `Gateway_Payload_t` | Snapshot Gateway hiện tại |
-| `Node_Payload_t` | Patient Event mới nhất |
+| `Node_Payload_t` | Patient Event cần gửi trong lần publish này; bị bỏ qua khi `has_patient_event == 0` |
+
+`has_patient_event` không có nghĩa là Gateway đã mất dữ liệu Node khi cờ bằng `0`.
+Gateway vẫn có thể giữ `current_node` gần nhất để hiển thị trên TFT; cờ này chỉ quyết
+định Node Payload có được đính kèm vào `Complete_Packet_t` gửi Cloud lần này hay không.
+
+Quy tắc gán đã chốt:
+
+```text
+has_patient_event = current_node_valid && node_dirty
+```
+
+Trong đó `current_node_valid` cho biết Gateway đang giữ một Event hợp lệ, còn
+`node_dirty` cho biết Event đó chưa được publish MQTT thành công. Khi retry cùng một
+Event, `has_patient_event` vẫn bằng `1` nhưng `event_id` phải giữ nguyên.
 
 ### Quy tắc Dashboard
 
@@ -385,12 +399,15 @@ Tên field thực tế có thể là `gate` và `patient_event`, nhưng kiểu d
 has_patient_event == 0
     -> luôn cập nhật Gateway/environment/network
     -> bỏ qua phần Node trong packet
+    -> JSON phải ghi patient_event = null
     -> không thêm Patient Event History
+    -> không xóa Patient Event gần nhất đang hiển thị trên Qt6
 
 has_patient_event == 1
     -> cập nhật Gateway/environment/network
     -> cập nhật Latest Patient Event
-    -> thêm Event History
+    -> so sánh event_id với Event cuối đã xử lý
+    -> chỉ thêm Event History khi event_id mới
     -> chỉ dùng HR/SpO₂ khi vitals_valid == 1
 ```
 
@@ -409,6 +426,7 @@ Gateway_Payload_t current_gateway{};
 bool current_node_valid = false;
 bool current_gateway_valid = false;
 bool node_dirty = false;
+uint64_t node_revision = 0;
 ```
 
 ### Khi nhận Node Event hợp lệ
@@ -417,6 +435,7 @@ bool node_dirty = false;
 current_node = Node Event vừa giải mã
 current_node_valid = true
 node_dirty = true
+node_revision tăng lên
 ```
 
 ### Khi MQTT publish thành công Event
@@ -427,7 +446,77 @@ node_dirty = false
 
 Không xóa `current_node` vì Gateway TFT vẫn có thể cần hiển thị Event gần nhất.
 
+Chỉ được xóa `node_dirty` nếu `node_revision` vừa publish vẫn là revision hiện tại.
+Quy tắc này tránh trường hợp Event B đến trong lúc Gateway đang publish Event A rồi
+kết quả gửi A lại xóa nhầm trạng thái chưa gửi của B.
+
 Nếu Internet mất và Event mới đến, Event mới được phép ghi đè Event cũ. Kiến trúc revised không giữ offline queue đầy đủ.
+
+### Khi dựng `Complete_Packet_t`
+
+```text
+Complete Packet luôn có Gateway snapshot hiện tại.
+
+current_node_valid == false
+    -> has_patient_event = 0
+    -> không chép current_node
+
+current_node_valid == true và node_dirty == true
+    -> has_patient_event = 1
+    -> patient_event = current_node
+    -> chép source_device_id, source_sequence, received_uptime_ms
+
+current_node_valid == true và node_dirty == false
+    -> has_patient_event = 0
+    -> không gửi lặp Node Payload
+    -> Gateway và Qt6 vẫn giữ kết quả Node gần nhất ở trạng thái cục bộ
+```
+
+### Bảng trạng thái cần nhớ
+
+| Tình huống | `current_node_valid` | `node_dirty` | `has_patient_event` | `patient_event` trong JSON |
+|---|---:|---:|---:|---|
+| Gateway vừa khởi động, chưa nhận Node | `0` | `0` | `0` | `null` |
+| Vừa nhận Event A | `1` | `1` | `1` | Event A |
+| MQTT gửi A thất bại | `1` | `1` | `1` | Retry Event A, giữ nguyên `event_id` |
+| MQTT gửi A thành công | `1` | `0` | `0` ở lần định kỳ kế tiếp | `null` |
+| Nhận Event B | `1` | `1` | `1` | Event B |
+
+### Quy ước JSON gửi Cloud
+
+Bản tin chính gửi trên topic Dashboard được chốt là:
+
+```json
+{
+  "schema_version": 1,
+  "message_type": "complete_packet",
+  "has_patient_event": false,
+  "gate": {},
+  "patient_event": null
+}
+```
+
+- `schema_version` là phiên bản cấu trúc JSON Cloud, độc lập với
+  `SECURE_PROTOCOL_VERSION` của ESP-NOW.
+- `message_type` luôn là `complete_packet` dù `has_patient_event` bằng `0` hay `1`.
+- `record_id` định danh từng Complete Packet do Gateway tạo.
+- `event_id` định danh Patient Event và phải giữ nguyên khi retry.
+- Dashboard dùng `event_id` để chống ghi trùng lịch sử; không dùng
+  `has_patient_event` làm bằng chứng duy nhất rằng Event chưa từng được nhận.
+- Chỉ tăng `schema_version` khi thay đổi cấu trúc không còn tương thích với Qt6 cũ.
+
+Qt6 hiện chỉ giữ Patient Event gần nhất trong bộ nhớ của phiên chạy. Vì MQTT đang
+publish không retained và Gateway không gửi lặp Node Payload sau khi `node_dirty`
+được xóa, một Dashboard mở sau thời điểm Event đã gửi sẽ không tự lấy lại Event cũ.
+Nếu sản phẩm cần khôi phục sau khi Qt6 khởi động lại thì phải bổ sung retained message,
+backend/database hoặc một cơ chế yêu cầu lại dữ liệu; quy tắc hiện tại ưu tiên giảm
+dữ liệu lặp trên đường truyền.
+
+### Phân biệt ACK cục bộ và publish Cloud
+
+ACK bảo mật Gateway gửi về Node chỉ xác nhận Gateway đã xác thực và tiếp nhận Event.
+ACK không chứng minh MQTT, Cloud hoặc Qt6 đã nhận dữ liệu. Trạng thái chờ gửi Cloud
+được quản lý riêng bằng `node_dirty`.
 
 ---
 
@@ -461,4 +550,3 @@ Patient_Event_Payload_t
 Secure_EspNow_Packet_t
 Gate_Payload_t
 ```
-
