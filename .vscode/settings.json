@@ -1,3 +1,4 @@
 {
-    "python-envs.defaultEnvManager": "ms-python.python:system"
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "cmake.sourceDirectory": "D:/github project/NCKH_2026_AIOT-1/Final_Project_NCKH/Dashboard_Qt6"
 }
