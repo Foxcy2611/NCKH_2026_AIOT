@@ -1,0 +1,6 @@
+PASS: missing/fresh/stale/boundary/future/partial/nonfinite/gas/64-bit-time/telemetry/protocol
+PASS: JSON mode=0, telemetry/event/status/alert, null/nonfinite, metadata, 64-bit, stable retry, buffer limits
+PASS: JSON mode=2, telemetry/event/status/alert, null/nonfinite, metadata, 64-bit, stable retry, buffer limits
+PASS: Wi-Fi mock no-AP timeout/backoff/channel mismatch/millis rollover
+
+Actual bundled Secure_Protocol.h used. No ESP32 firmware build or hardware test.
