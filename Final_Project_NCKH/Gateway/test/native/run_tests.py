@@ -15,6 +15,7 @@ with tempfile.TemporaryDirectory() as tmp:
         def invalid(value): raise AssertionError('Non-standard JSON number: '+value)
         rows = [json.loads(line, parse_constant=invalid) for line in lines]
         telemetry, event, partial = rows
+        assert all(r['schema_version'] == 1 and r['message_type'] == 'complete_packet' for r in rows)
         assert telemetry['gate']['timestamp'] == 4294967297
         assert telemetry['gate']['time_basis'] == 'uptime_ms'
         assert telemetry['patient_event'] is None and telemetry['source'] is None
@@ -30,6 +31,8 @@ with tempfile.TemporaryDirectory() as tmp:
         assert partial['gate']['temperature'] is None and partial['gate']['pressure'] is None
         assert partial['patient_event']['heart_rate'] is None and partial['patient_event']['spo2'] is None
         assert partial['patient_event']['time_basis'] == 'unsynced'
+        assert event['patient_event']['timestamp'] is None
+        assert partial['patient_event']['timestamp'] is None
         assert all(r['synthetic'] == (mode == 2) for r in rows)
         assert telemetry['transport'] == 'none'
         assert event['transport'] == partial['transport'] == 'wifi'

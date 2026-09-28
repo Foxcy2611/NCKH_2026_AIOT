@@ -12,7 +12,7 @@ void clearPayload(Node_Payload_t *p) {
 bool validPayload(const Node_Payload_t &p) {
     if (p.session_id == 0 || p.event_type > 2 || p.classification > 2 ||
         p.audio_quality > 3 || p.vitals_valid > 1 || p.spo2 > 100 ||
-        p.battery_node > 100) return false;
+        (p.battery_node > 100 && p.battery_node != 255)) return false;
     if (!(p.model_score >= 0.0f && p.model_score <= 1.0f)) return false;
     if (!p.vitals_valid && (p.heart_rate != 0 || p.spo2 != 0)) return false;
     return true;
@@ -66,9 +66,7 @@ bool SecureGateway_BuildResponse(
     Response_Payload_t payload{};
     payload.target_device_id = target_device_id;
     payload.session_id = session_id;
-    payload.gateway_timestamp = millis();
     payload.response_code = static_cast<uint8_t>(response_code);
-    payload.time_valid = 0;
 
     memset(out_packet, 0, sizeof(*out_packet));
     out_packet->magic = SECURE_PACKET_MAGIC;

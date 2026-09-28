@@ -94,16 +94,18 @@ void GatewayTFT_DrawPatientCard(const char *aiResult, int hr, int spo2, int bat)
     tft.setTextColor(C_WHITE);
     tft.drawString("Updated:", cx + 4, cy + 73, 1);
 
-    uint16_t bc = (bat >= 50) ? C_WHITE
+    const bool batteryAvailable = bat >= 0 && bat <= 100;
+    uint16_t bc = !batteryAvailable ? C_DARK
+                : (bat >= 50) ? C_WHITE
                 : (bat >= 20) ? tft.color565(255, 220, 30)
                               : C_RED;
     tft.drawString("Bat: ", cx + 4, cy + 85, 1);
     tft.setTextColor(bc);
-    tft.drawString(String(bat) + "%", cx + 28, cy + 85, 1);
+    tft.drawString(batteryAvailable ? String(bat) + "%" : "N/A", cx + 28, cy + 85, 1);
 
     // Thanh đo pin đồ họa
     int bx = cx + 4, by = cy + 96, bw = cw - 10, bh = 6;
-    int clampedBat = constrain(bat, 0, 100);
+    int clampedBat = batteryAvailable ? constrain(bat, 0, 100) : 0;
     int fw = (int)((long)bw * clampedBat / 100);
     tft.fillRect(bx, by, bw, bh, tft.color565(28, 30, 42));
     if (fw > 0) {
@@ -206,8 +208,23 @@ void GatewayTFT_Init() {
 static char s_lastAiResult[16] = "WAITING";
 static int s_lastHr = 0;
 static int s_lastSpo2 = 0;
-static int s_lastBat = 0;
+static int s_lastBat = 255;
 static bool s_hasPatientData = false;
+
+static const char* GatewayTFT_ClassificationName(uint8_t classification) {
+    switch (classification) {
+        case 0: return "ASTHMA";
+        case 1: return "NON-ASTHMA";
+        case 2: return "UNSURE";
+        default: return "UNKNOWN";
+    }
+}
+
+static void GatewayTFT_StoreClassification(uint8_t classification) {
+    strncpy(s_lastAiResult, GatewayTFT_ClassificationName(classification),
+            sizeof(s_lastAiResult) - 1);
+    s_lastAiResult[sizeof(s_lastAiResult) - 1] = '\0';
+}
 
 void GatewayTFT_Update(const char *aiResult, int hr, int spo2, int bat, float temp, int hum, bool wifi, bool mqtt, bool lte) {
     static int s_lastOnline = -1;
@@ -231,12 +248,7 @@ void GatewayTFT_UpdateFromPacket(const Complete_Packet_t &packet) {
         s_lastHr = packet.patient_event.heart_rate;
         s_lastSpo2 = packet.patient_event.spo2;
         s_lastBat = packet.patient_event.battery_node;
-        if (packet.patient_event.classification == 1) {
-            strncpy(s_lastAiResult, "ASTHMA", sizeof(s_lastAiResult) - 1);
-        } else {
-            strncpy(s_lastAiResult, "NON-ASTHMA", sizeof(s_lastAiResult) - 1);
-        }
-        s_lastAiResult[sizeof(s_lastAiResult) - 1] = '\0';
+        GatewayTFT_StoreClassification(packet.patient_event.classification);
         s_hasPatientData = true;
     }
 
@@ -259,12 +271,7 @@ void GatewayTFT_UpdateFromSnapshot(const GatewayStateSnapshot &state) {
         s_lastHr = state.current_node.payload.heart_rate;
         s_lastSpo2 = state.current_node.payload.spo2;
         s_lastBat = state.current_node.payload.battery_node;
-        if (state.current_node.payload.classification == 1) {
-            strncpy(s_lastAiResult, "ASTHMA", sizeof(s_lastAiResult) - 1);
-        } else {
-            strncpy(s_lastAiResult, "NON-ASTHMA", sizeof(s_lastAiResult) - 1);
-        }
-        s_lastAiResult[sizeof(s_lastAiResult) - 1] = '\0';
+        GatewayTFT_StoreClassification(state.current_node.payload.classification);
         s_hasPatientData = true;
     }
 

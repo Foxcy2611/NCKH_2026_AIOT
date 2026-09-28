@@ -1,3 +1,4 @@
+#include "Config/gateway_dashboard_config.h"
 #include <Arduino.h>
 #include "Task/gateway_tasks.h"
 #include <esp_system.h>
@@ -68,26 +69,17 @@ void TaskMqttPublisher(void *) {
     if (!MQTT_WIFI_Init()) {
         Serial.println("[MQTT] Wi-Fi MQTT configuration error");
     }
-    static char json[GATEWAY_JSON_CAPACITY];
-    static char secondaryJson[GATEWAY_JSON_CAPACITY];
+    static char json[GATEWAY_DASHBOARD_JSON_CAPACITY];
     const uint32_t bootId = esp_random();
     uint32_t recordSequence = 0;
-    uint64_t lastEventRevision = 0;
-    uint32_t lastEventRecordSequence = 0;
-    uint64_t nextConnect = 0, nextPublish = 0, nextTelemetry = 0, nextStatus = 0;
+    uint64_t nextConnect = 0, nextPublish = 0, nextTelemetry = 0;
     bool wasConnected = false;
     Gate_Uplink_Type_t previousUplink = GATE_UPLINK_NONE;
 
 #if GATEWAY_SENSOR_MODE == 2
-    const char *telemetryTopic = MQTT_TEST_TOPIC_TELEMETRY;
-    const char *eventTopic = MQTT_TEST_TOPIC_PATIENT_EVENT;
-    const char *statusTopic = MQTT_TEST_TOPIC_GATEWAY_STATUS;
-    const char *alertTopic = MQTT_TEST_TOPIC_ALERT;
+    const char *topic = MQTT_TEST_TOPIC_DASHBOARD;
 #else
-    const char *telemetryTopic = MQTT_TOPIC_TELEMETRY;
-    const char *eventTopic = MQTT_TOPIC_PATIENT_EVENT;
-    const char *statusTopic = MQTT_TOPIC_GATEWAY_STATUS;
-    const char *alertTopic = MQTT_TOPIC_ALERT;
+    const char *topic = MQTT_TOPIC_DASHBOARD;
 #endif
     Serial.println("[MQTT] Latest-state publisher started");
     for (;;) {
@@ -124,7 +116,6 @@ void TaskMqttPublisher(void *) {
         if (connected && !wasConnected) {
             nextPublish = 0;
             nextTelemetry = 0; // send current state even if node is already clean
-            nextStatus = 0;
             Serial.println("[MQTT] connected -> send latest snapshot");
         }
         wasConnected = connected;
@@ -151,27 +142,24 @@ void TaskMqttPublisher(void *) {
             GatewaySensor_GetLatest(&env);
             item.record.gate = GatewayBuildPayload(env, GatewayNowMs());
             GatewayApplyNetwork(item.record.gate, net);
+            // Chỉ đính kèm Event mới/chưa publish thành công. current_node vẫn
+            // được giữ trong GatewayState để TFT dùng sau khi node_dirty=false.
             item.record.has_patient_event = dirty ? 1 : 0;
             if (dirty) {
                 item.record.patient_event = snapshot.current_node.payload;
                 item.source_device_id = snapshot.current_node.device_id;
                 item.source_sequence = snapshot.current_node.sequence;
                 item.received_uptime_ms = snapshot.current_node.received_timestamp_ms;
-                // Same Event retry keeps its record_id even with a fresher gate.
-                if (lastEventRevision != snapshot.node_revision) {
-                    lastEventRevision = snapshot.node_revision;
-                    lastEventRecordSequence = ++recordSequence;
-                }
-                item.record_sequence = lastEventRecordSequence;
-            } else {
-                item.record_sequence = ++recordSequence;
             }
+            item.record_sequence = ++recordSequence;
             gatewayStats.complete_records++;
             // Chuyển gói tin tổng hợp sang Task Display trước khi gửi lên Cloud
             GatewayTFT_PostPacket(item.record);
 
-            const bool serialized = GatewaySerializeJson(item, json, sizeof(json));
-            const char *topic = dirty ? eventTopic : telemetryTopic;
+            const bool serialized = GatewaySerializeDashboardJson(
+                item, net, snapshot.current_node_valid, dirty,
+                snapshot.node_revision, item.record.gate.timestamp,
+                ESP.getFreeHeap(), json, sizeof(json));
             const bool sent = serialized && MqttPublishUnified(uplink, topic, json);
             if (sent) {
                 gatewayStats.mqtt_published++;
@@ -186,21 +174,7 @@ void TaskMqttPublisher(void *) {
                     (unsigned long long)(dirty ? snapshot.node_revision : 0),
                     uplink == GATE_UPLINK_LTE ? "LTE" : "Wi-Fi");
                 nextPublish = GatewayNowMs() + 20;
-                nextTelemetry = GatewayNowMs() + GATEWAY_TELEMETRY_PERIOD_MS;
-                // Auxiliary alert is best effort. Do not resend an accepted Event
-                // solely because this second publication fails. Backend can derive
-                // the alert from the canonical Patient Event.
-                const auto &event = item.record.patient_event;
-                if (dirty && event.classification != GATEWAY_ALERT_NORMAL_CLASS &&
-                    event.model_score >= GATEWAY_ALERT_MIN_SCORE) {
-                    const bool alertOk =
-                        GatewaySerializeAlertJson(item, secondaryJson, sizeof(secondaryJson)) &&
-                        MqttPublishUnified(uplink, alertTopic, secondaryJson);
-                    if (!alertOk) {
-                        gatewayStats.mqtt_failed++;
-                        Serial.println("[MQTT] auxiliary alert failed; no alert backlog");
-                    }
-                }
+                nextTelemetry = GatewayNowMs() + GATEWAY_DASHBOARD_PERIOD_MS;
             } else {
                 gatewayStats.mqtt_failed++;
                 Serial.println(serialized
@@ -208,20 +182,6 @@ void TaskMqttPublisher(void *) {
                     : "[MQTT] JSON overflow; state kept, bounded retry (check capacity)");
                 nextPublish = GatewayNowMs() + GATEWAY_MQTT_RETRY_MS;
             }
-        }
-        // Low priority status follows data, so reconnect sends latest data first.
-        now = GatewayNowMs();
-        if (now >= nextStatus && MqttIsConnectedUnified(uplink)) {
-            GatewayStateSnapshot status{};
-            if (GatewayState_GetSnapshot(&status) &&
-                GatewaySerializeStatusJson(net, status.current_node_valid,
-                    status.node_dirty, status.node_revision, now,
-                    ESP.getFreeHeap(), secondaryJson, sizeof(secondaryJson))) {
-                if (!MqttPublishUnified(uplink, statusTopic, secondaryJson)) {
-                    gatewayStats.mqtt_failed++;
-                }
-            }
-            nextStatus = GatewayNowMs() + GATEWAY_STATUS_PERIOD_MS;
         }
         vTaskDelay(pdMS_TO_TICKS(50));
     }

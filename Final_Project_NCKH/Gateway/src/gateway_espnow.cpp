@@ -10,7 +10,7 @@ GatewayStats gatewayStats{};
 
 namespace {
 // Arduino-ESP32 2.x callback signature.
-// Keep this callback minimal: validate size, copy MAC + 64-byte packet,
+// Keep this callback minimal: validate size, copy MAC + 56-byte packet,
 // and push it to the FreeRTOS queue. All AES-GCM/decrypt/ACK logic runs
 // later in TaskEspNow.
 void onReceive(const uint8_t *mac_addr,

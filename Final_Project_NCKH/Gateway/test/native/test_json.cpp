@@ -30,14 +30,14 @@ int main() {
     g.wifi_connected = g.mqtt_connected = 1; g.wifi_rssi_dbm = -65;
     g.operating_mode = GATE_MODE_HOME; g.uplink_type = GATE_UPLINK_WIFI;
     auto &p = item.record.patient_event;
-    p.session_id = UINT32_MAX; p.timestamp = UINT64_MAX;
+    p.session_id = UINT32_MAX;
     p.event_type = 2; p.classification = 2; p.model_score = .875f;
     p.audio_quality = 3; p.vitals_valid = 1; p.heart_rate = 72; p.spo2 = 98; p.battery_node = 100;
     assert(GatewaySerializeJson(item, json, sizeof(json))); puts(json);
     char retry[GATEWAY_JSON_CAPACITY];
     assert(GatewaySerializeJson(item, retry, sizeof(retry)) && strcmp(json, retry) == 0);
     g.temperature = std::numeric_limits<float>::infinity(); g.pressure = NAN;
-    p.vitals_valid = 0; p.timestamp = 0;
+    p.vitals_valid = 0;
     assert(GatewaySerializeJson(item, json, sizeof(json))); puts(json);
     char auxiliary[GATEWAY_JSON_CAPACITY];
     NetworkSnapshot network{true, true, -55};

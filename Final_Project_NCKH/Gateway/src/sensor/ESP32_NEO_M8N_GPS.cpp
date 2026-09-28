@@ -61,74 +61,97 @@ void NEO_M8N_Init(HardwareSerial* serialPort){
     gpsSerial = serialPort;
 }
 
-bool NEO_M8N_ReadData(NEO_Data_t* gpsData){
-    static char buff[128];
-    static uint8_t buff_idx = 0;
+// bool NEO_M8N_ReadData(NEO_Data_t* gpsData){
+//     static char buff[128];
+//     static uint8_t buff_idx = 0;
 
-    // Kiểm tra gpsSerial đã init chưa
-    if(gpsSerial == nullptr) return false;
+//     // Kiểm tra gpsSerial đã init chưa
+//     if(gpsSerial == nullptr) return false;
 
-    // Khởi tạo giá trị mặc định để tránh giữ giá trị cũ
-    if(gpsData){
-        gpsData->isValid = false;
-        gpsData->latitude = 0.0f;
-        gpsData->longitude = 0.0f;
-        gpsData->speed_kmh = 0.0f;
-        gpsData->hour = gpsData->minute = gpsData->second = 0;
-        gpsData->day = gpsData->month = 0;
-        gpsData->year = 0;
-    }
+//     // Khởi tạo giá trị mặc định để tránh giữ giá trị cũ
+//     if(gpsData){
+//         gpsData->isValid = false;
+//         gpsData->latitude = 0.0f;
+//         gpsData->longitude = 0.0f;
+//         gpsData->speed_kmh = 0.0f;
+//         gpsData->hour = gpsData->minute = gpsData->second = 0;
+//         gpsData->day = gpsData->month = 0;
+//         gpsData->year = 0;
+//     }
 
-    // Đọc toàn bộ - Sử dụng \n làm ký tự kết thúc
-    while(gpsSerial->available()){
-        char c = gpsSerial->read();
+//     // Đọc toàn bộ - Sử dụng \n làm ký tự kết thúc
+//     while(gpsSerial->available()){
+//         char c = gpsSerial->read();
 
-        if(c == '\n'){
-            buff[buff_idx] = '\0';
-            buff_idx = 0;
+//         if(c == '\n'){
+//             buff[buff_idx] = '\0';
+//             buff_idx = 0;
 
-            if(strncmp(buff, "$GNRMC", 6) == 0 || strncmp(buff, "$GPRMC", 6) == 0){
-                char *star = strchr(buff, '*');
-                if(!star || strlen(star + 1) < 2) continue;
-                uint8_t calculated = 0;
-                for(char *p = buff + 1; p < star; ++p) calculated ^= (uint8_t)*p;
-                const uint8_t received = (uint8_t)strtoul(star + 1, nullptr, 16);
-                if(calculated != received) continue;
-                *star = '\0';
+//             if(strncmp(buff, "$GNRMC", 6) == 0 || strncmp(buff, "$GPRMC", 6) == 0){
+//                 char *star = strchr(buff, '*');
+//                 if(!star || strlen(star + 1) < 2) continue;
+//                 uint8_t calculated = 0;
+//                 for(char *p = buff + 1; p < star; ++p) calculated ^= (uint8_t)*p;
+//                 const uint8_t received = (uint8_t)strtoul(star + 1, nullptr, 16);
+//                 if(calculated != received) continue;
+//                 *star = '\0';
 
-                // Split manually so empty NMEA fields keep their index. strtok()
-                // collapses consecutive commas and can shift date/course fields.
-                char *fields[16] = {};
-                size_t fieldCount = 1;
-                fields[0] = buff;
-                for(char *p = buff; *p && fieldCount < 16; ++p){
-                    if(*p == ',') { *p = '\0'; fields[fieldCount++] = p + 1; }
-                }
-                if(fieldCount < 10 || fields[2][0] != 'A') continue;
-                if(strlen(fields[1]) < 6 || !fields[3][0] || !fields[4][0]
-                   || !fields[5][0] || !fields[6][0] || strlen(fields[9]) != 6) continue;
+//                 // Split manually so empty NMEA fields keep their index. strtok()
+//                 // collapses consecutive commas and can shift date/course fields.
+//                 char *fields[16] = {};
+//                 size_t fieldCount = 1;
+//                 fields[0] = buff;
+//                 for(char *p = buff; *p && fieldCount < 16; ++p){
+//                     if(*p == ',') { *p = '\0'; fields[fieldCount++] = p + 1; }
+//                 }
+//                 if(fieldCount < 10 || fields[2][0] != 'A') continue;
+//                 if(strlen(fields[1]) < 6 || !fields[3][0] || !fields[4][0]
+//                    || !fields[5][0] || !fields[6][0] || strlen(fields[9]) != 6) continue;
 
-                char temp[3] = {0};
-                memcpy(temp, fields[1], 2); gpsData->hour = atoi(temp);
-                memcpy(temp, fields[1] + 2, 2); gpsData->minute = atoi(temp);
-                memcpy(temp, fields[1] + 4, 2); gpsData->second = atoi(temp);
-                memcpy(temp, fields[9], 2); gpsData->day = atoi(temp);
-                memcpy(temp, fields[9] + 2, 2); gpsData->month = atoi(temp);
-                memcpy(temp, fields[9] + 4, 2); gpsData->year = atoi(temp) + 2000;
-                gpsData->latitude = Convert_NMEA_2Decimal(fields[3], fields[4][0]);
-                gpsData->longitude = Convert_NMEA_2Decimal(fields[5], fields[6][0]);
-                gpsData->speed_kmh = fields[7][0] ? atof(fields[7]) * 1.852f : 0.0f;
-                gpsData->isValid = gpsData->latitude >= -90.0f && gpsData->latitude <= 90.0f
-                    && gpsData->longitude >= -180.0f && gpsData->longitude <= 180.0f;
-                if(gpsData->isValid) return true;
-            }
-            // Bỏ qua ký tự \r và chống tràn mảng
-        } else if(c != '\r' && buff_idx < 127){
-            buff[buff_idx++] = c;
-        }
-    }
+//                 char temp[3] = {0};
+//                 memcpy(temp, fields[1], 2); gpsData->hour = atoi(temp);
+//                 memcpy(temp, fields[1] + 2, 2); gpsData->minute = atoi(temp);
+//                 memcpy(temp, fields[1] + 4, 2); gpsData->second = atoi(temp);
+//                 memcpy(temp, fields[9], 2); gpsData->day = atoi(temp);
+//                 memcpy(temp, fields[9] + 2, 2); gpsData->month = atoi(temp);
+//                 memcpy(temp, fields[9] + 4, 2); gpsData->year = atoi(temp) + 2000;
+//                 gpsData->latitude = Convert_NMEA_2Decimal(fields[3], fields[4][0]);
+//                 gpsData->longitude = Convert_NMEA_2Decimal(fields[5], fields[6][0]);
+//                 gpsData->speed_kmh = fields[7][0] ? atof(fields[7]) * 1.852f : 0.0f;
+//                 gpsData->isValid = gpsData->latitude >= -90.0f && gpsData->latitude <= 90.0f
+//                     && gpsData->longitude >= -180.0f && gpsData->longitude <= 180.0f;
+//                 if(gpsData->isValid) return true;
+//             }
+//             // Bỏ qua ký tự \r và chống tràn mảng
+//         } else if(c != '\r' && buff_idx < 127){
+//             buff[buff_idx++] = c;
+//         }
+//     }
 
-    return false;
+//     return false;
+// }
+
+bool NEO_M8N_ReadData(NEO_Data_t* gpsData) {
+    if (gpsData == nullptr) return false;
+
+    // Xóa dữ liệu đầu ra, bao gồm ngày giờ GPS.
+    *gpsData = NEO_Data_t{};
+
+    // Tọa độ trung tâm giả để test, có thể thay theo ý bro.
+    const float centerLat = 20.9800f;
+    const float centerLon = 105.7900f;
+
+    // Random quanh tâm: mỗi trục dao động khoảng ±100 m.
+    gpsData->latitude =
+        centerLat + random(-1000L, 1001L) / 1000000.0f;
+
+    gpsData->longitude =
+        centerLon + random(-1000L, 1001L) / 1000000.0f;
+
+    gpsData->speed_kmh = 0.0f;
+    gpsData->isValid = true;
+
+    return true;
 }
 
 // ==== TEST MAIN ====

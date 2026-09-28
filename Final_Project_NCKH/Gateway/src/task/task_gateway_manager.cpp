@@ -15,7 +15,7 @@ void TaskGatewayManager(void *) {
         GatewaySensor_GetLatest(&env);
         NetworkSnapshot net{};
         GatewayNetwork_GetLatest(&net);
-        Gate_Payload_t gate = GatewayBuildPayload(env, GatewayNowMs());
+        Gateway_Payload_t gate = GatewayBuildPayload(env, GatewayNowMs());
         GatewayApplyNetwork(gate, net);
         if (!GatewayState_UpdateGate(gate)) {
             // The next iteration retries with fresh data, without blocking RX.

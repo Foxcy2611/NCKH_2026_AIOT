@@ -2,8 +2,8 @@
 #include <math.h>
 #include "Config/gateway_config.h"
 #include "Config/gateway_types.h"
-inline Gate_Payload_t GatewayBuildPayload(const EnvironmentSnapshot &env, uint64_t now) {
-    Gate_Payload_t g{};
+inline Gateway_Payload_t GatewayBuildPayload(const EnvironmentSnapshot &env, uint64_t now) {
+    Gateway_Payload_t g{};
     g.gateway_id = GATEWAY_DEVICE_ID;
     // Monotonic uptime, NOT UTC; M5 must supply a time basis in its JSON schema.
     g.timestamp = now;
@@ -11,6 +11,8 @@ inline Gate_Payload_t GatewayBuildPayload(const EnvironmentSnapshot &env, uint64
     g.uplink_type = GATE_UPLINK_NONE;
     g.temperature = g.humidity = g.pressure = NAN;
     g.latitude = g.longitude = NAN;
+    // Chưa có mạch quản lý pin Gateway: 255 = không khả dụng.
+    g.battery_gate = 255;
     const bool fresh = env.gateway_timestamp_ms != 0 && now >= env.gateway_timestamp_ms
         && now - env.gateway_timestamp_ms <= ENV_SNAPSHOT_MAX_AGE_MS;
     if (!fresh) return g;
@@ -38,7 +40,7 @@ inline Gate_Payload_t GatewayBuildPayload(const EnvironmentSnapshot &env, uint64
 
 // Preserve the current project's mode mapping during this storage-only stage.
 // A separate HOME/MOBILE user policy should replace it in the revised stage.
-inline void GatewayApplyNetwork(Gate_Payload_t &gate, const NetworkSnapshot &net) {
+inline void GatewayApplyNetwork(Gateway_Payload_t &gate, const NetworkSnapshot &net) {
     gate.wifi_connected = net.wifi_connected;
     gate.wifi_rssi_dbm = net.wifi_rssi_dbm;
     gate.mqtt_connected = net.mqtt_connected;

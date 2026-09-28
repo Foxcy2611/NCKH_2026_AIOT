@@ -7,7 +7,7 @@
 #include "Secure_Protocol.h"
 
 // Internal Gateway representation of an authenticated Patient Event.
-// The payload itself is the canonical 24-byte struct from Secure_Protocol.h.
+// The payload itself is the canonical 16-byte struct from Secure_Protocol.h.
 struct PatientEventEnvelope {
     Node_Payload_t payload;
     uint32_t device_id;
@@ -61,7 +61,7 @@ typedef enum : uint8_t {
 } Gate_Sensor_Valid_Bit_t;
 
 // Cloud/internal Gateway payload defined by GATE_PAYLOAD_COMPLETE_PACKET_DESIGN.md.
-struct Gate_Payload_t {
+struct Gateway_Payload_t {
     uint32_t gateway_id;
     uint64_t timestamp;
     uint8_t operating_mode;
@@ -80,11 +80,12 @@ struct Gate_Payload_t {
     double latitude;
     double longitude;
     uint64_t gps_timestamp;
+    uint8_t battery_gate;
 };
 
 struct Complete_Packet_t {
     uint8_t has_patient_event;
-    Gate_Payload_t gate;
+    Gateway_Payload_t gate;
     Node_Payload_t patient_event;
 };
 

@@ -30,7 +30,7 @@ bool GatewayState_UpdateNode(const PatientEventEnvelope &event) {
     return true;
 }
 
-bool GatewayState_UpdateGate(const Gate_Payload_t &gate) {
+bool GatewayState_UpdateGate(const Gateway_Payload_t &gate) {
     if (!lockState()) return false;
     state.current_gate = gate;
     state.current_gate_valid = true;

@@ -38,9 +38,9 @@
 
 // ===================== ESP-NOW ======================
 // Node và Gateway phải cùng channel.
-#define ESPNOW_CHANNEL                   10
+#define ESPNOW_CHANNEL                   6
 #define ESPNOW_MAX_PACKET_SIZE          250
-#define SECURE_ESPNOW_PACKET_SIZE        64
+#define SECURE_ESPNOW_PACKET_SIZE        56
 
 // ===================== Gateway identity ============
 // Phải trùng GATEWAY_DEVICE_ID ở Patient_Node/src/EspNow_Client.cpp
@@ -97,7 +97,7 @@ static const uint8_t KEY_GATEWAY_TO_NODE[16] = {
 #define MQTT_TEST_TOPIC_PATIENT_EVENT   "aiot/2026/test/patient/event"
 #define MQTT_TEST_TOPIC_GATEWAY_STATUS  "aiot/2026/test/gateway/status"
 #define MQTT_TEST_TOPIC_ALERT           "aiot/2026/test/alert"
-#define GATEWAY_ALERT_NORMAL_CLASS       0
+#define GATEWAY_ALERT_ASTHMA_CLASS       0
 #define GATEWAY_ALERT_MIN_SCORE          0.80f
 
 // 0 = no sensors, 1 = real drivers, 2 = synthetic (TEST ONLY).

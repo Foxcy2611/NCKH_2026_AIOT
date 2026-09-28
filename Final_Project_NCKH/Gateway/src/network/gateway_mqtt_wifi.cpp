@@ -1,3 +1,4 @@
+#include "Config/gateway_dashboard_config.h"
 #include "Network/gateway_mqtt_wifi.h"
 #include "Network/gateway_wifi.h"
 #include <WiFiClientSecure.h>
@@ -27,7 +28,7 @@ bool MQTT_WIFI_Init() {
     mqttClient.setSocketTimeout(3);
     mqttClient.setKeepAlive(30);
     snprintf(clientId, sizeof(clientId), "gateway-%012llx", (unsigned long long)ESP.getEfuseMac());
-    return mqttClient.setBufferSize(GATEWAY_MQTT_BUFFER_SIZE);
+    return mqttClient.setBufferSize(GATEWAY_MQTT_BUFFER_SIZE > GATEWAY_DASHBOARD_MQTT_BUFFER_SIZE ? GATEWAY_MQTT_BUFFER_SIZE : GATEWAY_DASHBOARD_MQTT_BUFFER_SIZE);
 }
 bool MQTT_WIFI_Connect() {
     if (!WiFi_IsConnected()) return false;
