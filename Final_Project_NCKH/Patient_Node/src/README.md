@@ -177,9 +177,9 @@ P(non-asthma) >= 0.65  → NON_ASTHMA
 Giá trị đưa về state machine dùng `Interface_TinyML_t`:
 
 ```text
-0 = INTERFACE_UNSURE
-1 = INTERFACE_ASTHMA_LIKE
-2 = INTERFACE_NON_ASTHMA
+0 = INTERFACE_ASTHMA_LIKE
+1 = INTERFACE_NON_ASTHMA
+2 = INTERFACE_UNSURE
 ```
 
 Mọi mô-đun hiển thị hoặc truyền dữ liệu phải dùng đúng ánh xạ này.
@@ -293,7 +293,8 @@ Khi tích hợp cần bảo đảm:
 
 ### Plaintext gửi đi
 
-State machine chuyển session thành `Node_Payload_t` 16 byte. Battery hiện đang để `0` vì chưa nối mô-đun nguồn.
+State machine chuyển session thành `Node_Payload_t` 16 byte. Battery hiện đặt `255`
+để biểu thị chưa có mô-đun nguồn; không được diễn giải thành pin `0%`.
 
 ### Packet truyền qua ESP-NOW
 

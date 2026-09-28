@@ -16,7 +16,6 @@ namespace {
 constexpr size_t kTensorArenaSize = 270 * 1024;
 constexpr float kTrainMinValue = -80.0f;
 constexpr float kTrainRange = 80.0f;
-constexpr float kDecisionThreshold = 0.5f;
 
 const tflite::Model* model = nullptr;
 tflite::MicroInterpreter* interpreter = nullptr;

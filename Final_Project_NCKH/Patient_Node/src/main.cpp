@@ -2,12 +2,18 @@
 #include <Wire.h>
 
 #include "Audio_IO/I2S_Mic.h"
+
 #include "Core_Logic/State_Machine.h"
+
 #include "DSP_Preprocessing/Mel_Scale.h"
+
 #include "Model_AI/Interface_Asthma.h"
+
 #include "Network/EspNow_Client.h"
+
 #include "Vitals_UI/PPG_Sensor.h"
 #include "Vitals_UI/UI_Oled.h"
+
 #include "board_pinout.h"
 
 static void Stop_OnInitError(const char* message) {

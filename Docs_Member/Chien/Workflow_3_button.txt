@@ -1,18 +1,22 @@
+LƯU Ý: Đây là bản phác thảo cũ, không dùng làm đặc tả FINAL.
+Luồng hiện hành: CHECK suy luận 1 lần; MONITOR dùng 3 đoạn thu hợp lệ để voting.
+Xem: Docs_Member/Chien/PATIENT_NODE_FINAL_SPEC.md
+
 Check
     Nhấn CHECK → OLED hướng dẫn → ghi âm ĐÚNG 5s
     → Kiểm tra chất lượng âm thanh (Quality Check)
-       FAIL: Gồm 3 trường hợp: 
+       FAIL: Gồm 3 trường hợp:
         + ỒN (LOUD)
         + BÉ QUÁ (WEAK)
-        + Không hiện tượng (INACTIVE) 
+        + Không hiện tượng (INACTIVE)
         => hiện thị "Retry"
 
-       PASS → [DSP → DS-CNN (3x invoke/voting)] 
+       PASS → [DSP → DS-CNN (1 lần suy luận)]
     → Kết quả phân loại
         + ASTHMA
         + NON-ASTHMA
         => Hiển thị
-    
+
     → OLED: "PLACE FINGER / PRESS CHECK"
     → Nhấn CHECK lần 2 → MAX30102 ON → đo HR/SpO2
        (hoặc nhấn SLEEP → bỏ qua, HR/SpO2 = unavailable)
@@ -26,7 +30,8 @@ Monitor
         => OLED hiển thị phát hiện 4 block vượt THRESHOLD
     → ghép 1s pre-trigger (từ PSRAM) + 4s post-trigger = 5s final audio
         => OLED hiển thị đủ 5s chuẩn bị kiểm tra chất lượng
-    → Quality Check → DSP → DS-CNN (3x invoke/voting) → Event gửi qua gateway (Tương tự check)
+    → Quality Check → DSP → DS-CNN cho từng đoạn hợp lệ
+    → Đủ 3 đoạn hợp lệ thì voting → Event gửi qua gateway
     → ESP-NOW → Gateway → quay lại `MONITOR` (chờ vòng lặp tiếp)
 
     Lưu ý: Qualitu Check mà FAIL -> Quay về MONITOR thu âm (Hiển thị OLED cảnh báo)

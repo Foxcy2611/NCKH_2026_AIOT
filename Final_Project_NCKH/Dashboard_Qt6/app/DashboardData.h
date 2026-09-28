@@ -23,9 +23,7 @@ private:
     static QString formatTimestamp(quint64 timestampMs, const QString &basis);
 
     void appendHistory(const QString &key, double value);
-    void updateGoogleMap(double latitude, double longitude);
 
-    QString m_googleMapsApiKey;
     QString m_lastPatientEventId;
 };
 

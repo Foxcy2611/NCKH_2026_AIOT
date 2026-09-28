@@ -4,9 +4,6 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonParseError>
-#include <QTime>
-#include <QUrl>
-#include <QUrlQuery>
 #include <QVariantList>
 
 namespace {
@@ -26,7 +23,6 @@ quint64 jsonUnsigned(const QJsonValue &value)
 
 DashboardData::DashboardData(QObject *parent)
     : QQmlPropertyMap(this, parent)
-    , m_googleMapsApiKey(qEnvironmentVariable("NCKH_GOOGLE_MAPS_API_KEY"))
 {
     insert("gatewayId", 0);
     insert("operatingMode", "OFFLINE");
@@ -56,9 +52,6 @@ DashboardData::DashboardData(QObject *parent)
     insert("longitude", 0.0);
     insert("gpsTime", "N/A");
     insert("hasMapLocation", false);
-    insert("googleMapsConfigured", !m_googleMapsApiKey.isEmpty());
-    insert("googleStaticMapUrl", QString{});
-    insert("googleMapsUrl", QString{});
 
     insert("hasPatientEvent", false);
     insert("sessionId", 0);
@@ -71,6 +64,7 @@ DashboardData::DashboardData(QObject *parent)
     insert("heartRate", 0);
     insert("spo2", 0);
     insert("batteryNode", 0);
+    insert("batteryNodeAvailable", false);
 
     insert("tempHistory", QVariantList{});
     insert("humHistory", QVariantList{});
@@ -95,9 +89,7 @@ bool DashboardData::applyCompletePacketJson(const QByteArray &json, QString *err
     const QString messageType = root.value("message_type").toString();
     const bool completePacket = schemaVersion == 1
                                 && messageType == QStringLiteral("complete_packet");
-    const bool legacyDashboardSnapshot = schemaVersion == 2
-                                         && messageType == QStringLiteral("dashboard_snapshot");
-    if (!completePacket && !legacyDashboardSnapshot) {
+    if (!completePacket) {
         if (errorMessage) {
             *errorMessage = QStringLiteral("Không hỗ trợ schema_version=%1, message_type=%2")
                                 .arg(schemaVersion)
@@ -106,18 +98,39 @@ bool DashboardData::applyCompletePacketJson(const QByteArray &json, QString *err
         return false;
     }
 
-    // Schema chính dùng gate/patient_event. Vẫn nhận gateway/node của dữ liệu
-    // thử nghiệm cũ để không làm hỏng file JSON đã lưu trước khi chốt schema.
-    const QString gateKey = root.value(QStringLiteral("gate")).isObject()
-                                ? QStringLiteral("gate")
-                                : QStringLiteral("gateway");
-    const QString patientKey = root.contains(QStringLiteral("patient_event"))
-                                   ? QStringLiteral("patient_event")
-                                   : QStringLiteral("node");
+    const QString gateKey = QStringLiteral("gate");
+    const QString patientKey = QStringLiteral("patient_event");
 
     if (!root.value(gateKey).isObject()) {
         if (errorMessage) {
             *errorMessage = QStringLiteral("Thiếu object %1").arg(gateKey);
+        }
+        return false;
+    }
+
+    if (!root.value(QStringLiteral("has_patient_event")).isBool()) {
+        if (errorMessage) {
+            *errorMessage = QStringLiteral("Thiếu hoặc sai kiểu has_patient_event");
+        }
+        return false;
+    }
+
+    const bool hasPatientEvent = root.value(QStringLiteral("has_patient_event")).toBool();
+    const QJsonValue patientValue = root.value(patientKey);
+    if (hasPatientEvent) {
+        if (!patientValue.isObject()
+            || !root.value(QStringLiteral("source")).isObject()
+            || root.value(QStringLiteral("event_id")).toString().isEmpty()) {
+            if (errorMessage) {
+                *errorMessage = QStringLiteral(
+                    "Complete Packet có Patient Event nhưng thiếu patient_event/source/event_id");
+            }
+            return false;
+        }
+    } else if (!patientValue.isNull()) {
+        if (errorMessage) {
+            *errorMessage = QStringLiteral(
+                "has_patient_event=false yêu cầu patient_event=null");
         }
         return false;
     }
@@ -131,7 +144,7 @@ bool DashboardData::applyCompletePacketJson(const QByteArray &json, QString *err
     insert("gatewayId", jsonUnsigned(gate.value("gateway_id")));
     insert("operatingMode", operatingModeName(gate.value("operating_mode").toInt(-1)));
     insert("uplinkType", uplinkTypeName(gate.value("uplink_type").toInt(-1)));
-    // Schema hiện chưa truyền pin Gateway; không ghi đè giá trị cũ thành 0.
+    // Pin Gateway chưa có phần cứng thì JSON gửi null; không ghi đè giá trị cũ thành 0.
     if (gate.contains("battery_gate") && !gate.value("battery_gate").isNull()) {
         insert("batteryGate", gate.value("battery_gate").toInt(0));
         insert("batteryGateAvailable", true);
@@ -177,7 +190,6 @@ bool DashboardData::applyCompletePacketJson(const QByteArray &json, QString *err
             insert("latitude", latitude);
             insert("longitude", longitude);
             insert("hasMapLocation", true);
-            updateGoogleMap(latitude, longitude);
         }
     }
     if (gpsValid && !gate.value("gps_timestamp").isNull()) {
@@ -190,18 +202,14 @@ bool DashboardData::applyCompletePacketJson(const QByteArray &json, QString *err
         insert("gpsTime", QStringLiteral("N/A"));
     }
 
-    const bool hasPatientEvent = root.value("has_patient_event").toBool(false);
     insert("hasPatientEvent", hasPatientEvent);
 
     // Không có Patient Event thì chỉ cập nhật Gateway, không xóa kết quả Node gần nhất.
-    if (hasPatientEvent && root.value(patientKey).isObject()) {
-        const QJsonObject node = root.value(patientKey).toObject();
+    if (hasPatientEvent) {
+        const QJsonObject node = patientValue.toObject();
         const bool vitalsValid = node.value("vitals_valid").toBool(false);
         const quint64 sessionId = jsonUnsigned(node.value("session_id"));
-        QString eventId = root.value("event_id").toString();
-        if (eventId.isEmpty()) {
-            eventId = QStringLiteral("legacy-session-%1").arg(sessionId);
-        }
+        const QString eventId = root.value("event_id").toString();
         const bool isNewPatientEvent = eventId != m_lastPatientEventId;
 
         quint64 eventTimestamp = gateTimestamp;
@@ -221,7 +229,12 @@ bool DashboardData::applyCompletePacketJson(const QByteArray &json, QString *err
         insert("vitalsValid", vitalsValid);
         insert("heartRate", vitalsValid ? node.value("heart_rate").toInt() : 0);
         insert("spo2", vitalsValid ? node.value("spo2").toInt() : 0);
-        insert("batteryNode", node.value("battery_node").toInt(0));
+        if (node.contains("battery_node") && !node.value("battery_node").isNull()) {
+            insert("batteryNode", node.value("battery_node").toInt(0));
+            insert("batteryNodeAvailable", true);
+        } else {
+            insert("batteryNodeAvailable", false);
+        }
 
         if (isNewPatientEvent && vitalsValid) {
             appendHistory("hrHistory", node.value("heart_rate").toDouble());
@@ -315,36 +328,4 @@ void DashboardData::appendHistory(const QString &key, double number)
         history.removeFirst();
     }
     insert(key, history);
-}
-
-void DashboardData::updateGoogleMap(double latitude, double longitude)
-{
-    const QString coordinate = QStringLiteral("%1,%2")
-                                   .arg(latitude, 0, 'f', 6)
-                                   .arg(longitude, 0, 'f', 6);
-
-    QUrl interactiveUrl(QStringLiteral("https://www.google.com/maps/search/"));
-    QUrlQuery interactiveQuery;
-    interactiveQuery.addQueryItem(QStringLiteral("api"), QStringLiteral("1"));
-    interactiveQuery.addQueryItem(QStringLiteral("query"), coordinate);
-    interactiveUrl.setQuery(interactiveQuery);
-    insert("googleMapsUrl", interactiveUrl.toString(QUrl::FullyEncoded));
-
-    if (m_googleMapsApiKey.isEmpty()) {
-        insert("googleStaticMapUrl", QString{});
-        return;
-    }
-
-    QUrl staticMapUrl(QStringLiteral("https://maps.googleapis.com/maps/api/staticmap"));
-    QUrlQuery staticMapQuery;
-    staticMapQuery.addQueryItem(QStringLiteral("center"), coordinate);
-    staticMapQuery.addQueryItem(QStringLiteral("zoom"), QStringLiteral("16"));
-    staticMapQuery.addQueryItem(QStringLiteral("size"), QStringLiteral("640x480"));
-    staticMapQuery.addQueryItem(QStringLiteral("scale"), QStringLiteral("2"));
-    staticMapQuery.addQueryItem(QStringLiteral("maptype"), QStringLiteral("roadmap"));
-    staticMapQuery.addQueryItem(QStringLiteral("markers"),
-                                QStringLiteral("color:blue|label:G|%1").arg(coordinate));
-    staticMapQuery.addQueryItem(QStringLiteral("key"), m_googleMapsApiKey);
-    staticMapUrl.setQuery(staticMapQuery);
-    insert("googleStaticMapUrl", staticMapUrl.toString(QUrl::FullyEncoded));
 }

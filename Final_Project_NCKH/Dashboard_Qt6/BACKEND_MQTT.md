@@ -10,15 +10,15 @@ HiveMQ topic
     -> QML bindings
 ```
 
-Frontend không còn tự random dữ liệu. Biểu đồ và các thẻ thông tin chỉ cập nhật
+Frontend không tự tạo dữ liệu ngẫu nhiên. Biểu đồ và các thẻ thông tin chỉ cập nhật
 khi nhận được JSON hợp lệ từ topic MQTT.
 
-## Cấu hình
+## Cấu hình MQTT
 
 Sửa `config/mqtt_config.json`, chủ yếu là trường `password`, rồi chạy lại CMake/build.
-File cục bộ này bị Git bỏ qua để tránh đẩy mật khẩu lên kho mã. Trên máy mới,
-copy `mqtt_config.example.json` thành `mqtt_config.json` rồi điền thông tin.
-CMake sẽ copy cấu hình ra cạnh `appDashboard_Qt6.exe`.
+File cục bộ này bị Git bỏ qua để tránh đẩy mật khẩu lên kho mã. Trên máy mới, copy
+`mqtt_config.example.json` thành `mqtt_config.json` rồi điền thông tin. CMake sẽ copy
+cấu hình ra cạnh `appDashboard_Qt6.exe`.
 
 Có thể ghi đè mà không sửa file bằng các biến môi trường:
 
@@ -28,28 +28,33 @@ Có thể ghi đè mà không sửa file bằng các biến môi trường:
 - `NCKH_MQTT_PASSWORD`
 - `NCKH_MQTT_TOPIC`
 
-## Google Maps
+## OpenStreetMap
 
-Trang Location hiển thị bản đồ thật bằng Google Maps Static API. Tọa độ đầu vào phải là
-độ thập phân có dấu (`latitude`, `longitude`); driver NEO-M8N đã đổi từ NMEA
-`ddmm.mmmm`/`dddmm.mmmm` sang định dạng này nên Qt không cần đổi thêm.
+Trang Location dùng trực tiếp `Qt Location`, `Qt Positioning` và plugin `osm` để hiển thị
+OpenStreetMap. Cách này không cần Google Maps API key và không cần Qt WebEngine, nhưng máy
+chạy dashboard vẫn cần Internet để tải các mảnh bản đồ. Qt tự lưu bộ nhớ đệm cho các mảnh
+đã tải.
 
-Trước khi chạy dashboard, đặt biến môi trường `NCKH_GOOGLE_MAPS_API_KEY` bằng khóa của
-Google Cloud đã bật Maps Static API. Không ghi khóa trực tiếp vào source. Nếu chưa có khóa,
-dashboard vẫn hiện tọa độ và cho phép bấm vùng bản đồ để mở vị trí bằng Google Maps trên
-trình duyệt.
+Tọa độ đầu vào phải là độ thập phân có dấu (`latitude`, `longitude`). Driver NEO-M8N đã
+đổi từ NMEA `ddmm.mmmm`/`dddmm.mmmm` sang dạng này nên Qt không đổi đơn vị thêm lần nữa.
 
-Khi GPS hiện tại không hợp lệ, dashboard giữ lại vị trí hợp lệ gần nhất và không đưa tọa độ
-`0,0` lên bản đồ.
+Khi GPS hiện tại không hợp lệ, dashboard giữ vị trí hợp lệ gần nhất và không đưa tọa độ
+`0,0` lên bản đồ. Người dùng có thể kéo, phóng to/thu nhỏ hoặc nhấn nút đưa bản đồ về vị
+trí Gateway mới nhất.
+
+Yêu cầu khi build:
+
+- Qt 6 có module `Location` và `Positioning` đúng phiên bản/đúng bộ biên dịch của Kit.
+- CMake liên kết `Qt6::Location` và `Qt6::Positioning`.
+- Máy chạy ứng dụng có plugin OSM và kết nối HTTPS hoạt động.
 
 ## Quy tắc xử lý
 
 - Schema chính từ Gateway: `schema_version = 1`, `message_type = complete_packet`,
   object `gate` và `patient_event`.
-- Vẫn nhận schema chuyển tiếp cũ: `schema_version = 2`,
-  `message_type = dashboard_snapshot`; dữ liệu thử nghiệm rất cũ dùng object
-  `gateway` và `node` cũng được nhận khi có đúng schema/type hỗ trợ.
-- `event_id` được dùng để tránh cộng lặp cùng một Patient Event khi Gateway retry
+- Dashboard chỉ nhận schema chính thức: `schema_version = 1`,
+  `message_type = complete_packet`, object `gate` và `patient_event`.
+- `event_id` được dùng để tránh cộng lặp cùng một Patient Event khi Gateway gửi lại
   sau lỗi MQTT.
 - Tự kết nối lại sau 5 giây nếu mất MQTT.
 - `has_patient_event = false`: `patient_event` phải là `null`; chỉ cập nhật Gateway

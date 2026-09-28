@@ -313,7 +313,8 @@ namespace {
         payload->heart_rate      = session.vitals_valid ? session.heart_rate : 0U;
         payload->spo2            = session.vitals_valid ? session.spo2 : 0U;
 
-        payload->battery_node    = 0U; // Sau này lấy từ mô-đun quản lý pin.
+        // 255 = chưa có mô-đun quản lý pin; không được hiểu nhầm thành pin 0%.
+        payload->battery_node    = 255U;
 
         return true;
     }

@@ -216,7 +216,7 @@ typedef struct {
     uint16_t heart_rate;
     uint8_t spo2;
 
-    uint8_t battery;
+    uint8_t battery_node;
 } Node_Payload_t;
 
 #pragma pack(pop)
@@ -464,7 +464,7 @@ payload.audio_quality = static_cast<uint8_t>(session.audio_quality);
 payload.vitals_valid = session.vitals_valid ? 1U : 0U;
 payload.heart_rate = session.vitals_valid ? session.heart_rate : 0U;
 payload.spo2 = session.vitals_valid ? session.spo2 : 0U;
-payload.battery = battery_percent;
+payload.battery_node = battery_percent;
 ```
 
 ### 7.2. Tạo Header, nonce và mã hóa

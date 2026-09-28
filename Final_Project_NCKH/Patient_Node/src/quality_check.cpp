@@ -5,14 +5,14 @@
 
 namespace {
     // Test chưa phải bản cuối
-    constexpr float kMinRMS = 150.0f;           // RMS dưới mức này -> TOO_WEAK
-    constexpr float kMinActiveRatio = 0.05f;    // < 5% block hoạt động -> INACTIVE
-    constexpr float kMaxClippedRatio = 0.01f;   // > 1% sample clip -> TOO_LOUD
+    constexpr float kMinRMS = 20.0f;               // RMS dưới mức này -> TOO_WEAK - 150
+    constexpr float kMinActiveRatio = 0.01f;        // < 5% block hoạt động -> INACTIVE
+    constexpr float kMaxClippedRatio = 0.01f;       // > 1% sample clip -> TOO_LOUD - 0.05
 
-    constexpr int32_t  kClipLevel = 32000;         // gần max int16 (32767) -> coi là clip     
-    constexpr int32_t  kActiveBlockThreshold = 80; // biên độ TB/block để coi là "có hoạt động"
+    constexpr int32_t  kClipLevel = 32000;          // gần max int16 (32767) -> coi là clip     
+    constexpr int32_t  kActiveBlockThreshold = 20;  // biên độ TB/block để coi là "có hoạt động" - 80
 
-    constexpr uint32_t kBlockSize = 256;          // ~16ms/block @16kHz
+    constexpr uint32_t kBlockSize = 256;            // ~16ms/block @16kHz
 
     const char* AudioQualityName(Audio_Quality_t quality){
         switch(quality){

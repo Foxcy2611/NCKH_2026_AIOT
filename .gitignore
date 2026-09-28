@@ -6,3 +6,8 @@
 *.keras
 *.tflite
 
+# Thư mục build/cache tự sinh, không được commit lên GitHub.
+.pio/
+build*/
+__pycache__/
+

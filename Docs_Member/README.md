@@ -10,7 +10,7 @@ Nơi mỗi thành viên trình bày ý tưởng và cách mình triển khai ph�
 
 ## Ví dụ cấu trúc
 
-\`\`\`text
+```text
 Docs_Member/
 ├── README.md
 ├── M1_AI_Firmware.md
@@ -18,6 +18,6 @@ Docs_Member/
 ├── M3_Hardware.md
 ├── M4_Gateway_Firmware.md
 └── M5_Network_Backend.md
-\`\`\`
+```
 
 Nếu nội dung của ai đó phát sinh nhiều phần (vd nhiều sơ đồ, nhiều lần đổi hướng), chuyển từ 1 file sang 1 folder riêng cho người đó là được, không bắt buộc theo khuôn cố định.

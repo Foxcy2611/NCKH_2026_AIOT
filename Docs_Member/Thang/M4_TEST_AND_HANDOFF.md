@@ -13,7 +13,7 @@
 
 ## Trình tự test (chưa chạy trên board)
 1. Nạp esp32dev; để không có Node ít nhất 60s: telemetry khoảng 5s, mask=0, không reset. Có `nan` ở float là đúng, không phải giá trị đo 0.
-2. Mở Patient_Node_Test trên S3, giữ MAC Gateway trong test_config.h đúng board, channel giống nhau. Gõ `n`: ACK_ACCEPTED, accepted tăng 1, một record patient=1.
+2. Mở `ESP32_Standalone_Modules_Test/Patient_Node_Test` trên S3, giữ MAC Gateway trong `test_config.h` đúng board và channel giống nhau. Gõ `n`: ACK_ACCEPTED, accepted tăng 1, một record patient=1.
 3. Gõ `d` hoặc `r`: ACK_DUPLICATE, không phát sinh thêm patient record. Record patient=0 định kỳ vẫn bình thường.
 4. Gõ `c`: auth_failed tăng; không patient record mới. Đây là kiểm thử sửa ciphertext; chưa thay thế kiểm thử sửa tag riêng.
 5. Lệnh `o` gửi previous_packet: nếu sequence vẫn trong history 16 mục thì ACK_DUPLICATE là đúng. Muốn chứng minh replay bị loại, phải phát lại packet đã nằm ngoài cửa sổ 16 mục, không chỉ nhấn o sau hai packet.

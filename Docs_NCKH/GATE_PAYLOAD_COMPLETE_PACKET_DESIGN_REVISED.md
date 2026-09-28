@@ -298,7 +298,7 @@ typedef struct {
     uint8_t vitals_valid;
     uint16_t heart_rate;
     uint8_t spo2;
-    uint8_t battery;
+    uint8_t battery_node;
 } Node_Payload_t;
 #pragma pack(pop)
 

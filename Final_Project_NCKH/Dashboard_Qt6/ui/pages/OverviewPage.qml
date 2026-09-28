@@ -237,7 +237,14 @@ Flickable {
                         Column {
                             spacing: 3
                             Text { text: "NODE BATTERY"; color: root.theme.text3; font.pixelSize: 9 }
-                            Text { text: root.dataSource.batteryNode + "%"; color: root.theme.text; font.pixelSize: 13; font.weight: Font.DemiBold }
+                            Text {
+                                text: root.dataSource.batteryNodeAvailable
+                                      ? root.dataSource.batteryNode + "%"
+                                      : "N/A"
+                                color: root.theme.text
+                                font.pixelSize: 13
+                                font.weight: Font.DemiBold
+                            }
                         }
                     }
                 }

@@ -62,7 +62,7 @@ typedef enum {
     AUDIO_OK = 0,       // PASS: Đạt chuẩn để interface
     AUDIO_TOO_WEAK,     // FAIL: Biên độ quá nhỏ
     AUDIO_TOO_LOUD,     // FAIL: Nhiễu rác
-    AUDIO_INACTIVE      // FAIL: Không có tiếng động
+    AUDIO_INACTIVE      // FAIL: Không có tiếng động hoặc số khối vượt ngưỡng quy định
 } Audio_Quality_t;
 
 // ============================

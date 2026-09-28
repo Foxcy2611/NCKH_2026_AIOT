@@ -10,16 +10,18 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(
-    Qt6
+    Qt6 6.11
     REQUIRED COMPONENTS
         Qml
         Quick
         QuickControls2
         Mqtt
         Network
+        Location
+        Positioning
 )
 
-qt_standard_project_setup(REQUIRES 6.8)
+qt_standard_project_setup(REQUIRES 6.11)
 
 # Frontend executable + QML module
 add_subdirectory(ui)

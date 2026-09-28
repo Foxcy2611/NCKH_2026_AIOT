@@ -198,8 +198,10 @@ Flickable {
                 Layout.fillWidth: true
                 theme: root.theme
                 label: "Node battery"
-                value: root.dataSource.batteryNode.toString()
-                unit: "%"
+                value: root.dataSource.batteryNodeAvailable
+                       ? root.dataSource.batteryNode.toString()
+                       : "N/A"
+                unit: root.dataSource.batteryNodeAvailable ? "%" : ""
                 note: "Patient node"
                 accentColor: root.theme.green
             }

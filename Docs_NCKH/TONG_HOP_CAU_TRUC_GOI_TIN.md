@@ -8,7 +8,7 @@ Quy ước trong tài liệu dựa trên thiết kế revised:
 
 ```text
 Node_Payload_t             = 16 byte
-Response_Payload_t = 16 byte
+Response_Payload_t         = 16 byte
 Secure_Packet_t            = 56 byte
 ```
 
@@ -140,7 +140,7 @@ typedef struct {
     uint16_t heart_rate;
     uint8_t spo2;
 
-    uint8_t battery;
+    uint8_t battery_node;
 } Node_Payload_t;
 #pragma pack(pop)
 
@@ -159,7 +159,7 @@ static_assert(sizeof(Node_Payload_t) == 16);
 | `vitals_valid` | 1 byte | `1` nếu HR/SpO₂ hợp lệ, ngược lại là `0` |
 | `heart_rate` | 2 byte | Nhịp tim BPM |
 | `spo2` | 1 byte | SpO₂ theo phần trăm |
-| `battery` | 1 byte | Pin Node: `0–100`; `255` nếu không khả dụng |
+| `battery_node` | 1 byte | Pin Node: `0–100`; `255` nếu không khả dụng |
 | **Tổng** | **16 byte** | Plaintext cố định của chiều Node → Gateway |
 
 ### Quy tắc

@@ -46,6 +46,8 @@ target_link_libraries(
         Qt6::QuickControls2
         Qt6::Mqtt
         Qt6::Network
+        Qt6::Location
+        Qt6::Positioning
 )
 
 set_target_properties(
