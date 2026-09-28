@@ -37,8 +37,8 @@ void TaskSensor(void *) {
 #if GATEWAY_GPS_ENABLED
     Serial1.begin(GATEWAY_GPS_BAUD, SERIAL_8N1, GATEWAY_GPS_RX_PIN, GATEWAY_GPS_TX_PIN);
     NEO_M8N_Init(&Serial1);
-    uint64_t lastGpsFix = 0;
-    NEO_Data_t gps{};
+    bool hasGpsFix = false;
+    NEO_Data_t lastKnownGps{};
 #endif
 #endif
     TickType_t wake = xTaskGetTickCount();
@@ -78,13 +78,13 @@ void TaskSensor(void *) {
 #if GATEWAY_GPS_ENABLED
         NEO_Data_t candidate{};
         if (NEO_M8N_ReadData(&candidate) && candidate.isValid) {
-            gps = candidate;
-            lastGpsFix = now;
+            lastKnownGps = candidate;
+            hasGpsFix = true;
         }
-        s.gps_valid = lastGpsFix && now - lastGpsFix <= GATEWAY_GPS_MAX_AGE_MS;
-        s.latitude = s.gps_valid ? gps.latitude : NAN;
-        s.longitude = s.gps_valid ? gps.longitude : NAN;
-        s.gps_timestamp_ms = s.gps_valid ? NEO_M8N_UnixTimeMs(&gps) : 0;
+        s.gps_valid = hasGpsFix;
+        s.latitude = hasGpsFix ? lastKnownGps.latitude : NAN;
+        s.longitude = hasGpsFix ? lastKnownGps.longitude : NAN;
+        s.gps_timestamp_ms = hasGpsFix ? NEO_M8N_UnixTimeMs(&lastKnownGps) : 0;
 #else
         s.gps_valid = false; s.latitude = s.longitude = NAN; s.gps_timestamp_ms = 0;
 #endif

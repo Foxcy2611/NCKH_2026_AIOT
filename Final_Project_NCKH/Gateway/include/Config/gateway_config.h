@@ -75,7 +75,7 @@ static const uint8_t KEY_GATEWAY_TO_NODE[16] = {
 #define GATEWAY_GPS_RX_PIN               32
 #define GATEWAY_GPS_TX_PIN               33
 #define GATEWAY_GPS_BAUD                9600
-#define GATEWAY_GPS_MAX_AGE_MS         10000
+// GPS retains last known valid fix indefinitely when indoors (no timeout)
 #ifndef GATEWAY_GPS_ENABLED
 #define GATEWAY_GPS_ENABLED                1
 #endif

@@ -10,6 +10,10 @@
 #include "Network/gateway_espnow.h"
 #include "Display_TFT/gateway_tft.h"
 
+// >>>>> [BẮT ĐẦU TEST GPS: XÓA KHI XONG] <<<<<
+#include "System/gateway_sensor.h"
+// >>>>> [KẾT THÚC TEST GPS] <<<<<
+
 static void startTask(TaskFunction_t fn, const char *name, uint32_t stack, UBaseType_t priority) {
     if (xTaskCreate(fn, name, stack, nullptr, priority, nullptr) != pdPASS) {
         Serial.printf("[FATAL] task creation failed: %s\n", name);
@@ -53,6 +57,17 @@ void setup() {
 
 
 void loop() {
+    // >>>>> [BẮT ĐẦU TEST GPS: XÓA KHI XONG] <<<<<
+    EnvironmentSnapshot env{};
+    GatewaySensor_GetLatest(&env);
+    if (env.gps_valid) {
+        Serial.printf("[TEST GPS] VALID/HOLD | Lat: %.6f | Lon: %.6f | GpsTime: %llu ms\n",
+            env.latitude, env.longitude, (unsigned long long)env.gps_timestamp_ms);
+    } else {
+        Serial.printf("[TEST GPS] NO FIX (chưa có tọa độ) | Lat: null | Lon: null\n");
+    }
+    // >>>>> [KẾT THÚC TEST GPS] <<<<<
+
     GatewayStateSnapshot state{};
     if (GatewayState_GetSnapshot(&state)) {
         Serial.printf("[State] node_valid=%u gate_valid=%u dirty=%u revision=%llu session=%lu seq=%lu\n",
