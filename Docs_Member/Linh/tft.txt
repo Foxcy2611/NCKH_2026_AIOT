@@ -7,3 +7,5 @@ RESET - 4
 CS - 15
 VCC - 3.3V
 GND - GND
+-------------------------------------
+mới cập nhật hiển thị kết nối espnow, espNowConnected = true/false
