@@ -52,24 +52,25 @@ void drawCard(int x, int y, int w, int h) {
 //  HEADER  (SVG: PTIT red circle, GATEWAY text, ONLINE dot)
 //  Scale 320→160: circle cx=22→11  GATEWAY x=180→44  ONLINE cx=255→128
 // ──────────────────────────────────────────────────────────
-void drawHeader() {
+void drawHeader(bool espNow) {
   tft.fillRect(0, 0, 160, 14, tft.color565(14, 15, 22));
 
   // PTIT logo: vòng tròn đỏ + chữ PTIT (SVG: circle cx=22 cy=15 r=11)
-  
   tft.setTextColor(C_WHITE);
   tft.drawString("PTIT", 10, 4, 1);
 
-  // GATEWAY (dịch phải gần ONLINE hơn)
+  // GATEWAY
   tft.setTextDatum(TL_DATUM);
   tft.setTextColor(C_WHITE);
   tft.drawString("GATEWAY", 70, 4, 1);
 
-  // ONLINE: chấm neon + chữ (SVG: circle cx=255→128, text x=265→133)
-  tft.fillCircle(138, 7, 3, C_NEON);
-  tft.setTextDatum(TL_DATUM);
-  tft.setTextColor(C_NEON);
-  tft.drawString("ON", 145, 4, 1);
+  // ESP-NOW: chỉ hiện chấm neon + chữ NOW khi có kết nối ESP-NOW
+  if (espNow) {
+    tft.fillCircle(135, 7, 3, C_NEON);
+    tft.setTextDatum(TL_DATUM);
+    tft.setTextColor(C_NEON);
+    tft.drawString("NOW", 141, 4, 1);
+  }
 
   // Divider (SVG: line y=28 → scale y=14)
   tft.drawFastHLine(5, 14, 150, C_STROKE);
@@ -228,13 +229,15 @@ void drawNetworkCard(bool wifi, bool mqtt, bool lte) {
 // ──────────────────────────────────────────────────────────
 //  SETUP
 // ──────────────────────────────────────────────────────────
+bool espNowConnected = true;  // true khi có kết nối ESP-NOW
+
 void setup() {
   Serial.begin(115200);
   tft.init();
   tft.setRotation(1);  // Landscape 160x128
 
   drawBackgroundGradient();
-  drawHeader();
+  drawHeader(espNowConnected);
   drawPatientCard("NON-ASTHMA", 82, 98, 85);
   drawEnvironmentCard(28.4, 71);
   drawNetworkCard(true, true, false);
@@ -250,6 +253,9 @@ void loop() {
 
     static bool isAsthma = false;
     isAsthma = !isAsthma;
+
+    // Header (cập nhật trạng thái ESP-NOW)
+    drawHeader(espNowConnected);
 
     // Patient Card
     tft.fillRoundRect(2,  18, 88, 106, 5, C_BLUE_DARK);  // giữ màu navy cho Patient Node
