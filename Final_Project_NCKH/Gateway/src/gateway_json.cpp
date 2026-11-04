@@ -62,7 +62,8 @@ bool GatewaySerializeJson(const UplinkRecord &item, char *out, size_t capacity) 
         w.number(p.model_score, true);
         w.add(",\"audio_quality\":%u,\"vitals_valid\":%s,\"heart_rate\":", p.audio_quality, p.vitals_valid ? "true" : "false");
         if (p.vitals_valid) w.add("%u", p.heart_rate); else w.add("null");
-        w.add(",\"spo2\":"); if (p.vitals_valid) w.add("%u", p.spo2); else w.add("null");
+        w.add(",\"spo2\":");
+        if (r.latest_spo2_valid) w.add("%u", r.latest_spo2); else w.add("null");
         w.add(",\"battery_node\":");
         if (p.battery_node <= 100) w.add("%u", p.battery_node); else w.add("null");
         w.add("}");
@@ -117,7 +118,7 @@ bool GatewaySerializeAlertJson(const UplinkRecord &item, char *out, size_t capac
     w.add(",\"event_timestamp\":null,\"heart_rate\":");
     if (p.vitals_valid) w.add("%u", p.heart_rate); else w.add("null");
     w.add(",\"spo2\":");
-    if (p.vitals_valid) w.add("%u", p.spo2); else w.add("null");
+    if (item.record.latest_spo2_valid) w.add("%u", item.record.latest_spo2); else w.add("null");
     w.add("}");
     if (!w.ok) out[0] = '\0';
     return w.ok;

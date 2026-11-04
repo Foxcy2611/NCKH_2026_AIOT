@@ -18,6 +18,19 @@
 #define GATEWAY_WIFI_FAILOVER_TIMEOUT_MS 15000UL // Mất Wi-Fi >15s -> chuyển sang LTE
 #define GATEWAY_LTE_PROBE_WIFI_MS       30000UL // Chu kỳ thăm dò lại Wi-Fi khi đang chạy LTE (30s)
 
+// ===================== Patient Event -> SMS =====================
+// Uses the A7680C SIM even while MQTT goes via Wi-Fi. SMS needs registered SIM/network.
+#ifndef GATEWAY_SMS_ENABLED
+#define GATEWAY_SMS_ENABLED              1
+#endif
+#define GATEWAY_SMS_PHONE                "0919332022"
+#define GATEWAY_SMS_NON_ASTHMA_CLASS     1
+#define GATEWAY_SMS_QUEUE_LENGTH         8
+#define GATEWAY_SMS_SESSION_HISTORY      32
+#define GATEWAY_SMS_MODEM_READY_WAIT_MS  30000UL
+#define TASK_SMS_STACK_SIZE              4096
+#define TASK_SMS_PRIORITY                1
+
 // ===================== FreeRTOS =====================
 #define ESPNOW_RX_QUEUE_LENGTH          10
 #define DISPLAY_QUEUE_LENGTH            1
@@ -52,7 +65,7 @@
 // Để test strict MAC, điền MAC của Patient Node và đặt = 1.
 #define GATEWAY_STRICT_NODE_MAC          0
 #define GATEWAY_NODE_DEVICE_ID           0UL
-#define GATEWAY_NODE_MAC {0x00,0x00,0x00,0x00,0x00,0x00}
+#define GATEWAY_NODE_MAC {0x44,0x1B,0xF6,0x81,0xE8,0xB0}
 
 // ===================== AES-128-GCM ==================
 // Phải trùng KEY_NODE_TO_GATEWAY ở Patient Node.
@@ -80,8 +93,21 @@ static const uint8_t KEY_GATEWAY_TO_NODE[16] = {
 #define GATEWAY_GPS_ENABLED                1
 #endif
 #define GATEWAY_SENSOR_PERIOD_MS       1000
-#define GATEWAY_DHT22_PERIOD_MS        2000
+#define GATEWAY_DHT22_PERIOD_MS        3000
 #define ENV_SNAPSHOT_MAX_AGE_MS        5000
+
+// ===================== Gateway battery (measured calibration) =====
+#ifndef GATEWAY_BATTERY_ENABLED
+#define GATEWAY_BATTERY_ENABLED         1
+#endif
+#define GATEWAY_BATTERY_PIN             34 // ADC1; does not compete with Wi-Fi ADC2
+// User measured both values at the same operating point with a multimeter.
+#define GATEWAY_BATTERY_VBAT_REF        8.39f
+#define GATEWAY_BATTERY_ADC_REF         2.56f
+// Assumed 2S Li-ion pack. Percentage is an estimate, not a fuel-gauge reading.
+#define GATEWAY_BATTERY_FULL_V          8.39f
+#define GATEWAY_BATTERY_EMPTY_V         6.40f
+#define GATEWAY_BATTERY_MAX_AGE_MS      5000UL
 
 // ===================== Aggregator ==================
 #define PATIENT_HISTORY_SIZE            16

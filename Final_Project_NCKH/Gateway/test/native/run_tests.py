@@ -7,6 +7,20 @@ def run(*args):
     return subprocess.check_output(args, cwd=root, text=True)
 with tempfile.TemporaryDirectory() as tmp:
     common = ['g++', '-std=c++11', '-Wall', '-Wextra', '-Werror', '-Itest/native', '-Iinclude']
+    subprocess.check_call(['g++', '-std=c++11', '-Wall', '-Wextra', '-Werror', '-Itest/native/dht_mock', '-Iinclude', 'test/native/test_dht_diagnostics.cpp', 'src/sensor/ESP32_DHT22_Lib.cpp', '-o', tmp+'/dht_diagnostics.exe'], cwd=root)
+    print(run(tmp+'/dht_diagnostics.exe').strip())
+    subprocess.check_call(common + ['test/native/test_battery.cpp', 'src/gateway_json.cpp', '-o', tmp+'/battery.exe'], cwd=root)
+    print(run(tmp+'/battery.exe').strip())
+    subprocess.check_call(common + ['test/native/test_tft_environment.cpp', '-o', tmp+'/tft_environment.exe'], cwd=root)
+    print(run(tmp+'/tft_environment.exe').strip())
+    subprocess.check_call(common + ['test/native/test_latest_dht22.cpp', 'src/gateway_json.cpp', '-o', tmp+'/latest_dht22.exe'], cwd=root)
+    print(run(tmp+'/latest_dht22.exe').strip())
+    subprocess.check_call(common + ['-Itest/native/state_mock', 'test/native/test_latest_spo2.cpp', 'src/gateway_state.cpp', 'src/gateway_json.cpp', '-o', tmp+'/latest_spo2.exe'], cwd=root)
+    print(run(tmp+'/latest_spo2.exe').strip())
+    subprocess.check_call(['g++', '-std=c++11', '-Wall', '-Wextra', '-Werror', '-Itest/native/sms_mock', '-Iinclude', 'test/native/test_sms_queue.cpp', 'src/task/task_sms.cpp', '-o', tmp+'/sms_queue'], cwd=root)
+    print(run(tmp+'/sms_queue').strip())
+    subprocess.check_call(common + ['test/native/test_sms_policy.cpp', '-o', tmp+'/sms_policy'], cwd=root)
+    print(run(tmp+'/sms_policy').strip())
     subprocess.check_call(common + ['test/native/test_record.cpp', '-o', tmp+'/record'], cwd=root)
     print(run(tmp+'/record').strip())
     for mode in [0, 2]:
@@ -29,7 +43,8 @@ with tempfile.TemporaryDirectory() as tmp:
         assert event['gate']['tvoc'] == 0 and event['gate']['eco2'] == 500
         assert event['patient_event']['model_score'] == .875
         assert partial['gate']['temperature'] is None and partial['gate']['pressure'] is None
-        assert partial['patient_event']['heart_rate'] is None and partial['patient_event']['spo2'] is None
+        assert partial['patient_event']['heart_rate'] is None and partial['patient_event']['spo2'] == 98
+        assert all('latest_spo2' not in r for r in rows)
         assert partial['patient_event']['time_basis'] == 'unsynced'
         assert event['patient_event']['timestamp'] is None
         assert partial['patient_event']['timestamp'] is None

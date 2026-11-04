@@ -137,6 +137,8 @@ void TaskMqttPublisher(void *) {
             UplinkRecord item{};
             item.boot_id = bootId;
             item.record.gate = snapshot.current_gate;
+            item.record.latest_spo2 = snapshot.latest_spo2;
+            item.record.latest_spo2_valid = snapshot.latest_spo2_valid;
             // Refresh environment age + network immediately before serialization.
             EnvironmentSnapshot env{};
             GatewaySensor_GetLatest(&env);
@@ -147,6 +149,8 @@ void TaskMqttPublisher(void *) {
             item.record.has_patient_event = dirty ? 1 : 0;
             if (dirty) {
                 item.record.patient_event = snapshot.current_node.payload;
+                item.record.patient_event.spo2 = snapshot.latest_spo2_valid
+                    ? snapshot.latest_spo2 : 0;
                 item.source_device_id = snapshot.current_node.device_id;
                 item.source_sequence = snapshot.current_node.sequence;
                 item.received_uptime_ms = snapshot.current_node.received_timestamp_ms;

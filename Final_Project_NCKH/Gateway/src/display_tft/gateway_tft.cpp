@@ -1,3 +1,4 @@
+#include "Display_TFT/gateway_environment_text.h"
 #include "Display_TFT/gateway_tft.h"
 #include "System/gateway_queue.h"
 #include "System/gateway_runtime.h"
@@ -119,7 +120,9 @@ void GatewayTFT_DrawPatientCard(const String &aiResult, int hr, int spo2, int ba
     GatewayTFT_DrawPatientCard(aiResult.c_str(), hr, spo2, bat);
 }
 
-void GatewayTFT_DrawEnvironmentCard(float temp, int hum) {
+void GatewayTFT_DrawEnvironmentCard(float temp, float hum) {
+    char temperatureText[16], humidityText[16];
+    GatewayFormatEnvironment(temp, hum, temperatureText, humidityText);
     const int cx = 92, cy = 18, cw = 66, ch = 51;
     
     // Nền card riêng cho môi trường
@@ -136,7 +139,7 @@ void GatewayTFT_DrawEnvironmentCard(float temp, int hum) {
     // Nhiệt độ bên trái
     tft.setTextDatum(TC_DATUM);
     tft.setTextColor(C_CYAN);
-    tft.drawString(String(temp, 1), cx + cw / 4 - 1, cy + 24, 2);
+    tft.drawString(temperatureText, cx + cw / 4 - 1, cy + 26, 1);
 
     // Ký hiệu °C
     int degX = cx + cw / 2 - 8;
@@ -152,7 +155,7 @@ void GatewayTFT_DrawEnvironmentCard(float temp, int hum) {
 
     // Độ ẩm bên phải
     tft.setTextColor(C_CYAN);
-    tft.drawString(String(hum) + "%", cx + cw * 3 / 4, cy + 24, 2);
+    tft.drawString(humidityText, cx + cw * 3 / 4, cy + 26, 1);
     tft.setTextColor(C_WHITE);
     tft.drawString("HUM", cx + cw * 3 / 4, cy + 40, 1);
 }
@@ -200,7 +203,7 @@ void GatewayTFT_Init() {
     GatewayTFT_DrawBackground();
     GatewayTFT_DrawHeader(true);
     GatewayTFT_DrawPatientCard("NO NODE", 0, 0, 0);
-    GatewayTFT_DrawEnvironmentCard(0.0f, 0);
+    GatewayTFT_DrawEnvironmentCard(NAN, NAN);
     GatewayTFT_DrawNetworkCard(false, false, false);
 }
 
@@ -226,7 +229,7 @@ static void GatewayTFT_StoreClassification(uint8_t classification) {
     s_lastAiResult[sizeof(s_lastAiResult) - 1] = '\0';
 }
 
-void GatewayTFT_Update(const char *aiResult, int hr, int spo2, int bat, float temp, int hum, bool wifi, bool mqtt, bool lte) {
+void GatewayTFT_Update(const char *aiResult, int hr, int spo2, int bat, float temp, float hum, bool wifi, bool mqtt, bool lte) {
     static int s_lastOnline = -1;
     int currentOnline = (wifi || lte) ? 1 : 0;
     if (currentOnline != s_lastOnline) {
@@ -246,14 +249,14 @@ bool GatewayTFT_PostPacket(const Complete_Packet_t &packet) {
 void GatewayTFT_UpdateFromPacket(const Complete_Packet_t &packet) {
     if (packet.has_patient_event) {
         s_lastHr = packet.patient_event.heart_rate;
-        s_lastSpo2 = packet.patient_event.spo2;
+        s_lastSpo2 = packet.latest_spo2_valid ? packet.latest_spo2 : 0;
         s_lastBat = packet.patient_event.battery_node;
         GatewayTFT_StoreClassification(packet.patient_event.classification);
         s_hasPatientData = true;
     }
 
-    float temp = packet.gate.temperature;
-    int hum = (int)packet.gate.humidity;
+    float temp = NAN, hum = NAN;
+    GatewayEnvironmentValues(packet.gate, temp, hum);
 
     bool wifi = (packet.gate.wifi_connected != 0);
     bool mqtt = (packet.gate.mqtt_connected != 0);
@@ -269,18 +272,16 @@ void GatewayTFT_UpdateFromSnapshot(const GatewayStateSnapshot &state) {
     // Trích xuất dữ liệu bệnh nhân nếu có
     if (state.current_node_valid) {
         s_lastHr = state.current_node.payload.heart_rate;
-        s_lastSpo2 = state.current_node.payload.spo2;
+        s_lastSpo2 = state.latest_spo2_valid ? state.latest_spo2 : 0;
         s_lastBat = state.current_node.payload.battery_node;
         GatewayTFT_StoreClassification(state.current_node.payload.classification);
         s_hasPatientData = true;
     }
 
     // Trích xuất dữ liệu môi trường từ Gateway
-    float temp = 0.0f;
-    int hum = 0;
+    float temp = NAN, hum = NAN;
     if (state.current_gate_valid) {
-        temp = state.current_gate.temperature;
-        hum = (int)state.current_gate.humidity;
+        GatewayEnvironmentValues(state.current_gate, temp, hum);
     }
 
     // Trích xuất trạng thái kết nối mạng

@@ -8,6 +8,9 @@ struct GatewayStateSnapshot {
     bool current_gate_valid = false;
     bool node_dirty = false;
     uint64_t node_revision = 0;
+    // Last usable SpO2 for the configured Node, retained until Gateway restart.
+    uint8_t latest_spo2 = 0;
+    bool latest_spo2_valid = false;
 };
 
 // Call once in setup(), before starting tasks or ESP-NOW.

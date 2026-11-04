@@ -9,8 +9,8 @@ int main() {
     e.pressure_hpa=1013.25; e.eco2_ppm=500; e.tvoc_ppb=20;
     p=GatewayBuildPayload(e,10001); assert(p.sensor_valid_mask==7 && p.eco2==500 && p.temperature==25);
     p=GatewayBuildPayload(e,15000); assert(p.sensor_valid_mask==7);
-    p=GatewayBuildPayload(e,15001); assert(p.sensor_valid_mask==0 && isnan(p.pressure));
-    p=GatewayBuildPayload(e,9999); assert(p.sensor_valid_mask==0);
+    p=GatewayBuildPayload(e,15001); assert(p.sensor_valid_mask==SENSOR_DHT22_VALID && isnan(p.pressure));
+    p=GatewayBuildPayload(e,9999); assert(p.sensor_valid_mask==SENSOR_DHT22_VALID);
     e.humidity_valid=false; p=GatewayBuildPayload(e,10001); assert(p.sensor_valid_mask==6 && isnan(p.humidity));
     e.pressure_hpa=NAN; p=GatewayBuildPayload(e,10001); assert(p.sensor_valid_mask==4);
     e.tvoc_valid=false; p=GatewayBuildPayload(e,10001); assert(p.sensor_valid_mask==0);

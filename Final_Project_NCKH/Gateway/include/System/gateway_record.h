@@ -11,15 +11,21 @@ inline Gateway_Payload_t GatewayBuildPayload(const EnvironmentSnapshot &env, uin
     g.uplink_type = GATE_UPLINK_NONE;
     g.temperature = g.humidity = g.pressure = NAN;
     g.latitude = g.longitude = NAN;
-    // Chưa có mạch quản lý pin Gateway: 255 = không khả dụng.
+    // Preserve existing JSON null convention for missing/invalid/stale battery.
     g.battery_gate = 255;
+    if (env.battery_valid && env.battery_percent <= 100 && env.battery_timestamp_ms != 0
+        && now >= env.battery_timestamp_ms
+        && now - env.battery_timestamp_ms <= GATEWAY_BATTERY_MAX_AGE_MS) {
+        g.battery_gate = env.battery_percent;
+    }
     const bool fresh = env.gateway_timestamp_ms != 0 && now >= env.gateway_timestamp_ms
         && now - env.gateway_timestamp_ms <= ENV_SNAPSHOT_MAX_AGE_MS;
-    if (!fresh) return g;
+    // DHT22 fields carry the last successful reading, not an expiring sample.
     if (env.temperature_valid && env.humidity_valid && isfinite(env.temperature_c) && isfinite(env.humidity_percent)) {
         g.temperature = env.temperature_c; g.humidity = env.humidity_percent;
         g.sensor_valid_mask |= SENSOR_DHT22_VALID;
     }
+    if (!fresh) return g;
     if (env.pressure_valid && isfinite(env.pressure_hpa)) {
         g.pressure = env.pressure_hpa; g.sensor_valid_mask |= SENSOR_BMP280_VALID;
     }

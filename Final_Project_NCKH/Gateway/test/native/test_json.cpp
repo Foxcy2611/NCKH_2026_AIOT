@@ -33,6 +33,8 @@ int main() {
     p.session_id = UINT32_MAX;
     p.event_type = 2; p.classification = 2; p.model_score = .875f;
     p.audio_quality = 3; p.vitals_valid = 1; p.heart_rate = 72; p.spo2 = 98; p.battery_node = 100;
+    item.record.latest_spo2 = 98;
+    item.record.latest_spo2_valid = true;
     assert(GatewaySerializeJson(item, json, sizeof(json))); puts(json);
     char retry[GATEWAY_JSON_CAPACITY];
     assert(GatewaySerializeJson(item, retry, sizeof(retry)) && strcmp(json, retry) == 0);

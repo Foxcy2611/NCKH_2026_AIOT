@@ -1,3 +1,5 @@
+**Mới:** SMS NON-ASTHMA qua A7680C khi có phiên `patient_event`; xem [HUONG_DAN_SMS_NON_ASTHMA.md](HUONG_DAN_SMS_NON_ASTHMA.md).
+
 # Bản MQTT một topic
 
 Xem HUONG_DAN_ONE_TOPIC.md và test/native/dashboard_example.json. Publisher dùng
