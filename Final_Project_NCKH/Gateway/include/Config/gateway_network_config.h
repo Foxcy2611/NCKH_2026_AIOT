@@ -5,12 +5,12 @@
 #define LTE_SIM_APN "v-internet"
 
 #define GATEWAY_NETWORK_CONFIGURED 1
-#define WIFI_SSID "iPhone"
-#define WIFI_PASSWORD "09092005"
-#define MQTT_BROKER "c5fe6f9b3aa34af2a790d0165dcd981c.s1.eu.hivemq.cloud"
+#define WIFI_SSID "Thawngspt"
+#define WIFI_PASSWORD "21022006"
+#define MQTT_BROKER "6ff32dfda1cd49c49496e5b35f957f87.s1.eu.hivemq.cloud"
 #define MQTT_PORT 8883
-#define MQTT_USERNAME "thangpt"
-#define MQTT_PASSWORD "0919332022"
+#define MQTT_USERNAME "AIOT_2026"
+#define MQTT_PASSWORD "12345678"
 #define MQTT_CLIENT_ID "nckh-gateway"
 
 // Chỉ dùng 1 khi thử nghiệm. Bản triển khai thật nên xác thực CA và đặt bằng 0.

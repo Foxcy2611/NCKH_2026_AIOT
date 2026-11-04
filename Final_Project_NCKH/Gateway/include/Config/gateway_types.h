@@ -39,6 +39,10 @@ struct EnvironmentSnapshot {
     double latitude;
     double longitude;
     uint64_t gps_timestamp_ms;
+    // Internal snapshot only: never sent as an ESP-NOW struct.
+    bool battery_valid;
+    uint8_t battery_percent;
+    uint64_t battery_timestamp_ms;
 };
 
 typedef enum : uint8_t {
@@ -87,6 +91,9 @@ struct Complete_Packet_t {
     uint8_t has_patient_event;
     Gateway_Payload_t gate;
     Node_Payload_t patient_event;
+    // Gateway-only cached reading; does not alter the ESP-NOW wire payload.
+    uint8_t latest_spo2 = 0;
+    bool latest_spo2_valid = false;
 };
 
 // Compatibility name used in the M4 task/aggregator roadmap.

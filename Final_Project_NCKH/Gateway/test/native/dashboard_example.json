@@ -41,7 +41,7 @@
     "audio_quality": 0,
     "vitals_valid": true,
     "heart_rate": 72,
-    "spo2": 98,
+    "spo2": null,
     "battery_node": null
   },
   "transport": "wifi",

@@ -1,0 +1,24 @@
+KIỂM CHỨNG BẢN SỬA ĐỌC PIN GATEWAY
+
+Hệ số thực đo: 8.39 / 2.56. GPIO34 ADC1.
+Pin đầy/cạn: tạm đặt 8.39 / 6.40 V, phần trăm tuyến tính ước lượng.
+
+Các bộ kiểm thử native dưới đây đạt. Giao thức Node/Gateway giống nội dung sau chuẩn hóa xuống dòng; gói ESP-NOW giữ 56 byte. Chỉ 5 file có sẵn được sửa: gateway_config.h, gateway_types.h, gateway_record.h, task_sensor.cpp, run_tests.py. Thêm gateway_battery.h, test_battery.cpp và hướng dẫn.
+
+Build esp32dev với PlatformIO espressif32@6.10.0: CHƯA XÁC NHẬN.
+Trình biên dịch xtensa-esp32-elf-g++.exe không khởi chạy, Windows báo Illegal System DLL Relocation. Công cụ gốc và bản sao cục bộ đều lỗi. Chưa nạp thiết bị, chưa đo độ trễ ESP-NOW/MQTT trên phần cứng thật.
+
+PASS: DHT driver diagnostics, stuck HIGH/LOW, timeout cleanup, argument
+PASS: measured calibration, bounds, filtering, invalid/recovery, age, JSON isolation, Node ABI
+PASS: TFT NA, finite values, ranges, zero, DHT cache, validity mask
+PASS: latest DHT22 initial null, failures retained, atomic pair, replacement, stale JSON, bounds, restart
+PASS: latest SpO2, initial NA, retained NA, zero/range/flag, replacement, telemetry, revision
+PASS: SMS event queue, at most one per session, no telemetry, overflow retry
+PASS: SMS only NON-ASTHMA with session; duplicate session cache/device isolation
+PASS: missing/fresh/stale/boundary/future/partial/nonfinite/gas/64-bit-time/telemetry/protocol
+PASS: JSON mode=0, telemetry/event/status/alert, null/nonfinite, metadata, 64-bit, stable retry, buffer limits
+PASS: JSON mode=2, telemetry/event/status/alert, null/nonfinite, metadata, 64-bit, stable retry, buffer limits
+PASS: Wi-Fi mock no-AP timeout/backoff/channel mismatch/millis rollover
+
+PASS dashboard mode=0: schema1/complete_packet/dirty-only/retry/event ID/classification/null/buffer bounds
+PASS dashboard mode=2: schema1/complete_packet/dirty-only/retry/event ID/classification/null/buffer bounds

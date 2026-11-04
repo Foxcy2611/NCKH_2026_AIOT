@@ -22,6 +22,12 @@ bool GatewayState_Init() {
 
 bool GatewayState_UpdateNode(const PatientEventEnvelope &event) {
     if (!lockState()) return false;
+    // SpO2 validity is independent of vitals_valid. Zero/out-of-range
+    // readings leave the cache unchanged. Keep the raw event unchanged.
+    if (event.payload.spo2 > 0 && event.payload.spo2 <= 100) {
+        state.latest_spo2 = event.payload.spo2;
+        state.latest_spo2_valid = true;
+    }
     state.current_node = event;
     state.current_node_valid = true;
     state.node_dirty = true;

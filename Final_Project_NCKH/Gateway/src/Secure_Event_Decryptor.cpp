@@ -1,4 +1,5 @@
 #include "Network/Secure_Event_Decryptor.h"
+#include "Network/gateway_payload_validation.h"
 #include <string.h>
 #include <mbedtls/gcm.h>
 #include <esp_system.h>
@@ -9,14 +10,6 @@ void clearPayload(Node_Payload_t *p) {
     if (p) memset(p, 0, sizeof(*p));
 }
 
-bool validPayload(const Node_Payload_t &p) {
-    if (p.session_id == 0 || p.event_type > 2 || p.classification > 2 ||
-        p.audio_quality > 3 || p.vitals_valid > 1 || p.spo2 > 100 ||
-        (p.battery_node > 100 && p.battery_node != 255)) return false;
-    if (!(p.model_score >= 0.0f && p.model_score <= 1.0f)) return false;
-    if (!p.vitals_valid && (p.heart_rate != 0 || p.spo2 != 0)) return false;
-    return true;
-}
 }
 
 Secure_Event_Decrypt_Result_t SecureEvent_Decrypt(
@@ -48,7 +41,7 @@ Secure_Event_Decrypt_Result_t SecureEvent_Decrypt(
         clearPayload(out_payload);
         return (r == MBEDTLS_ERR_GCM_AUTH_FAILED) ? SECURE_EVENT_AUTH_FAILED : SECURE_EVENT_CRYPTO_ERROR;
     }
-    if (!validPayload(*out_payload)) {
+    if (!GatewayNodePayloadValid(*out_payload)) {
         clearPayload(out_payload);
         return SECURE_EVENT_INVALID_PAYLOAD;
     }
