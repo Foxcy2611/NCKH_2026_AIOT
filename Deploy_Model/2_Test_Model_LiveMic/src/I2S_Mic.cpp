@@ -3,9 +3,10 @@
 #include <algorithm>
 #include <math.h>
 #include <string.h>
+#include "esp_heap_caps.h"
 
-#if RUN_PARITY_20_TEST
-#include "Raw_Include_Parity20/Raw_Test_20.h"
+#if RUN_RAW_PCM16_TEST
+#include "Raw_PCM16_Test/Raw_PCM16_Test_Samples.h"
 #endif
 
 
@@ -17,6 +18,11 @@
 /**/ // THAY ĐỔI P5: Phải có 4 khối 16 ms liên tiếp, tránh xung nhiễu đơn lẻ.
 #define VAD_Consecutive_Required 4
 
+#if RUN_RAW_PCM16_TEST
+static_assert(kRawPcmSampleRate == Sample_Rate, "RAW sample rate phai la 16 kHz");
+static_assert(kRawPcmSamplesPerTest == Total_Samples, "Moi RAW phai du 5 giay");
+#endif
+
 #define Vote_Round 3 // Đo 3 lần ms ra quyết định
 static uint8_t vote_asthma_count = 0;
 static uint8_t vote_non_asthma_count = 0;
@@ -27,7 +33,7 @@ static uint8_t current_vote_round = 0;
 static uint32_t total_tests = 0;
 static uint32_t total_asthma_alerts = 0;
 
-#if RUN_PARITY_20_TEST
+#if RUN_RAW_PCM16_TEST
 System_State curr_state = STATE_RECORDING;
 #else
 System_State curr_state = STATE_LISTENING;
@@ -51,15 +57,17 @@ static uint32_t pre_roll_valid_samples = 0;
 // tại chỗ thành Mel-Spectrogram dB. Không cần giữ đồng thời hai bản.
 static float mel_spectrogram_buff[N_MELS][MAX_FRAMES];
 
-#if RUN_PARITY_20_TEST
-static int parity_test_index = 0;
-static int parity_same_prediction_count = 0;
-static int parity_correct_label_count = 0;
-static int parity_exact_tensor_count = 0;
+#if RUN_RAW_PCM16_TEST
+static size_t raw_test_index = 0;
+static int raw_correct_label_count = 0;
+static int raw_same_python_prediction_count = 0;
+static int raw_exact_python_output_count = 0;
+static int raw_max_python_output_difference = 0;
+static float raw_max_python_probability_difference = 0.0f;
 #endif
 
 void Process_Audio_Stream(void){
-#if RUN_PARITY_20_TEST
+#if RUN_RAW_PCM16_TEST
     if(curr_state == STATE_DONE){
         delay(1000);
         return;
@@ -68,7 +76,7 @@ void Process_Audio_Stream(void){
     int samples_read = Buffer_Samples;
     int16_t chunk[Buffer_Samples] = {0};
 
-#if !RUN_PARITY_20_TEST
+#if !RUN_RAW_PCM16_TEST
     // 1. Đọc 256 mẫu thô từ DMA
     int32_t raw_samples[Buffer_Samples];
     size_t bytes_read = 0;
@@ -175,20 +183,17 @@ void Process_Audio_Stream(void){
         } 
 
     } else if(curr_state == STATE_RECORDING){
-#if RUN_PARITY_20_TEST
+#if RUN_RAW_PCM16_TEST
+        const RawPcm16TestSample& sample = kRawPcm16Tests[raw_test_index];
         Serial.printf(
-            "\n[PARITY] Mẫu %d/%d: %s | nhãn thật=%d | Python dự đoán=%d\n",
-            parity_test_index + 1,
-            PARITY_SAMPLE_COUNT,
-            PARITY_FILE_NAMES[parity_test_index],
-            PARITY_TRUE_LABELS[parity_test_index],
-            PARITY_EXPECTED_PREDICTIONS[parity_test_index]
+            "\n[RAW_PCM16] Mẫu %u/%u: %s | true=%u | model=%s\n",
+            static_cast<unsigned int>(raw_test_index + 1),
+            static_cast<unsigned int>(kRawPcmTestCount),
+            sample.source_name,
+            static_cast<unsigned int>(sample.expected_label),
+            Get_Asthma_Model_Name()
         );
-        memcpy(
-            audio_buffer,
-            PARITY_AUDIO[parity_test_index],
-            PARITY_AUDIO_LENGTH * sizeof(int16_t)
-        );
+        memcpy(audio_buffer, sample.pcm16, Total_Samples * sizeof(int16_t));
         sample_cnt = Total_Samples;
         curr_state = STATE_PROCESSING;
 #else
@@ -217,9 +222,8 @@ void Process_Audio_Stream(void){
         Butterworth_Process_Buffer(audio_float_buff, Total_Samples);   
         Serial.println("2. Hoàn thành bộ lọc Butterworth.");
 
-        // 3. Pre-emphasis TRÊN FLOAT
-        Apply_Pre_Emphasis(audio_float_buff, Total_Samples);            
-        Serial.println("3. Hoàn thành bộ lọc Pre-Emphasis.");
+        // C4 dùng pre_emphasis=0.0: giữ nguyên tín hiệu sau Butterworth.
+        Serial.println("3. Bỏ qua Pre-Emphasis theo cấu hình C4.");
 
         // 4. Chạy STFT và năng lượng Mel
         int num_frames = Compute_Mel_Power_Spectrogram(
@@ -250,87 +254,85 @@ void Process_Audio_Stream(void){
         }
         Serial.println();
 
-        curr_state = STATE_INTERFACE;
+        curr_state = STATE_INFERENCE;
 
-    } else if(curr_state == STATE_INTERFACE){
-#if RUN_PARITY_20_TEST
-        Input_Tensor_Comparison comparison = {-1, -1, -1.0f};
-        Asthma_Result result = Run_Asthma_Interface(
-            mel_spectrogram_buff,
-            PARITY_TENSOR[parity_test_index],
-            PARITY_TENSOR_LENGTH,
-            &comparison
-        );
-#else
-        Asthma_Result result = Run_Asthma_Interface(mel_spectrogram_buff);
-#endif
+    } else if(curr_state == STATE_INFERENCE){
+        Asthma_Result result = Run_Asthma_Inference(mel_spectrogram_buff);
 
-#if RUN_PARITY_20_TEST
-        const int python_prediction =
-            PARITY_EXPECTED_PREDICTIONS[parity_test_index];
-        const int true_label = PARITY_TRUE_LABELS[parity_test_index];
-        const int python_output_raw =
-            PARITY_EXPECTED_OUTPUT_RAW[parity_test_index];
-        const float python_probability =
-            PARITY_EXPECTED_PROBABILITIES[parity_test_index];
+#if RUN_RAW_PCM16_TEST
+        const RawPcm16TestSample& sample = kRawPcm16Tests[raw_test_index];
         const float esp_probability = result.Non_Asthma_Prob / 100.0f;
-        const int output_raw_difference = abs(
-            static_cast<int>(result.Output_Raw_Int8) - python_output_raw
-        );
-        const float probability_difference = fabsf(
-            esp_probability - python_probability
-        );
-        const bool same_prediction =
-            result.Predicted_Class == python_prediction;
-        const bool correct_label = result.Predicted_Class == true_label;
-
-        if(same_prediction) parity_same_prediction_count++;
-        if(correct_label) parity_correct_label_count++;
-        if(comparison.Different_Count == 0) parity_exact_tensor_count++;
+        const bool correct_label = result.Predicted_Class == sample.expected_label;
+        if (correct_label) raw_correct_label_count++;
 
         Serial.printf(
-            "[PARITY_RESULT] index=%d,file=%s,true=%d,py_pred=%d,esp_pred=%d,"
-            "py_raw=%d,esp_raw=%d,raw_diff=%d,py_prob=%.9f,esp_prob=%.9f,"
-            "prob_diff=%.9f,tensor_diff=%d,tensor_max_diff=%d,tensor_mean_diff=%.9f\n",
-            parity_test_index,
-            PARITY_FILE_NAMES[parity_test_index],
-            true_label,
-            python_prediction,
+            "[RAW_RESULT] index=%u,file=%s,true=%u,esp_pred=%d,esp_raw=%d,esp_p_non=%.9f",
+            static_cast<unsigned int>(raw_test_index),
+            sample.source_name,
+            static_cast<unsigned int>(sample.expected_label),
             result.Predicted_Class,
-            python_output_raw,
             static_cast<int>(result.Output_Raw_Int8),
-            output_raw_difference,
-            python_probability,
-            esp_probability,
-            probability_difference,
-            comparison.Different_Count,
-            comparison.Max_Abs_Difference,
-            comparison.Mean_Abs_Difference
+            esp_probability
         );
 
-        parity_test_index++;
-        sample_cnt = 0;
+        // Header RAW lưu oracle Python của đúng model/PCM16 đang nhúng.
+        if (Asthma_Model_Has_Python_Reference()) {
+            const int raw_difference = abs(
+                static_cast<int>(result.Output_Raw_Int8) -
+                static_cast<int>(sample.expected_output_int8)
+            );
+            const float probability_difference = fabsf(
+                esp_probability - sample.expected_probability_non_asthma
+            );
+            const bool same_prediction =
+                result.Predicted_Class == sample.expected_prediction;
+            if (same_prediction) raw_same_python_prediction_count++;
+            if (raw_difference == 0) raw_exact_python_output_count++;
+            if (raw_difference > raw_max_python_output_difference) {
+                raw_max_python_output_difference = raw_difference;
+            }
+            if (probability_difference > raw_max_python_probability_difference) {
+                raw_max_python_probability_difference = probability_difference;
+            }
+            Serial.printf(
+                ",py_pred=%u,py_raw=%d,py_p_non=%.9f,raw_diff=%d,prob_diff=%.9f\n",
+                static_cast<unsigned int>(sample.expected_prediction),
+                static_cast<int>(sample.expected_output_int8),
+                sample.expected_probability_non_asthma,
+                raw_difference,
+                probability_difference
+            );
+        } else {
+            Serial.println(",python_reference=N/A");
+        }
 
-        if(parity_test_index < PARITY_SAMPLE_COUNT){
+        raw_test_index++;
+        sample_cnt = 0;
+        if (raw_test_index < kRawPcmTestCount) {
             curr_state = STATE_RECORDING;
-        }else{
-            Serial.println("\n========== TỔNG KẾT PYTHON - ESP32 ==========");
+        } else {
+            Serial.println("\n========== TỔNG KẾT RAW PCM16 -> C++ -> MODEL ==========");
+            Serial.printf("Model: %s\n", Get_Asthma_Model_Name());
             Serial.printf(
-                "Cùng lớp dự đoán: %d/%d\n",
-                parity_same_prediction_count,
-                PARITY_SAMPLE_COUNT
+                "Đúng nhãn thật: %d/%u\n",
+                raw_correct_label_count,
+                static_cast<unsigned int>(kRawPcmTestCount)
             );
-            Serial.printf(
-                "ESP32 đúng nhãn thật: %d/%d\n",
-                parity_correct_label_count,
-                PARITY_SAMPLE_COUNT
-            );
-            Serial.printf(
-                "Tensor INT8 trùng toàn bộ: %d/%d\n",
-                parity_exact_tensor_count,
-                PARITY_SAMPLE_COUNT
-            );
-            Serial.println("==============================================");
+            if (Asthma_Model_Has_Python_Reference()) {
+                Serial.printf(
+                    "Cùng dự đoán Python oracle: %d/%u\n",
+                    raw_same_python_prediction_count,
+                    static_cast<unsigned int>(kRawPcmTestCount)
+                );
+                Serial.printf(
+                    "Output INT8 trùng tuyệt đối: %d/%u | max_raw_diff=%d | max_prob_diff=%.9f\n",
+                    raw_exact_python_output_count,
+                    static_cast<unsigned int>(kRawPcmTestCount),
+                    raw_max_python_output_difference,
+                    raw_max_python_probability_difference
+                );
+            }
+            Serial.println("=========================================================");
             curr_state = STATE_DONE;
         }
 #else
@@ -413,8 +415,11 @@ void I2S_Mic_Init(int SCK_Pin, int WS_Pin, int SD_Pin){
         while(1); // Treo mạch ở đây luôn để dễ debug
     }
 
-#if RUN_PARITY_20_TEST
-    Serial.println("[PARITY] Chế độ 20 mẫu: không đọc micro INMP441.");
+#if RUN_RAW_PCM16_TEST
+    Serial.printf(
+        "[RAW_PCM16] Đã cấp phát buffer; bỏ qua I2S hardware, sẽ chạy %u mẫu nhúng.\n",
+        static_cast<unsigned int>(kRawPcmTestCount)
+    );
     return;
 #endif
 

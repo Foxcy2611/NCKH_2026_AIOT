@@ -1,0 +1,2 @@
+﻿file_name,channels,sample_width_bits,sample_rate_hz,frames,duration_seconds,format_ok,duration_30_90s,peak_pcm,rms_pcm,mav_pcm,dc_offset_pcm,peak_dbfs,rms_dbfs,clipped_samples,clipped_ratio,active_blocks,total_blocks,active_ratio,quality_result
+speech_session_01.wav,1,16,16000,960000,60.0,True,True,1244,109.84384266236016,65.89497083333333,-0.5008333333333334,-28.412591092098364,-49.49348435120672,0,0.0,2289,3750,0.6104,AUDIO_OK

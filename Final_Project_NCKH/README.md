@@ -2,13 +2,22 @@
 
 `Final_Project_NCKH/` là nơi tập trung **source tích hợp cuối cùng** của đề tài.
 Các thư mục bên ngoài như `AI_Training_Model/`, `Deploy_Model/`,
-`ESP32-Sensor_Suite/` và `ESP32-Qt-Telemetry/` phục vụ nghiên cứu, kiểm thử hoặc
-làm prototype; những thành phần đã được lựa chọn mới được đưa vào đây để tạo
-hệ thống hoàn chỉnh.
+`ESP32_Sensor_Suite/` và `ESP32_Standalone_Modules_Test/` phục vụ nghiên cứu,
+kiểm thử hoặc làm prototype, những thành phần đã được lựa chọn mới được đưa vào
+đây để tạo hệ thống hoàn chỉnh.
 
-README này chỉ giới thiệu phạm vi và cách tổ chức thư mục. Kiến trúc, trường hợp
-sử dụng và thông số kỹ thuật được duy trì ở tài liệu cấp repository để tránh
-lặp lại nhiều nguồn dễ lệch nhau.
+README này giới thiệu phạm vi, cách tổ chức và luồng khởi động/vận hành tổng quát
+của bản tích hợp. Thông số kỹ thuật chi tiết vẫn được duy trì ở tài liệu cấp
+repository để tránh lặp lại nhiều nguồn dễ lệch nhau.
+
+## Sơ đồ tổng quan bản tích hợp
+
+[![Luồng tổng quan Final Project](./Overview/Overview_Workflow.png)](./Overview/Overview_Workflow.png)
+
+Sơ đồ trên dùng để đọc nhanh quan hệ giữa Patient Node, Gateway và Dashboard từ
+lúc khởi tạo phần cứng đến thu dữ liệu, suy luận tại edge, truyền sự kiện bảo mật,
+chuyển tiếp MQTT và hiển thị. Khi cần đối chiếu state, packet hoặc điều kiện lỗi,
+phải đọc thêm đặc tả chi tiết được liên kết ở cuối tài liệu.
 
 ## Cấu trúc
 
@@ -18,6 +27,7 @@ Final_Project_NCKH/
 ├── Patient_Node/      # firmware ESP32-S3 phía người dùng
 ├── Gateway/           # firmware ESP32 gateway
 ├── Dashboard_Qt6/     # ứng dụng desktop Qt6/QML
+├── Overview/          # ảnh tổng quan luồng khởi tạo và vận hành
 └── README.md          # trang định hướng thư mục này
 ```
 
@@ -27,6 +37,7 @@ Final_Project_NCKH/
 | `Patient_Node/` | Thu dữ liệu bệnh nhân, xử lý DSP/TinyML, tạo `Node_Payload_t` và mã hóa thành packet AES-128-GCM |
 | `Gateway/` | Xác thực/giải mã sự kiện, phản hồi bảo mật, thu context môi trường và quản lý kết nối mạng |
 | `Dashboard_Qt6/` | Nhận dữ liệu qua MQTT và cung cấp giao diện theo dõi |
+| `Overview/` | Lưu sơ đồ tổng quan giúp trình bày nhanh luồng tích hợp của sản phẩm cuối |
 
 ## Ranh giới với các thư mục thử nghiệm
 
@@ -60,11 +71,11 @@ lại pipeline TinyML thay cho Patient Node.
 
 - [README tổng thể](../README.md): mục tiêu, kiến trúc, ba trường hợp sử dụng và
   bản đồ repository.
-- [Định nghĩa sản phẩm](../Docs_NCKH/NCKH_PRODUCT_DEFINITION_FINAL.md): phạm vi
+- [Định nghĩa sản phẩm](../Docs_NCKH/NCKH_PRODUCT_DEFINITION_FINAL_REVISED.md): phạm vi
   sản phẩm và các quyết định đã chốt.
 - [Phân công công việc](../Docs_NCKH/NCKH_PHAN_CONG_CONG_VIEC.md): trách nhiệm
   và đầu ra của từng phần.
-- [Đặc tả AES-128-GCM](../Docs_NCKH/Encrypt_AES-128-GCM.md): format packet,
+- [Đặc tả AES-128-GCM](../Docs_NCKH/Encrypt_AES-128-GCM_REVISED.md): format packet,
   mã hóa Event, phản hồi ACK/NACK và retry.
 - [Pipeline huấn luyện](../AI_Training_Model/README.md): dữ liệu, model và đánh
   giá phía Python.

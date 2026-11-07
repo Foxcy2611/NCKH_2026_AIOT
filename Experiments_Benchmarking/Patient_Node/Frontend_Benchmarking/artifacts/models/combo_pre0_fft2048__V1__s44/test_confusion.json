@@ -1,0 +1,17 @@
+{
+  "labels": [
+    0,
+    1
+  ],
+  "matrix": [
+    [
+      35,
+      3
+    ],
+    [
+      18,
+      103
+    ]
+  ],
+  "note": "matrix rows: actual Asthma, Non-Asthma; columns: predicted same order"
+}

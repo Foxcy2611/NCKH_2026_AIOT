@@ -1,0 +1,80 @@
+COMBINED VALIDATION CLASSIFICATION REPORT
+Plan SHA256: 5f65766e6f61863d01e1526c1314ba1e3f249769a2ea782b007ce8b3e84e1234
+Total expected entries: 4
+Labels: Asthma=0, Non-Asthma=1
+
+========================================================================================
+Priority   : 1
+Model role: EXPLICIT
+Trial      : combo_pre0_mel40_fft2048__V2__s44
+Method     : KERAS_FP32
+Accuracy   : 0.974026
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9250      0.9737      0.9487        38
+Non-Asthma            0.9912      0.9741      0.9826       116
+accuracy                                      0.9740       154
+macro avg             0.9581      0.9739      0.9657       154
+weighted avg          0.9749      0.9740      0.9742       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  37                 1
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 1
+Model role: EXPLICIT
+Trial      : combo_pre0_mel40_fft2048__V2__s44
+Method     : PTQ_INT8
+Accuracy   : 0.928571
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8293      0.8947      0.8608        38
+Non-Asthma            0.9646      0.9397      0.9520       116
+accuracy                                      0.9286       154
+macro avg             0.8969      0.9172      0.9064       154
+weighted avg          0.9312      0.9286      0.9295       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  34                 4
+Actual Non-Asthma               7               109
+
+========================================================================================
+Priority   : 1
+Model role: EXPLICIT
+Trial      : combo_pre0_mel40_fft2048__V2__s44
+Method     : QAT_INT8
+Accuracy   : 0.980519
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9487      0.9737      0.9610        38
+Non-Asthma            0.9913      0.9828      0.9870       116
+accuracy                                      0.9805       154
+macro avg             0.9700      0.9782      0.9740       154
+weighted avg          0.9808      0.9805      0.9806       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  37                 1
+Actual Non-Asthma               2               114
+
+========================================================================================
+Priority   : 1
+Model role: EXPLICIT
+Trial      : combo_pre0_mel40_fft2048__V2__s44
+Method     : PTQ_INT16x8
+Accuracy   : 0.974026
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9250      0.9737      0.9487        38
+Non-Asthma            0.9912      0.9741      0.9826       116
+accuracy                                      0.9740       154
+macro avg             0.9581      0.9739      0.9657       154
+weighted avg          0.9749      0.9740      0.9742       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  37                 1
+Actual Non-Asthma               3               113

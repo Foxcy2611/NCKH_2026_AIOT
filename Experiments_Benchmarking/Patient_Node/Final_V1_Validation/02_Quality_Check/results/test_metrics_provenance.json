@@ -1,0 +1,29 @@
+{
+  "status": "FROZEN_TEST_RESULT",
+  "experiment": "Patient_Node_Final_V1_Quality_Gate",
+  "test_metrics_sha256": "df3c403240eb31805a1f53b6ba925ce6239536a1610e6c78a1fc1c54ac73a52c",
+  "frozen_config_sha256": "d79e6d1b5a208d7e51410237c7dd8dbc4df23851396608019e7a39506e042793",
+  "manifest_sha256": "5ca46931d0b86c69714f14ee165ec90e802da56f15c2e7d8090ac55009e00e14",
+  "calibration_metrics_sha256": "ac0946ee38acc9a70153e2e2004a5fb3a655de1e86b856babc9d9d0df784a6a7",
+  "test_source_wav_sha256": {
+    "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_Chia_V2\\Asthma\\test\\AST_037__P11WheezingRS_52__take01.wav": "e490f3c5abc3f64592896333cdd7ffe7d050570a30a58b075f9e0a0a966b0e52",
+    "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_Chia_V2\\Asthma\\test\\AST_037__P11WheezingRS_52__take02.wav": "5b65426e83cca0ecd28d5a12e377687f89751e8f00a7587156f051338e7e0a0c",
+    "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_Chia_V2\\Asthma\\test\\AST_038__P17WheezingIE_85__take01.wav": "d13504293ec8488248d2c9d72efb20c1eaf8b2b633cf7b6f722a3def831f9dfd",
+    "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_Chia_V2\\Asthma\\test\\AST_038__P17WheezingIE_85__take02.wav": "16cbf735ec9d2559687170f30cad74493f1ba39a75bb7e6c0f4b2f12b5fff637",
+    "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_Chia_V2\\Asthma\\test\\AST_039__P24WheezingRS_120__take01.wav": "9148134695aa9913475841322a6da3a577b7a0bc344e47bf77a6b60b90c226ec",
+    "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_Chia_V2\\Asthma\\test\\AST_039__P24WheezingRS_120__take02.wav": "0ec7cd7dbe97d50c35366949412c934fc0c8e11e0fc9d29f069fa819125df797",
+    "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_Chia_V2\\Asthma\\test\\AST_040__P26WheezingIU_126__take01.wav": "bf46605a1bb1956f26ca590d4c543deb2476f7e98153c80e51b8335d552d490a",
+    "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_Chia_V2\\Asthma\\test\\AST_040__P26WheezingIU_126__take02.wav": "c09ccc2ece41c157fd684f9820b1e9f83d41c7de2801da82c1c55927d374b16b",
+    "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_Chia_V2\\Non_Asthma_Disease\\test\\BRO_010__P12BronchialSc_58__take01.wav": "a6fc8e1be642ed43f01e1b955528dcc964e7df535ec3e84e14988b582fd30d0f",
+    "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_Chia_V2\\Non_Asthma_Disease\\test\\BRO_010__P12BronchialSc_58__take02.wav": "6e0168ead4a183de13c53496f08ea930d0e458dd7705f9e1fadd43480bf82897",
+    "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_Chia_V2\\Non_Asthma_Disease\\test\\COPD_010__P47COPDPr_375__take01.wav": "3b261ba424c41cf08fd285de2edf21568e85ecd6283d47e0451c043d3d3cfcda",
+    "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_Chia_V2\\Non_Asthma_Disease\\test\\COPD_010__P47COPDPr_375__take02.wav": "44433d441f9946f2f93f8be230ac00872902f3dd4cb0b2c8d3ebc140d969108d",
+    "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_Chia_V2\\Non_Asthma_Disease\\test\\HEA_010__P2Healthy72S__take01.wav": "b76a115e47e457e770770b26da1c64c44a4ce7a865466a2c3ccf750ff8e5fe72",
+    "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_Chia_V2\\Non_Asthma_Disease\\test\\HEA_010__P2Healthy72S__take02.wav": "165668db8cf410f2c10879e0943145e81a7e1d725673a3009df173467a189a54",
+    "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_Chia_V2\\Non_Asthma_Disease\\test\\PNE_010__P15Pneumonia81V__take01.wav": "c4cea78d28bb04aa250be95623ace433476809c013dc611aaaa4eae4cb822794",
+    "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_Chia_V2\\Non_Asthma_Disease\\test\\PNE_010__P15Pneumonia81V__take02.wav": "1b345dbf3625edff753d4acb49c520f6fdc1590ba5628efd08e7287ba25c834d",
+    "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_TuThu_v_Kaggle\\TuThu\\Record_Env\\Knock\\knock_session_02.wav": "c2259fc26c4bbc6fe9819e3142d653a490c97144931cac62aaf18a627653b16f",
+    "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_TuThu_v_Kaggle\\TuThu\\Record_Env\\Room_Noise\\room_noise_session_06.wav": "9785d735f2639c809fa134466bc55fb442ed04c20444573df066df5f85f171e1",
+    "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_TuThu_v_Kaggle\\TuThu\\Record_Env\\Speech\\speech_session_03.wav": "5525838eca7f227d550ed82c86bfa2bb3a671af4c9532b1d90437eae00c8e736"
+  }
+}

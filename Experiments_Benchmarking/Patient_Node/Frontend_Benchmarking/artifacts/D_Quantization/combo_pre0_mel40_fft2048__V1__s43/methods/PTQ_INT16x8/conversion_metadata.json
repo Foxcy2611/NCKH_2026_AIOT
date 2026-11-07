@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "status": "CONVERSION_COMPLETE",
+  "generated_utc": "2026-10-21T15:55:48.135931+00:00",
+  "trial_id": "combo_pre0_mel40_fft2048__V1__s43",
+  "variant_id": "combo_pre0_mel40_fft2048",
+  "method_id": "PTQ_INT16x8",
+  "training_mode": "PTQ",
+  "integer_mode": "INT16x8",
+  "experimental": false,
+  "plan_path": "D:\\NCKH_2026\\NCKH_2026_AIOT\\Experiments_Benchmarking\\Patient_Node\\Frontend_Benchmarking\\results\\D_Quantization\\quantization_plan.json",
+  "plan_sha256": "8258e0c64948a6d2916f84089bd590f40c8b026b22f713e5bfe1845dabbe544d",
+  "source_model_sha256": "48732287648a4f95538aa9137399f572d0c395593e4f54d9963df3726f4a6424",
+  "source_training_metadata_sha256": "6abc3ba798cbdd7e2759d899d183cbc1e47bca3e1bee8db103d3262110767049",
+  "tflite_path": "D:\\NCKH_2026\\NCKH_2026_AIOT\\Experiments_Benchmarking\\Patient_Node\\Frontend_Benchmarking\\artifacts\\D_Quantization\\combo_pre0_mel40_fft2048__V1__s43\\methods\\PTQ_INT16x8\\PTQ_INT16x8.tflite",
+  "tflite_sha256": "e6f768eaf345791591f450900625a844e5ad8ae2e8162c543033c81d9049a397",
+  "tflite_size_bytes": 351136,
+  "representative_count": 100,
+  "representative_class_counts": {
+    "0": 50,
+    "1": 50
+  },
+  "representative_indices_sha256": "062be8a32e8e68148669b84511783404396b1275d6baaa6d66db948aff3dc387",
+  "representative_source": "normalized Train features only",
+  "normalization": {
+    "method": "minmax_train_only_then_float32",
+    "train_min": -80.0,
+    "train_max": 0.0
+  },
+  "input_shape": [
+    40,
+    129,
+    1
+  ],
+  "io": {
+    "input": {
+      "name": "serving_default_input_layer:0",
+      "shape": [
+        1,
+        40,
+        129,
+        1
+      ],
+      "dtype": "int16",
+      "scale": 3.0518509447574615e-05,
+      "zero_point": 0
+    },
+    "output": {
+      "name": "StatefulPartitionedCall_1:0",
+      "shape": [
+        1,
+        1
+      ],
+      "dtype": "int16",
+      "scale": 3.0517578125e-05,
+      "zero_point": 0
+    }
+  },
+  "tensorflow_version": "2.21.0",
+  "numpy_version": "2.4.4",
+  "test_accessed": false,
+  "qat": null
+}

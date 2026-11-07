@@ -1,0 +1,2 @@
+﻿file_name,channels,sample_width_bits,sample_rate_hz,frames,duration_seconds,format_ok,duration_30_90s,peak_pcm,rms_pcm,mav_pcm,dc_offset_pcm,peak_dbfs,rms_dbfs,clipped_samples,clipped_ratio,active_blocks,total_blocks,active_ratio,quality_result
+knock_session_05.wav,1,16,16000,960000,60.0,True,True,417,37.166151659361596,19.117441666666668,-0.4954604166666667,-37.9062775997192,-58.90604680449435,0,0.0,1141,3750,0.3042666666666667,AUDIO_OK

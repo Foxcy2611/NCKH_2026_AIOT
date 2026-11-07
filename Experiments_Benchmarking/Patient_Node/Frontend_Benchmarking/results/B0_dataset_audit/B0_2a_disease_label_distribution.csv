@@ -1,0 +1,8 @@
+﻿Nhãn bệnh / nguồn,Train,Validation,Test,Tổng
+Asthma,987,38,38,1063
+Bronchial,100,12,12,124
+COPD,337,42,42,421
+Healthy,118,12,17,147
+Pneumonia,162,20,20,202
+Environment,270,30,30,330
+Tổng Dataset,1974,154,159,2287

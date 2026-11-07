@@ -1,37 +1,25 @@
 #include <Arduino.h>
 
 #include "Test_Model_Static_Profiling.h"
-#include "Sample_Asthma_1.h"
-#include "Sample_Non_Asthma_1.h"
-
-/*
-- Nhiệm vụ 1: Vào Test_Asthma_2.cpp để thay đổi kích thước
-tensor_arena sao cho nó tối ưu nhất
-
-- Nhiệm vụ 2: Vào platform.ini tiến hành ép tần số hoạt động
-lên 240 MHz (Theo max thông số của NXS) và 1 số cờ
-+ Tại file platformio.ini, dù đã ép tần số lên 240MHz mà tốc độ
-suy luận vẫn ở 1867ms
-+ Nên coi như đó là tốc độ interface max có thể có
-*/
 
 void setup() {
     Serial.begin(115200);
-    delay(3000); // Chờ 3 giây để Windows nhận diện lại cổng USB COM6
+    delay(3000);  // Cho Windows nhan lai cong USB Serial sau khi reset.
 
-    Serial.printf("CPU Freq: %d MHz\n", getCpuFrequencyMhz());
+    Serial.println("\n==================================================");
+    Serial.println(" ESP32-S3 STATIC MODEL PROFILING");
+    Serial.println("==================================================");
+    Serial.printf("CPU frequency : %u MHz\n", getCpuFrequencyMhz());
 
     if (!Setup_TinyML()) {
-        Serial.println("He thong AI khoi dong that bai. Treo may!");
-        while(1) { delay(100); } 
+        Serial.println("[FATAL] Khoi tao TinyML that bai. Dung benchmark.");
+        return;
     }
+
+    Run_Static_Benchmark();
 }
 
 void loop() {
-  Predict_Static_Dummy(sample_asthma_data, "MAU BENH NHAN HEN SUYEN");
-  delay(3000); 
-
-  Predict_Static_Dummy(sample_non_asthma_data, "MAU NON-ASTHMA");
-  delay(10000); 
-  // Không khác so vs Prj 1 
+    // Benchmark chi chay mot lan trong setup de log khong bi lap vo han.
+    delay(1000);
 }

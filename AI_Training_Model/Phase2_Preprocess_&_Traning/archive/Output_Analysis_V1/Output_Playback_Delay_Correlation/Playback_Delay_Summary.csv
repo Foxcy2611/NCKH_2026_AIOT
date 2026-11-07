@@ -1,0 +1,4 @@
+﻿split,total_takes,valid_takes,reliable_takes,reliable_rate,mean_delay_seconds,median_delay_seconds,std_delay_seconds,min_delay_seconds,p10_delay_seconds,p90_delay_seconds,max_delay_seconds,p90_minus_p10_seconds
+train,64,64,64,1.0,1.022734,1.02,0.02325,1.0,1.005,1.035,1.16,0.03
+val,8,8,8,1.0,1.01625,1.015,0.009922,1.005,1.005,1.028,1.035,0.023
+train_val,72,72,72,1.0,1.022014,1.02,0.022262,1.0,1.005,1.035,1.16,0.03

@@ -1,0 +1,23 @@
+{
+  "plan_path": "D:\\NCKH_2026\\NCKH_2026_AIOT\\Experiments_Benchmarking\\Patient_Node\\Frontend_Benchmarking\\results\\D_Quantization\\quantization_plan.json",
+  "plan_sha256": "8258e0c64948a6d2916f84089bd590f40c8b026b22f713e5bfe1845dabbe544d",
+  "checkpoint_count": 24,
+  "quantized_model_count": 72,
+  "deployment_review_methods": [
+    "PTQ_INT8",
+    "QAT_INT8"
+  ],
+  "int16x8_role": "reference_only_not_verified_for_current_ESP32S3_runtime",
+  "methods": [
+    "KERAS_FP32",
+    "PTQ_INT8",
+    "QAT_INT8",
+    "PTQ_INT16x8"
+  ],
+  "source_sha256": {
+    "val_summary_C": "8df797bd296e9991ca0e453a763ab091a0789cf96aa34ab8154057728708248f",
+    "test_summary_C": "06588d9acd3ce94ff38afbdf8839b2589b997ecf62f6edd054c534b3a249f7aa",
+    "val_summary_D": "67e5f375315a9bb33945538726fbae4ccc09acdfcbadb6feeef6676397209d74",
+    "test_summary_D": "100495009f9b1517b8baebfaa0b42e47c7686faed8d31feffed4671d21c5c366"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "status": "COMPLETE",
+  "version": "V1",
+  "architecture": "V1_SepConv2D_Flatten",
+  "source_folder": "Output_Train_V1_SepConv2D_Flatten",
+  "source_model": "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Phase2_Preprocess_&_Traning\\Output_Train_V1_SepConv2D_Flatten\\Model_Asthma.keras",
+  "source_model_sha256": "2af2fcd110f26b58c5dc0805426865b4cc7e24f4f9208a08158c269be20f6768",
+  "training_seed": 44,
+  "quantization_seed": 42,
+  "config_sha256": "5ae8a2c91c92b58653d899ddec056485787b6307db2cc0c350382b4ded2576f8",
+  "methods": [
+    "PTQ_INT8",
+    "QAT_INT8",
+    "PTQ_INT16x8"
+  ],
+  "outputs": {
+    "Quantization_Predictions.csv": {
+      "size_bytes": 20556,
+      "sha256": "fd43276675d6aa925cec01e682885bd1fe79cf4cd45f9ea382b63acfeafd9ca6"
+    },
+    "Quantization_Report.txt": {
+      "size_bytes": 3714,
+      "sha256": "1e545034cbd796d12aea278648a21820c3c8f24a6d63147c7020ee98ffb4e9dd"
+    },
+    "V1_FP32.tflite": {
+      "size_bytes": 1333520,
+      "sha256": "b4b46bd3e3a8c0253f37e181ca15b03c690960c5f17c5e9d79508f3283eb7d0f"
+    },
+    "V1_PTQ_INT8.tflite": {
+      "size_bytes": 347368,
+      "sha256": "023e2a294c5237ab0547f2a74b6bcc11d05ee62ae291e0f36acd7b4956fc1c2a"
+    },
+    "V1_QAT_INT8.tflite": {
+      "size_bytes": 347960,
+      "sha256": "e77856cf8c7db2178a3e0a108582061d3695ce595372ef53e7a7ab6f1681632e"
+    },
+    "V1_PTQ_INT16x8.tflite": {
+      "size_bytes": 351136,
+      "sha256": "22056772820a74fce80d8d6419d987e1f51f12d0537a5f275cb37fd4262882c3"
+    },
+    "V1_PTQ_INT8.h": {
+      "size_bytes": 2229226,
+      "sha256": "df0f5105db9dbf037943d3a8e7e9a65e8a8bbf4e41c0db2c2f229bd14ef87788"
+    },
+    "V1_QAT_INT8.h": {
+      "size_bytes": 2233023,
+      "sha256": "6dc208fa6e21c8efda31e9619d6327938879706f9b301ac03c421e2b751155d3"
+    },
+    "V1_PTQ_INT16x8.h": {
+      "size_bytes": 2253416,
+      "sha256": "e26f78f38f4442b16b51283de414c8ac20b208f1545433f15e4905ecf40e0b68"
+    }
+  }
+}

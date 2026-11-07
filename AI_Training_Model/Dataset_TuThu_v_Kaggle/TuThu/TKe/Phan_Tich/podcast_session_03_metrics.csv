@@ -1,0 +1,2 @@
+﻿file_name,channels,sample_width_bits,sample_rate_hz,frames,duration_seconds,format_ok,duration_30_90s,peak_pcm,rms_pcm,mav_pcm,dc_offset_pcm,peak_dbfs,rms_dbfs,clipped_samples,clipped_ratio,active_blocks,total_blocks,active_ratio,quality_result
+podcast_session_03.wav,1,16,16000,960000,60.0,True,True,1419,257.96220068710323,171.11793333333333,-0.49983125,-27.26935079004488,-42.077877233858146,0,0.0,3074,3750,0.8197333333333333,AUDIO_OK

@@ -1,0 +1,2 @@
+﻿file_name,channels,sample_width_bits,sample_rate_hz,frames,duration_seconds,format_ok,duration_30_90s,peak_pcm,rms_pcm,mav_pcm,dc_offset_pcm,peak_dbfs,rms_dbfs,clipped_samples,clipped_ratio,active_blocks,total_blocks,active_ratio,quality_result
+room_noise_session_06.wav,1,16,16000,960000,60.0,True,True,387,27.93138760501645,18.194636458333335,-0.499290625,-38.55477939881613,-61.38714846764298,0,0.0,739,3750,0.19706666666666667,AUDIO_OK

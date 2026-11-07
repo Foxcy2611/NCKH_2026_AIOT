@@ -60,7 +60,10 @@ DashboardData::DashboardData(QObject *parent)
     insert("classification", "N/A");
     insert("modelScore", 0.0);
     insert("audioQuality", "N/A");
+    insert("eventVitalsValid", false);
     insert("vitalsValid", false);
+    insert("heartRateAvailable", false);
+    insert("spo2Available", false);
     insert("heartRate", 0);
     insert("spo2", 0);
     insert("batteryNode", 0);
@@ -207,10 +210,33 @@ bool DashboardData::applyCompletePacketJson(const QByteArray &json, QString *err
     // Không có Patient Event thì chỉ cập nhật Gateway, không xóa kết quả Node gần nhất.
     if (hasPatientEvent) {
         const QJsonObject node = patientValue.toObject();
-        const bool vitalsValid = node.value("vitals_valid").toBool(false);
+        const bool eventVitalsValid = node.value("vitals_valid").toBool(false);
         const quint64 sessionId = jsonUnsigned(node.value("session_id"));
         const QString eventId = root.value("event_id").toString();
         const bool isNewPatientEvent = eventId != m_lastPatientEventId;
+
+        // HR và SpO2 là trạng thái gần nhất, không phải lúc nào cũng thuộc event
+        // Monitor hiện tại. Chỉ cập nhật cache khi Gateway gửi một số hợp lệ;
+        // null/0/vitals_valid=false không được xóa lần đo CHECK gần nhất.
+        const QJsonValue heartRateValue = node.value("heart_rate");
+        const int incomingHeartRate = heartRateValue.toInt(0);
+        const bool incomingHeartRateAvailable = heartRateValue.isDouble()
+                                                && incomingHeartRate > 0
+                                                && incomingHeartRate <= 65535;
+        if (incomingHeartRateAvailable) {
+            m_lastHeartRate = incomingHeartRate;
+            m_lastHeartRateAvailable = true;
+        }
+
+        const QJsonValue spo2Value = node.value("spo2");
+        const int incomingSpo2 = spo2Value.toInt(0);
+        const bool incomingSpo2Available = spo2Value.isDouble()
+                                           && incomingSpo2 > 0
+                                           && incomingSpo2 <= 100;
+        if (incomingSpo2Available) {
+            m_lastSpo2 = incomingSpo2;
+            m_lastSpo2Available = true;
+        }
 
         quint64 eventTimestamp = gateTimestamp;
         QString eventTimestampBasis = timestampBasis;
@@ -226,9 +252,12 @@ bool DashboardData::applyCompletePacketJson(const QByteArray &json, QString *err
         insert("classification", classificationName(node.value("classification").toInt(-1)));
         insert("modelScore", node.value("model_score").toDouble(0.0));
         insert("audioQuality", audioQualityName(node.value("audio_quality").toInt(-1)));
-        insert("vitalsValid", vitalsValid);
-        insert("heartRate", vitalsValid ? node.value("heart_rate").toInt() : 0);
-        insert("spo2", vitalsValid ? node.value("spo2").toInt() : 0);
+        insert("eventVitalsValid", eventVitalsValid);
+        insert("heartRateAvailable", m_lastHeartRateAvailable);
+        insert("spo2Available", m_lastSpo2Available);
+        insert("vitalsValid", m_lastHeartRateAvailable && m_lastSpo2Available);
+        insert("heartRate", m_lastHeartRateAvailable ? m_lastHeartRate : 0);
+        insert("spo2", m_lastSpo2Available ? m_lastSpo2 : 0);
         if (node.contains("battery_node") && !node.value("battery_node").isNull()) {
             insert("batteryNode", node.value("battery_node").toInt(0));
             insert("batteryNodeAvailable", true);
@@ -236,8 +265,8 @@ bool DashboardData::applyCompletePacketJson(const QByteArray &json, QString *err
             insert("batteryNodeAvailable", false);
         }
 
-        if (isNewPatientEvent && vitalsValid) {
-            appendHistory("hrHistory", node.value("heart_rate").toDouble());
+        if (isNewPatientEvent && eventVitalsValid && incomingHeartRateAvailable) {
+            appendHistory("hrHistory", incomingHeartRate);
         }
         m_lastPatientEventId = eventId;
     }

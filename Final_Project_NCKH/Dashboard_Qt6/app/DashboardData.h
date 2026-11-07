@@ -25,6 +25,10 @@ private:
     void appendHistory(const QString &key, double value);
 
     QString m_lastPatientEventId;
+    int m_lastHeartRate = 0;
+    int m_lastSpo2 = 0;
+    bool m_lastHeartRateAvailable = false;
+    bool m_lastSpo2Available = false;
 };
 
 #endif

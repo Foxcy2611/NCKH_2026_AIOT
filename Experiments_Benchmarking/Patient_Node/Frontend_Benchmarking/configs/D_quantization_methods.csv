@@ -1,0 +1,4 @@
+method_id,enabled,training_mode,integer_mode,experimental,description
+PTQ_INT8,1,PTQ,INT8,0,Post-training full integer quantization; INT8 weights activations input output
+QAT_INT8,1,QAT,INT8,0,INT8-aware fine-tuning then full INT8 export
+PTQ_INT16x8,1,PTQ,INT16x8,0,Post-training quantization; INT8 weights and INT16 activations input output

@@ -2,7 +2,7 @@
 
 #include "Audio_IO/I2S_Mic.h"
 #include "DSP_Preprocessing/Mel_Scale.h"
-#include "Model_AI/Interface_Asthma.h"
+#include "Model_AI/Inference_Asthma.h"
 
 void setup() {
     Serial.begin(115200);

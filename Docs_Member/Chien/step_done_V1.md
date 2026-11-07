@@ -1,191 +1,236 @@
-# CÁC BƯỚC CHỐT PATIENT NODE FINAL V1
+# Patient Node — Steps to FINAL V1
 
 ## 1. Mục tiêu
 
-Tài liệu này là checklist các công việc còn lại để Patient Node được công nhận là
-`FINAL V1`. Việc firmware đã chạy được chưa đồng nghĩa mọi ngưỡng đã tối ưu hoặc
-đã có đủ bằng chứng thực nghiệm.
-
-Luồng tổng thể đã thử thành công:
+Tài liệu này là checklist chính để đưa Patient Node từ trạng thái:
 
 ```text
-Node CHECK/MONITOR
-    → mã hóa và gửi ESP-NOW
-    → Gateway giải mã
-    → Gateway phản hồi ACK cho Node
-    → Gateway định kỳ tạo Complete_Packet
-    → MQTT/Cloud
-    → Qt6 nhận JSON và cập nhật dashboard
+firmware đã chạy được
 ```
 
-Gateway vẫn phải được nạp lại bản source mới nhất trước lượt kiểm tra toàn chuỗi
-chính thức.
+tới:
 
-Các trạng thái sử dụng trong tài liệu:
+```text
+Patient Node — FINAL V1
+```
 
-- `[ ]`: chưa hoàn thành;
-- `[~]`: đã chạy được nhưng chưa có đủ phép thử hoặc bằng chứng;
-- `[x]`: đã kiểm tra, lưu kết quả và được chấp nhận cho Final V1.
+Hai thư mục liên quan:
+
+- [Final V1 Validation](./Final_V1_Validation/README.md)
+- [Research Extensions](./Extension/README.md)
+
+Quy ước trạng thái:
+
+```text
+[ ]  chưa hoàn thành
+[~]  đã chạy được nhưng chưa đủ bằng chứng
+[x]  đã kiểm tra, lưu artifact và chấp nhận cho FINAL V1
+```
+
+AI Model hiện hành:
+
+```text
+Architecture       : V1 — DS-CNN / SeparableConv2D
+Quantization       : PTQ Full INT8
+Decision benchmark : threshold 0.5
+Input              : [1, 64, 129, 1] INT8
+Tensor Arena target: 280,000 B
+Status             : FROZEN
+```
+
+Trong chuỗi chốt Patient Node V1, **không retrain model** trừ khi kiểm thử cho thấy lỗi rõ ràng có nguồn gốc từ AI pipeline.
 
 ---
 
-## 2. Bước 1 — Chốt vùng phân lớp
+# 2. Bước 1 — Chốt vùng phân lớp
 
-### 2.1. Mục tiêu
-
-Kiểm chứng hai biên phân lớp hiện hành:
+Folder:
 
 ```text
-p_non_asthma <= 0,45         → ASTHMA     (mã 0)
-0,45 < p_non_asthma < 0,65  → UNSURE     (mã 2)
-p_non_asthma >= 0,65         → NON-ASTHMA (mã 1)
+Final_V1_Validation/01_Classification_Threshold/
 ```
 
-Model chỉ được huấn luyện hai lớp. `UNSURE` là vùng xử lý sau suy luận, không
-phải lớp thứ ba của model.
+## 2.1. Mục tiêu
 
-### 2.2. Cách thực hiện
-
-1. Dùng đúng 108 mẫu validation, gồm 30 Asthma và 78 Non-Asthma.
-2. Chạy model TFLite INT8 và lưu `p_non_asthma`, nhãn thật và kết quả của từng
-   mẫu.
-3. So sánh tối thiểu các cặp biên:
+Chọn và freeze hai biên:
 
 ```text
-0,40 / 0,60
-0,45 / 0,65
-0,45 / 0,70
-0,50 / 0,65
+p_non_asthma <= LOW       → ASTHMA
+LOW < p_non_asthma < HIGH → UNSURE
+p_non_asthma >= HIGH      → NON-ASTHMA
 ```
 
-4. Với mỗi cặp biên, thống kê:
+Model chỉ có hai lớp:
 
-   - số Asthma được phát hiện đúng;
-   - số Asthma bị nhầm thẳng thành Non-Asthma;
-   - số Non-Asthma bị cảnh báo nhầm thành Asthma;
-   - số và tỷ lệ mẫu UNSURE;
-   - Precision, Recall và F1 của Asthma;
-   - ma trận nhầm lẫn có tính cả UNSURE.
+```text
+0 = Asthma
+1 = Non-Asthma
+```
 
-5. Ưu tiên giảm trường hợp Asthma bị kết luận thành Non-Asthma, nhưng không để
-   số cảnh báo sai hoặc tỷ lệ UNSURE tăng quá mức sử dụng được.
-6. Chọn một cặp biên duy nhất bằng validation.
-7. Sau khi đã chốt mới chạy đúng một lượt trên 113 mẫu test để báo cáo kết quả
-   cuối. Không dùng tập test để quay lại lựa chọn ngưỡng.
-8. Đối chiếu lại các phép thử phần cứng để bảo đảm Python/TFLite và firmware sử
-   dụng đúng cùng hai biên.
+`UNSURE` là post-processing.
 
-### 2.3. Bằng chứng cần lưu
+## 2.2. Dữ liệu
 
-- File kết quả của 108 mẫu validation.
-- Bảng so sánh các cặp biên.
-- Kết quả cuối trên 113 mẫu test.
-- Lý do chọn hai biên Final V1.
+Dùng đúng split của Final AI Model hiện hành:
 
-### 2.4. Điều kiện hoàn thành
+```text
+Validation: 154
+├── Asthma      : 38
+└── Non-Asthma  : 116
 
-- [ ] Hai biên được chọn bằng validation, không chọn bằng test.
-- [ ] Source, tài liệu và kết quả thử dùng cùng một giá trị.
-- [ ] Có báo cáo tỷ lệ UNSURE và số Asthma bị bỏ sót.
-- [ ] Không cần huấn luyện lại model nếu chỉ thay hai biên này.
+Test: 159
+├── Asthma      : 38
+└── Non-Asthma  : 121
+```
+
+Không sử dụng lại số `108 Validation / 113 Test` của baseline cũ.
+
+## 2.3. Cách thực hiện
+
+1. Chạy V1 PTQ INT8 trên toàn bộ 154 Validation.
+2. Lưu với từng sample:
+
+```text
+file_name
+true_label
+output_int8
+p_non_asthma
+binary_pred_0.5
+```
+
+3. So sánh tối thiểu:
+
+```text
+0.40 / 0.60
+0.45 / 0.65
+0.45 / 0.70
+0.50 / 0.65
+```
+
+4. Có thể grid sweep rộng hơn trên Validation.
+5. Với mỗi cặp biên tính:
+
+```text
+Asthma → Asthma
+Asthma → Unsure
+Asthma → Non-Asthma
+
+Non-Asthma → Asthma
+Non-Asthma → Unsure
+Non-Asthma → Non-Asthma
+
+Asthma Precision
+Asthma Recall
+Asthma F1
+Unsure Rate
+Asthma Miss Rate
+Non-Asthma False Alarm Rate
+```
+
+6. Ưu tiên giảm:
+
+```text
+Asthma → Non-Asthma
+```
+
+nhưng không làm false alarm hoặc Unsure Rate tăng quá mức.
+
+7. Chọn một cặp LOW/HIGH duy nhất bằng Validation.
+8. Ghi vào `final_threshold.json`.
+9. Freeze.
+10. Chạy 159 Test đúng một lượt cuối.
+11. Không quay lại chỉnh threshold bằng Test.
+
+## 2.4. Điều kiện hoàn thành
+
+- [ ] Có `validation_predictions.csv`.
+- [ ] Có bảng so sánh threshold.
+- [ ] LOW/HIGH được chọn chỉ bằng Validation.
+- [ ] Có `final_threshold.json`.
+- [ ] Có kết quả cuối trên 159 Test.
+- [ ] Firmware / tài liệu / experiment dùng cùng LOW/HIGH.
+- [ ] Có báo cáo Unsure Rate và Asthma Miss.
 
 ---
 
-## 3. Bước 2 — Chốt Quality Gate
+# 3. Bước 2 — Chốt Quality Gate
 
-### 3.1. Mục tiêu
-
-Quality Gate phải loại được âm thanh không dùng được nhưng không quá kén đến mức
-loại nhầm nhiều lần nói, ho hoặc âm thanh hô hấp hợp lệ trong CHECK/MONITOR.
-
-Ngưỡng hiện hành dùng làm mốc:
+Folder:
 
 ```text
-RMS tối thiểu                    = 150
-MAV để block hoạt động           > 80
-Tỷ lệ block hoạt động tối thiểu  = 5%
-Ngưỡng sample clipping           > 32000
-Tỷ lệ clipping tối đa            = 1%
+Final_V1_Validation/02_Quality_Gate/
 ```
 
-### 3.2. Chuẩn bị tình huống thử
+Baseline hiện hành:
 
-Mỗi nhóm nên thực hiện tối thiểu 15–20 lần:
+```text
+RMS minimum                    = 150
+MAV active threshold           > 80
+Minimum active ratio           = 5%
+Clipping sample threshold      > 32000
+Maximum clipping ratio         = 1%
+```
 
-| Nhóm | Ví dụ | Kết quả mong đợi |
+## 3.1. Nhóm thử
+
+Mỗi nhóm nên lặp đủ số lần để có thống kê:
+
+| Nhóm | Ví dụ | Kỳ vọng |
 |---|---|---|
-| Im lặng | Phòng yên | `AUDIO_INACTIVE` |
-| Quá nhỏ | Nói/phát âm thanh quá xa | `AUDIO_INACTIVE` hoặc `AUDIO_TOO_WEAK` |
-| Hợp lệ | Ho, thở, file thử ở khoảng cách quy định | `AUDIO_OK` |
-| Quá lớn | La hoặc dí loa quá sát | `AUDIO_TOO_LOUD` nếu có clipping |
-| Nhiễu | Quạt, xe, tiếng nói nền | Không được chấp nhận hàng loạt như âm hợp lệ |
-| Va chạm | Gõ/chạm vào micro | Nên bị loại hoặc không tạo kết quả tin cậy |
+| Im lặng | phòng yên | `AUDIO_INACTIVE` |
+| Quá nhỏ | nguồn âm xa | inactive / too weak |
+| Hợp lệ | ho/thở/playback hợp lệ | `AUDIO_OK` |
+| Quá lớn | nguồn sát mic / clipping | too loud |
+| Nhiễu | quạt / speech nền | không lọt hàng loạt |
+| Va chạm | chạm/gõ micro | nên bị loại hoặc không tạo inference tin cậy |
 
-### 3.3. Cách thực hiện
-
-1. Giữ nguyên bộ ngưỡng hiện hành và chạy toàn bộ nhóm thử làm mốc.
-2. Mỗi lần ghi:
+Mỗi lần ghi:
 
 ```text
-Tình huống
-Khoảng cách
+scenario
+distance
 RMS
-MAV trung bình
-Active ratio
-Clipped ratio
-Kết luận Quality Gate
-Kết quả mong đợi
-Đúng/Sai
+MAV
+active_ratio
+clipped_ratio
+expected
+actual
+pass
 ```
 
-3. Tính:
+## 3.2. Điều kiện hoàn thành
 
-   - tỷ lệ chấp nhận âm thanh hợp lệ;
-   - tỷ lệ loại âm thanh không hợp lệ;
-   - số âm hợp lệ bị loại nhầm;
-   - số âm không hợp lệ lọt qua.
-
-4. Nếu kết quả chưa đạt, chỉ thay đổi một nhóm tham số trong mỗi lượt:
-
-   - trước tiên xem `MAV` và tỷ lệ block hoạt động nếu thường bị
-     `AUDIO_INACTIVE`;
-   - sau đó mới xem RMS nếu thường bị `AUDIO_TOO_WEAK`;
-   - chỉ chỉnh clipping khi có bằng chứng âm thanh hợp lệ bị báo quá lớn.
-
-5. Chạy lại cùng kịch bản và so sánh trực tiếp với cấu hình mốc.
-6. Không chọn ngưỡng chỉ dựa trên một file hoặc một lần thử.
-
-### 3.4. Điều kiện hoàn thành
-
-- [ ] CHECK chấp nhận ổn định âm thanh hợp lệ trong điều kiện sử dụng đã quy định.
-- [ ] Im lặng và âm quá yếu vẫn bị loại.
-- [ ] Âm clipping vẫn bị phát hiện.
-- [ ] MONITOR bỏ đoạn lỗi mà không tăng vote và không bị treo.
-- [ ] Có bảng kết quả trước/sau khi chỉnh.
-- [ ] Chốt một bộ ngưỡng duy nhất cho Final V1.
+- [ ] Âm hợp lệ được chấp nhận ổn định.
+- [ ] Silence / âm quá yếu bị loại.
+- [ ] Clipping được phát hiện.
+- [ ] MONITOR bỏ sample lỗi mà không tăng vote.
+- [ ] Không treo state machine.
+- [ ] Có bảng trước/sau nếu thay threshold.
+- [ ] Freeze một bộ Quality Gate cho V1.
 
 ---
 
-## 4. Bước 3 — Chốt VAD và điều kiện khoảng cách sử dụng
+# 4. Bước 3 — Chốt VAD và khoảng cách
 
-### 4.1. Mục tiêu
-
-Chốt rõ thiết bị được sử dụng ở khoảng cách và môi trường nào. Không tuyên bố
-Node hoạt động tốt ở mọi khoảng cách hoặc mọi mức nhiễu.
-
-Thông số mốc hiện hành:
+Folder:
 
 ```text
-Ngưỡng VAD              = 75
-Số chunk liên tiếp      = 4, khoảng 64 ms
-Warm-up                 = 100 chunk, khoảng 1,6 giây
-Bộ đệm trước kích hoạt  = 1 giây
-Đoạn hoàn chỉnh         = 5 giây
+Final_V1_Validation/03_VAD_Distance/
 ```
 
-### 4.2. Ma trận kiểm tra
+Baseline:
 
-Thử tối thiểu các khoảng cách:
+```text
+VAD threshold          = 75
+Consecutive chunks     = 4
+Warm-up                = 100 chunks
+Pre-trigger buffer     = 1 s
+Clip                    = 5 s
+```
+
+## 4.1. Khoảng cách cần kiểm tra
+
+Tối thiểu:
 
 ```text
 3 cm
@@ -194,354 +239,341 @@ Thử tối thiểu các khoảng cách:
 15 cm
 ```
 
-Thử trong các môi trường:
-
-- phòng yên;
-- có tiếng quạt ổn định;
-- có tiếng nói hoặc tiếng động nền nhẹ.
-
-Nguồn âm thanh:
-
-- ho/thở thực tế của người bình thường;
-- file Asthma chưa dùng để huấn luyện nếu có;
-- file Non-Asthma chưa dùng để huấn luyện;
-- im lặng và chỉ có nhiễu nền.
-
-Mỗi tổ hợp quan trọng nên lặp lại 10–20 lần.
-
-### 4.3. Cách thực hiện
-
-1. Chạy cấu hình `75` và 4 chunk làm mốc.
-2. Mỗi lần ghi:
-
-   - VAD có kích hoạt hay không;
-   - có kích hoạt nhầm khi không có âm thanh mục tiêu hay không;
-   - thời gian phản ứng;
-   - Quality Gate có chấp nhận đoạn thu hay không;
-   - phần âm thanh trước kích hoạt có nằm trong đoạn 5 giây hay không;
-   - kết quả suy luận và vote.
-
-3. Để MONITOR chạy 30–60 phút chỉ với nhiễu nền và đếm số lần kích hoạt nhầm.
-4. Nếu ngưỡng hiện hành chưa phù hợp, thử lần lượt:
+Môi trường:
 
 ```text
-Ngưỡng năng lượng: 60 / 75 / 90
-Số chunk liên tiếp: 2 / 4 / 6
+phòng yên
+quạt ổn định
+nhiễu nền nhẹ
 ```
 
-5. Không thay đồng thời ngưỡng và số chunk trong lượt so sánh đầu tiên.
-6. Chọn khoảng cách lớn nhất vẫn có tỷ lệ kích hoạt và thu mẫu hợp lệ ổn định.
-7. Viết rõ điều kiện sử dụng, ví dụ:
+Theo dõi:
 
-> Final V1 được sử dụng trong nhà, nhiễu nhẹ, nguồn âm cách INMP441 không quá
-> 6 cm. Khoảng cách xa hơn không nằm trong phạm vi bảo đảm của nguyên mẫu.
+```text
+trigger / miss
+false trigger
+reaction time
+Quality Gate result
+pre-trigger correctness
+inference / vote
+```
 
-Con số 6 cm chỉ được ghi Final sau khi kết quả đo xác nhận.
+MONITOR nên chạy thêm 30–60 phút chỉ với background để đo false trigger.
 
-### 4.4. Điều kiện hoàn thành
+Nếu baseline chưa phù hợp, thử có kiểm soát:
 
-- [ ] Chốt ngưỡng VAD và số chunk liên tiếp.
+```text
+VAD threshold: 60 / 75 / 90
+chunks       : 2 / 4 / 6
+```
+
+Không đổi đồng thời cả hai biến trong vòng so sánh đầu.
+
+## 4.2. Điều kiện hoàn thành
+
+- [ ] Freeze VAD threshold.
+- [ ] Freeze số chunk.
+- [ ] Xác nhận pre-trigger 1 s.
 - [ ] Chốt khoảng cách sử dụng tối đa.
-- [ ] Ghi rõ môi trường sử dụng và giới hạn của nguyên mẫu.
-- [ ] Có thống kê kích hoạt đúng, bỏ sót và kích hoạt nhầm.
-- [ ] Xác nhận bộ đệm một giây hoạt động đúng.
+- [ ] Ghi rõ điều kiện môi trường.
+- [ ] Có trigger/miss/false-trigger statistics.
 
 ---
 
-## 5. Bước 4 — Kiểm tra MAX30102 thật
+# 5. Bước 4 — Kiểm tra MAX30102
 
-### 5.1. Mục tiêu
-
-Xác nhận module thật có thể phát hiện ngón tay, trả kết quả nhịp tim/SpO2 hợp lý
-và đặt đúng cờ `vitals_valid`.
-
-### 5.2. Cách thực hiện
-
-1. Khởi động và xác nhận I2C tìm thấy địa chỉ `0x57`.
-2. Không đặt ngón tay:
-
-   - phải báo chưa có ngón tay hoặc hết thời gian;
-   - `vitals_valid = false`;
-   - packet không được biến giá trị lỗi thành dữ liệu hợp lệ.
-
-3. Đặt ngón tay đúng vị trí:
-
-   - chờ tín hiệu ổn định;
-   - kiểm tra nhịp tim và SpO2;
-   - `vitals_valid = true` khi cả hai giá trị hợp lệ.
-
-4. Thử ngón tay đặt lệch, chuyển động và ánh sáng ngoài để xem hệ thống có loại
-   phép đo kém hay không.
-5. So sánh với máy đo SpO2 thương mại:
-
-   - tối thiểu 3 người;
-   - mỗi người khoảng 5 lượt;
-   - đo khi ngồi nghỉ;
-   - ghi đồng thời kết quả Node và thiết bị tham chiếu.
-
-6. Mức sai lệch tham khảo cho nguyên mẫu:
+Folder:
 
 ```text
-Nhịp tim: khoảng ±5 BPM
-SpO2: khoảng ±2–3 điểm phần trăm
+Final_V1_Validation/04_MAX30102/
 ```
 
-Đây không phải kiểm định thiết bị y tế. Nếu sai lệch lớn, kiểm tra vị trí ngón
-tay, chuyển động, dòng LED, ánh sáng ngoài và thời gian chờ ổn định trước khi
-đổi thuật toán.
+Kiểm tra:
 
-### 5.3. Điều kiện hoàn thành
+```text
+I2C 0x57
+finger detection
+timeout
+Heart Rate
+SpO2
+vitals_valid
+motion
+ambient light
+```
 
-- [ ] Phát hiện đúng trường hợp có/không có ngón tay.
-- [ ] Timeout không làm treo state machine.
-- [ ] `vitals_valid` và dữ liệu trong packet đúng.
-- [ ] Có bảng so sánh với thiết bị tham chiếu.
-- [ ] Ghi rõ giới hạn: số liệu chỉ mang tính hỗ trợ nghiên cứu.
+Nếu có thiết bị tham chiếu:
+
+```text
+ít nhất 3 người
+~5 lượt/người
+đo khi nghỉ
+```
+
+Kết quả chỉ dùng ở mức prototype nghiên cứu.
+
+Không diễn giải thành kiểm định y tế.
+
+Thiết kế firmware hiện hành cần được xác nhận bằng test phần cứng:
+
+```text
+boot: xác minh/cấu hình MAX30102 rồi shutdown
+→ bắt đầu CHECK: wake SpO2
+→ vào VITAL_CHECK
+→ reset buffer/cache và flush FIFO
+→ chờ kết quả trong deadline chung 10 giây
+→ có HR + SpO2 hợp lệ: vitals_valid=1
+→ không ngón tay / FIFO-I2C lỗi / kết quả invalid: vitals_valid=0, HR=0, SpO2=0
+→ luôn đi tiếp SESSION_READY, không chờ vô hạn
+→ shutdown MAX30102 khi CHECK hoàn tất/hủy/lỗi
+```
+
+MAX30102 không còn duy trì SpO2 ngoài CHECK. Bộ đệm trượt 75/25 không được tái sử dụng qua
+ranh giới hai phiên CHECK. Các checkbox bên dưới chỉ được đánh dấu sau khi đã chạy module thật;
+việc đã sửa source chưa được tính là hoàn thành validation.
+
+## Điều kiện hoàn thành
+
+- [ ] Có/không có ngón tay được xử lý đúng.
+- [ ] Timeout không treo hệ thống.
+- [ ] `vitals_valid` đúng.
+- [ ] Packet không chứa dữ liệu invalid dưới dạng hợp lệ.
+- [ ] LED RED/IR tắt tại STANDBY và MONITOR, bật đúng khi CHECK bắt đầu.
+- [ ] Sensor trở lại shutdown sau complete/abort/timeout/error.
+- [ ] Có bảng so sánh tham chiếu nếu thực hiện được.
+- [ ] Giới hạn được ghi rõ.
 
 ---
 
-## 6. Bước 5 — Chạy toàn chuỗi Node → Gateway → Cloud → Qt6
+# 6. Bước 5 — End-to-End
 
-### 6.1. Trạng thái hiện tại
+Folder:
 
-Đã chạy thành công về chức năng:
+```text
+Final_V1_Validation/05_End_to_End/
+```
 
-- Node CHECK/MONITOR gửi được tới Gateway;
-- Gateway phản hồi ACK;
-- Gateway gửi định kỳ `Complete_Packet` lên Cloud;
-- bản tin có thể chỉ chứa Gateway hoặc kèm `Node_Payload` mới;
-- Qt6 nhận dữ liệu và cập nhật dashboard.
-
-Trạng thái hiện tại là `[~]`: phải nạp Gateway từ source mới nhất và lưu lại log
-của lượt kiểm tra chính thức.
-
-### 6.2. Luồng CHECK cần xác nhận
+Luồng CHECK:
 
 ```text
 CHECK
-→ thu 5 giây
+→ audio 5 s
 → Quality Gate
-→ suy luận một lần
-→ đo MAX30102
-→ tạo Node_Payload_t
-→ mã hóa AES-128-GCM
-→ gửi ESP-NOW
-→ Gateway xác thực/giải mã
-→ Gateway phản hồi ACK
-→ Gateway tạo Complete_Packet
-→ MQTT
-→ Qt6 cập nhật
-```
-
-### 6.3. Luồng MONITOR cần xác nhận
-
-```text
-VAD
-→ bộ đệm trước kích hoạt
-→ Quality Gate
-→ DSP + suy luận
-→ đủ 3 vote hợp lệ
-→ kết luận cuối
-→ Node_Payload_t
+→ DSP
+→ V1 PTQ INT8
+→ post-processing
+→ MAX30102
+→ Node_Payload
+→ AES-128-GCM
+→ ESP-NOW
 → Gateway ACK
 → Complete_Packet
 → MQTT
 → Qt6
 ```
 
-### 6.4. Quy tắc bản tin cần kiểm tra
-
-Khi có sự kiện Node mới:
+Luồng MONITOR:
 
 ```text
-message_type = "complete_packet"
-schema_version = 1
-has_patient_event = true
-patient_event chứa Node_Payload mới
+VAD
+→ pre-trigger
+→ Quality Gate
+→ DSP + inference
+→ 3 valid votes
+→ final result
+→ Node_Payload
+→ Gateway
+→ MQTT
+→ Qt6
 ```
 
-Sau khi sự kiện đó đã được publish thành công, bản tin định kỳ tiếp theo:
+Phải thử:
+
+1. CHECK thành công ngay lần đầu.
+2. MONITOR đủ vote và chỉ gửi một kết luận cuối.
+3. ESP-NOW fail một lần rồi retry thành công.
+4. Gateway offline.
+5. Gateway online lại.
+6. Wi-Fi/MQTT mất và reconnect.
+7. Không gửi lặp vô hạn.
+8. sequence/session/event id đúng.
+9. Qt6 hiển thị đúng state.
+
+Phải lưu cùng lượt:
 
 ```text
-message_type = "complete_packet"
-schema_version = 1
-has_patient_event = false
-patient_event = null
+Node log
+Gateway log
+MQTT payload
+Qt6 evidence
 ```
 
-Qt6 phải giữ dữ liệu Node gần nhất trên giao diện khi nhận packet không có sự
-kiện Node mới.
+## Điều kiện hoàn thành
 
-### 6.5. Các trường hợp phải thử
-
-1. CHECK gửi thành công ngay lần đầu.
-2. MONITOR đủ ba vote rồi gửi đúng một kết luận cuối.
-3. ESP-NOW lỗi một lần rồi retry thành công.
-4. Gateway tắt: Node retry đủ số lần, bỏ sự kiện và không treo.
-5. Gateway bật lại: phép đo mới tiếp tục gửi bình thường.
-6. Wi-Fi/MQTT mất rồi kết nối lại được.
-7. Không gửi lặp vô hạn cùng một sự kiện Node.
-8. `sequence`, `session_id`, `event_id` và `record_id` thay đổi đúng vai trò.
-9. Qt6 hiển thị đúng Asthma/Non-Asthma/Unsure, điểm model, sinh hiệu, môi
-   trường, GPS và trạng thái mạng.
-
-### 6.6. Điều kiện hoàn thành
-
-- [ ] Nạp bản Gateway mới nhất.
-- [ ] Lưu log Node, Gateway và bản tin MQTT cùng một lượt thử.
-- [ ] Kiểm tra cả `has_patient_event=true` và `false`.
-- [ ] ACK/retry/timeout không làm kẹt Node.
-- [ ] Qt6 giữ đúng trạng thái Node gần nhất.
-- [ ] Không có sai khác tên trường hoặc quy ước lớp giữa ba thành phần.
+- [ ] Gateway dùng source mới nhất.
+- [ ] ACK/retry/timeout không kẹt.
+- [ ] `has_patient_event=true` đúng.
+- [ ] `has_patient_event=false` đúng.
+- [ ] Qt6 giữ latest Node data đúng policy.
+- [ ] Tên field / class code thống nhất toàn hệ thống.
 
 ---
 
-## 7. Bước 6 — Chạy thử ổn định dài hạn
+# 7. Bước 6 — Long-Term Stability
 
-### 7.1. Node riêng
+Folder:
 
-Chạy MONITOR liên tục tối thiểu 2–4 giờ. Trong thời gian này:
+```text
+Final_V1_Validation/06_Long_Term_Stability/
+```
 
-- để một số khoảng chỉ có nhiễu nền;
-- tạo nhiều lần kích hoạt hợp lệ;
-- thực hiện CHECK nhiều lần;
-- chuyển đổi CHECK/MONITOR/STANDBY;
-- thử thoát và bắt đầu lại phiên mới.
+## 7.1. Node
+
+Chạy:
+
+```text
+MONITOR 2–4 giờ
+```
 
 Theo dõi:
 
 ```text
-Reset ngoài dự kiến
-Watchdog
-Treo OLED
-Treo I2S
-Lỗi cấp phát bộ nhớ
-Heap còn lại và heap nhỏ nhất
-Vote còn sót từ phiên trước
-Pending còn bị giữ
-State machine không trở lại STANDBY
+unexpected reset
+watchdog
+OLED
+I2S
+heap
+minimum free heap
+state machine
+stale vote
+pending ACK
+Light Sleep sau 15 giây STANDBY
+wake bằng CHECK / MONITOR / SLEEP
+I2S và ESP-NOW sau nhiều chu kỳ sleep/wake
 ```
 
-### 7.2. Toàn hệ thống
+## 7.2. Toàn hệ thống
 
-Chạy Node + Gateway + MQTT + Qt6 ít nhất 8–12 giờ; nếu có điều kiện thì chạy
-24 giờ.
+Chạy:
+
+```text
+Node + Gateway + MQTT + Qt6
+8–12 giờ
+```
+
+nếu có điều kiện có thể chạy 24 giờ.
 
 Theo dõi:
 
-- số bản tin gửi và nhận;
-- ACK và retry;
-- chu kỳ MQTT 5 giây;
-- mất/kết nối lại Wi-Fi, LTE và MQTT;
-- lỗi JSON;
-- trùng hoặc mất sự kiện;
-- Qt6 ngừng cập nhật;
-- bộ nhớ Node/Gateway có giảm dần hay không.
+```text
+message count
+ACK / retry
+reconnect
+JSON error
+duplicate event
+lost event
+Qt6 update
+memory drift
+```
 
-### 7.3. Điều kiện hoàn thành
+## Điều kiện hoàn thành
 
 - [ ] Không reset ngoài dự kiến.
-- [ ] Không treo task, I2S, OLED hoặc state machine.
-- [ ] Không có xu hướng mất dần bộ nhớ.
-- [ ] Không kẹt pending ACK.
-- [ ] Sau mất kết nối, hệ thống tiếp tục làm việc được.
-- [ ] Node vẫn thực hiện được phiên CHECK/MONITOR mới sau khi chạy dài hạn.
+- [ ] Không deadlock / treo.
+- [ ] Không có memory leak rõ.
+- [ ] Pending ACK không kẹt.
+- [ ] Reconnect hoạt động.
+- [ ] CHECK/MONITOR vẫn chạy được sau test dài.
+- [ ] Không tự sleep ngoài STANDBY.
+- [ ] Không mất model/Tensor Arena sau Light Sleep.
+- [ ] MAX30102 không sáng liên tục ngoài CHECK.
 
 ---
 
-## 8. Bước 7 — Đóng băng source, thông số và tài liệu FINAL V1
+# 8. Bước 7 — Freeze Patient Node FINAL V1
 
-Chỉ thực hiện sau khi sáu bước trên đạt yêu cầu.
+Chỉ thực hiện khi Bước 1–6 đều `DONE`.
 
-### 8.1. Thành phần phải đóng băng
-
-- Source Patient Node.
-- Model `.tflite` và `Asthma_Model.h`.
-- SHA-256 của model.
-- Hai biên phân lớp.
-- Ngưỡng Quality Gate.
-- VAD, số chunk và khoảng cách sử dụng.
-- Số vote.
-- Cấu hình MAX30102.
-- Cấu hình chân phần cứng.
-- Kênh ESP-NOW, cấu trúc packet và phiên bản schema.
-- Chu kỳ gửi Cloud.
-- `platformio.ini` và phiên bản thư viện thực tế.
-
-Không đưa Wi-Fi, mật khẩu MQTT, khóa AES hoặc thông tin bí mật vào tài liệu công
-khai.
-
-### 8.2. Bằng chứng phải lưu
+Freeze:
 
 ```text
-Log kiểm thử ngưỡng
-Bảng validation/test
-Log Quality Gate và VAD
-Kết quả MAX30102
-Log toàn chuỗi
-Log chạy dài hạn
-Ảnh/video demo
-Phiên bản firmware
-Ngày chốt
-Các giới hạn còn tồn tại
+Patient Node source
+Asthma_Model.h
+TFLite model
+model SHA-256
+classification LOW/HIGH
+Quality Gate thresholds
+VAD config
+vote policy
+MAX30102 config
+Light Sleep timeout và wake-source
+pin map
+ESP-NOW channel
+packet structure
+schema version
+cloud interval
+platformio.ini
+resolved library versions
 ```
 
-### 8.3. Quy tắc phiên bản
-
-Ghi thống nhất:
+Không commit:
 
 ```text
-Patient Node Firmware: FINAL V1
-Model: FINAL V1
-Cloud schema_version: 1
-message_type: complete_packet
+Wi-Fi password
+MQTT secret
+AES key
+private credential
 ```
 
-Tạo commit/tag riêng, ví dụ:
+Artifact cuối cần có:
+
+```text
+threshold report
+Quality Gate report
+VAD report
+MAX30102 result
+end-to-end logs
+long-term logs
+demo evidence
+firmware version
+model hash
+known limitations
+```
+
+Commit/tag khuyến nghị:
 
 ```text
 patient-node-final-v1
 ```
 
-Sau khi đóng băng, không sửa trực tiếp Final V1. Mọi thay đổi tiếp theo phải tạo
-V1.1 hoặc V2 để có thể đối chiếu lại kết quả.
+Sau khi freeze:
 
-### 8.4. Điều kiện hoàn thành
-
-- [ ] Source build sạch từ một lần clean mới.
-- [ ] Node và Gateway dùng đúng protocol đã chốt.
-- [ ] Tài liệu khớp source.
-- [ ] Model/hash khớp file triển khai.
-- [ ] Không commit thông tin bí mật.
-- [ ] Có commit/tag Final V1 và gói bằng chứng đi kèm.
+```text
+FINAL V1 không sửa trực tiếp
+→ thay đổi mới = V1.1 hoặc V2
+```
 
 ---
 
-## 9. Trạng thái và thứ tự thực hiện
+# 9. Trạng thái hiện tại
 
-| Bước | Trạng thái hiện tại | Hành động tiếp theo |
+| Bước | Trạng thái | Hành động tiếp theo |
 |---|---|---|
-| 1. Vùng phân lớp | Chưa kiểm chứng chính thức | Chạy 108 validation và so sánh các cặp biên |
-| 2. Quality Gate | CHECK còn loại nhầm | Ghi RMS/MAV/active/clipping theo từng tình huống |
-| 3. VAD/khoảng cách | Khả quan dưới khoảng 6 cm | Lập ma trận khoảng cách và đo kích hoạt nhầm |
-| 4. MAX30102 | Chờ module thật | So sánh với thiết bị tham chiếu |
-| 5. Toàn chuỗi | Đã chạy được | Nạp Gateway mới và lưu log chính thức |
-| 6. Chạy dài hạn | Chưa thực hiện | Chạy Node 2–4 giờ, toàn hệ thống 8–12 giờ |
-| 7. Đóng băng | Chưa thực hiện | Chỉ làm sau khi bước 1–6 đạt |
+| 1. Classification Threshold | `Done` | chạy 154 Validation bằng V1 PTQ INT8 |
+| 2. Quality Gate | `TODO` | test với mạch và nhiều tình huống |
+| 3. VAD / Distance | `TODO` | lập ma trận khoảng cách |
+| 4. MAX30102 | `Done` | kiểm tra module thật |
+| 5. End-to-End | `[~]` | chạy lại bằng source/model mới nhất và lưu evidence |
+| 6. Long-Term Stability | `[~]` | chạy Node và full system dài hạn |
+| 7. Freeze | `TODO` | chỉ làm sau Bước 1–6 |
 
-Thứ tự đề xuất:
+Thứ tự:
 
 ```text
-Bước 1
-→ Bước 2
-→ Bước 3
-→ Bước 4
-→ nạp Gateway mới nhất
-→ Bước 5
-→ Bước 6
-→ Bước 7
+1 Threshold
+→ 2 Quality Gate
+→ 3 VAD / Distance
+→ 4 MAX30102
+→ 5 End-to-End
+→ 6 Long-Term
+→ 7 Freeze FINAL V1
 ```
-
-Không cần huấn luyện lại model trong chuỗi này, trừ khi các phép thử cho thấy
-model thất bại rõ ràng. Phần việc chính còn lại là chốt xử lý sau suy luận,
-ngưỡng âm thanh, phần cứng và độ ổn định của hệ thống.

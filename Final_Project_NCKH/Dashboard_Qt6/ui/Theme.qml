@@ -15,6 +15,9 @@ QtObject {
     readonly property color surface2:
         dark ? "#151F33" : "#F8FAFD"
 
+    readonly property color surface3:
+        dark ? "#1A2740" : "#EEF3F9"
+
     readonly property color hover:
         dark ? "#18243A" : "#F0F5FC"
 
@@ -23,6 +26,9 @@ QtObject {
 
     readonly property color border:
         dark ? "#202D44" : "#DFE6F0"
+
+    // Alias dùng cho các component cũ và đường phân cách mảnh.
+    readonly property color line: border
 
     readonly property color text:
         dark ? "#F4F7FC" : "#172033"
@@ -51,4 +57,10 @@ QtObject {
 
     readonly property color redSoft:
         dark ? "#41232B" : "#FFF0F2"
+
+    readonly property color cyanSoft:
+        dark ? "#123A43" : "#E6FAFC"
+
+    readonly property color purpleSoft:
+        dark ? "#30294C" : "#F2EEFF"
 }

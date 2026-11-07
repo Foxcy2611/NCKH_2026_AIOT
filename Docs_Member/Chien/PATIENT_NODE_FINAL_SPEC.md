@@ -66,7 +66,7 @@ Hiển thị và gửi Gateway
 | I2S SD | GPIO 16 | FINAL |
 | I2C SCL | GPIO 7 | FINAL |
 | I2C SDA | GPIO 8 | FINAL |
-| MAX30102 INT | GPIO 9 | FINAL |
+| MAX30102 INT | GPIO 10 | FINAL |
 | Nút SLEEP/CHECK/MONITOR | GPIO 6 / 4 / 5 | FINAL |
 | OLED | SSD1306, 128 × 64, địa chỉ `0x3C` | FINAL |
 
@@ -332,7 +332,36 @@ lần nữa. Sau ba vote:
 | Tần số dùng trong thuật toán | 25 Hz | FINAL |
 | Miền nhịp tim hợp lệ | 40–180 BPM | FINAL |
 | Miền SpO2 hợp lệ | 70–100% | FINAL |
-| Timeout mẫu | 6.000 ms | FINAL |
+| Deadline chung mỗi phiên Vitals | 10.000 ms | FINAL - cần kiểm chứng phần cứng |
+| Không có ngón tay / FIFO-I2C không tiến triển | Hết deadline → `vitals_valid=0`, HR/SpO2=0 | FINAL - cần kiểm chứng phần cứng |
+| Biên phiên đo | Reset buffer/cache và flush FIFO trước mỗi CHECK | FINAL - cần kiểm chứng phần cứng |
+| Trạng thái ngoài CHECK | Shutdown, LED RED/IR tắt | FINAL - cần kiểm chứng phần cứng |
+| Thời điểm bật | Ngay khi bắt đầu CHECK | FINAL - cần kiểm chứng phần cứng |
+| Thời điểm tắt | CHECK hoàn tất, hủy hoặc lỗi | FINAL - cần kiểm chứng phần cứng |
+
+MAX30102 được xác minh/cấu hình tại boot rồi đưa về shutdown. Cảm biến chỉ chuyển sang
+SpO2 khi bắt đầu CHECK; tới `VITAL_CHECK`, firmware reset sạch FIFO, buffer và cache để
+không trộn mẫu giữa hai phiên hoặc hai người dùng. Cơ chế giữ 75 mẫu cũ và thêm 25 mẫu
+mới chỉ dùng cho cập nhật trong cùng phiên. CHECK hoàn tất, bị hủy hoặc gặp lỗi đều đưa
+cảm biến trở lại shutdown. Người dùng có thể nhấn `SLEEP` để bỏ qua sinh hiệu; deadline
+chung vẫn bảo đảm state machine không chờ vô hạn.
+
+### 12.1. Light Sleep tại STANDBY
+
+| Thông số | Giá trị FINAL | Trạng thái |
+|---|---:|---|
+| State được tự ngủ | Chỉ `STATE_STANDBY` | FINAL - cần kiểm chứng phần cứng |
+| Thời gian chờ | 15.000 ms không thao tác | FINAL - cần kiểm chứng phần cứng |
+| Kiểu ngủ | ESP32-S3 Light Sleep | FINAL - cần kiểm chứng phần cứng |
+| Nguồn đánh thức | CHECK, MONITOR hoặc SLEEP, mức LOW | FINAL - cần kiểm chứng phần cứng |
+| RAM/PSRAM/model | Giữ nguyên; không chạy lại `setup()` | FINAL - cần kiểm chứng phần cứng |
+| Ngoại vi trước ngủ | OLED off, MAX30102 shutdown, I2S stop, ESP-NOW/Wi-Fi stop | FINAL - cần kiểm chứng phần cứng |
+| CHECK wake | Khôi phục ngoại vi và bắt đầu CHECK | FINAL - cần kiểm chứng phần cứng |
+| MONITOR wake | Khôi phục, warm-up Monitor rồi chạy VAD | FINAL - cần kiểm chứng phần cứng |
+| SLEEP wake | Khôi phục và ở lại STANDBY | FINAL - cần kiểm chứng phần cứng |
+
+Light Sleep không được gọi khi đang CHECK, MONITOR, xử lý AI, có packet pending hoặc chờ
+ACK. Sau khi thức, I2S bỏ 8 chunk chuyển tiếp; MONITOR vẫn dùng warm-up 100 chunk riêng.
 
 Phần MAX30102 phải được kiểm tra bằng module thật; source build thành công chưa
 chứng minh độ chính xác sinh hiệu.

@@ -1,0 +1,13 @@
+﻿test_index,source_file,class_label,class_name,expected_output_int8,probability_non_asthma,predicted_label,prediction_correct,tensor_name
+1,AST_038__P17WheezingIE_85__take01.wav,0,Asthma,-127,0.00390625,0,1,static_asthma_01
+2,P17WheezingIU_82.wav,0,Asthma,-127,0.00390625,0,1,static_asthma_02
+3,P17WheezingRL_83.wav,0,Asthma,-128,0.0,0,1,static_asthma_03
+4,P24WheezingRS_120.wav,0,Asthma,-127,0.00390625,0,1,static_asthma_04
+5,P26WheezingRL_127.wav,0,Asthma,-128,0.0,0,1,static_asthma_05
+6,P47WheezingRS_232.wav,0,Asthma,-128,0.0,0,1,static_asthma_06
+7,P26Pneumonia72P.wav,1,Non_Asthma,106,0.9140625,1,1,static_non_asthma_07
+8,P47COPDMc_372.wav,1,Non_Asthma,25,0.59765625,1,1,static_non_asthma_08
+9,P47COPDMc_374.wav,1,Non_Asthma,127,0.99609375,1,1,static_non_asthma_09
+10,P47COPDPr_371.wav,1,Non_Asthma,127,0.99609375,1,1,static_non_asthma_10
+11,P50COPDMc_398.wav,1,Non_Asthma,127,0.99609375,1,1,static_non_asthma_11
+12,P8Pneumonia28V.wav,1,Non_Asthma,127,0.99609375,1,1,static_non_asthma_12

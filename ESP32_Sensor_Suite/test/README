@@ -1,0 +1,7 @@
+
+Thư mục `test/` được dành cho các kiểm thử tự động bằng PlatformIO Test.
+
+Hiện việc kiểm tra phần cứng được thực hiện qua chương trình thử riêng lẻ trong
+`../src/main.cpp`: chọn mô-đun bằng `SENSOR_SUITE_MODULE`, nạp firmware và quan
+sát Serial Monitor hoặc màn hình tương ứng. Chưa có unit test phần cứng tự động
+trong thư mục này.

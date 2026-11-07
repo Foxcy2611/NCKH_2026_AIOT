@@ -1,5 +1,5 @@
 ===============================================================================
-BỘ ĐỆM 1 GIÂY TRƯỚC KHI VAD KÍCH HOẠT
+RING BUFFER 1 GIÂY VÀ TRUY HỒI ONSET VAD
 ===============================================================================
 
 Tác dụng:
@@ -13,18 +13,21 @@ Cách hoạt động:
 1. Sau reset, ESP32 bỏ 100 khối đầu, tương đương khoảng 1,6 giây.
 2. ESP32 liên tục lưu 16000 mẫu gần nhất vào bộ đệm vòng trong PSRAM.
 3. Khi bộ đệm chưa đủ 1 giây, VAD chưa được phép kích hoạt.
-4. Khi 4 khối liên tiếp vượt ngưỡng 75, VAD xác nhận có âm thanh.
-5. ESP32 chép 1 giây nằm trước thời điểm kích hoạt vào audio_buffer.
-6. ESP32 thu thêm 4 giây để đủ 80000 mẫu, tương đương đúng 5 giây.
+4. Khối đầu tiên vượt ngưỡng 75 được đánh dấu là candidate onset.
+5. Khi 4 khối liên tiếp vượt ngưỡng, VAD xác nhận có âm thanh sau khoảng
+   64 ms và truy hồi các khối từ candidate onset trong ring buffer.
+6. ESP32 thu tiếp cho đến khi audio_buffer đủ 80000 mẫu, tương đương đúng
+   5 giây tính từ onset. Toàn bộ 1 giây lịch sử không được đưa vào model.
 7. Sau khi mô hình xử lý xong, bộ đệm vòng được làm mới cho lượt tiếp theo.
 
 Luồng tổng quát:
 
     Bỏ nhiễu reset 1,6 giây
     -> tích lũy bộ đệm vòng 1 giây
-    -> 4 khối liên tiếp vượt ngưỡng 75
-    -> lấy lại 1 giây trước kích hoạt
-    -> thu thêm 4 giây
+    -> đánh dấu chunk active đầu tiên là candidate onset
+    -> xác nhận sau 4 chunk liên tiếp vượt ngưỡng 75
+    -> truy hồi khoảng 64 ms từ onset
+    -> thu tiếp khoảng 4,936 giây cho đủ 5 giây
     -> tiền xử lý và chạy mô hình
 
 Tài nguyên:
@@ -35,8 +38,9 @@ Lưu ý:
 
 - Micro và bộ đệm hoạt động liên tục, nhưng mô hình không chạy liên tục.
 - Mô hình chỉ chạy sau khi đã thu đủ một đoạn 5 giây.
-- Bộ đệm không thay thế VAD; nó chỉ giữ lại âm thanh xảy ra trước khi VAD xác
-  nhận.
-- Model Keras, TFLite, Mel-Spectrogram và ngưỡng phân loại 0,5 không thay đổi.
+- Bộ đệm không thay thế VAD; nó giữ lịch sử để truy hồi phần onset đã xảy ra
+  trong thời gian VAD chờ xác nhận.
+- Ring có dung lượng 1 giây nhưng lượng audio được truy hồi phụ thuộc số chunk
+  từ candidate onset đến lúc xác nhận, mặc định khoảng 64 ms.
 
 ===============================================================================

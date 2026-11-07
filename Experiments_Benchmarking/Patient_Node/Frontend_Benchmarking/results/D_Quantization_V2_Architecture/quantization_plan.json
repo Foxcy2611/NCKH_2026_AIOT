@@ -1,0 +1,91 @@
+{
+  "schema_version": 2,
+  "stage": "D_QUANTIZATION_PLAN",
+  "generated_utc": "2026-10-22T09:57:40.528123+00:00",
+  "test_accessed": false,
+  "test_access_scope": "none",
+  "selection_rule": "Quantization calibration uses Train only; QAT uses Train and Validation only",
+  "threshold_p_non_asthma": 0.5,
+  "method_config_path": "D:\\NCKH_2026\\NCKH_2026_AIOT\\Experiments_Benchmarking\\Patient_Node\\Frontend_Benchmarking\\configs\\D_quantization_methods.csv",
+  "method_config_sha256": "12f6b7bcd7df283bea331e1acd2cc0257d06a80b6e9b833d4105d03819d9793e",
+  "methods": [
+    {
+      "method_id": "PTQ_INT8",
+      "training_mode": "PTQ",
+      "integer_mode": "INT8",
+      "experimental": false,
+      "description": "Post-training full integer quantization; INT8 weights activations input output"
+    },
+    {
+      "method_id": "QAT_INT8",
+      "training_mode": "QAT",
+      "integer_mode": "INT8",
+      "experimental": false,
+      "description": "INT8-aware fine-tuning then full INT8 export"
+    },
+    {
+      "method_id": "PTQ_INT16x8",
+      "training_mode": "PTQ",
+      "integer_mode": "INT16x8",
+      "experimental": false,
+      "description": "Post-training quantization; INT8 weights and INT16 activations input output"
+    }
+  ],
+  "settings": {
+    "representative_per_class": 50,
+    "representative_seed": 42,
+    "qat_epochs": 15,
+    "qat_batch_size": 32,
+    "qat_learning_rate": 1e-05,
+    "qat_patience": 5
+  },
+  "trials": [
+    {
+      "trial_id": "combo_pre0_mel40_fft2048__V2__s44",
+      "variant_id": "combo_pre0_mel40_fft2048",
+      "architecture": "V2",
+      "seed": 44,
+      "config_sha256": "5ae8a2c91c92b58653d899ddec056485787b6307db2cc0c350382b4ded2576f8",
+      "model_path": "D:\\NCKH_2026\\NCKH_2026_AIOT\\Experiments_Benchmarking\\Patient_Node\\Frontend_Benchmarking\\artifacts\\models\\combo_pre0_mel40_fft2048__V2__s44\\Model_Asthma.keras",
+      "model_sha256": "70034ade214b22b2ee4e2de53966187cf18dbae57cc3af92aaf8af13fba4de58",
+      "training_metadata_path": "D:\\NCKH_2026\\NCKH_2026_AIOT\\Experiments_Benchmarking\\Patient_Node\\Frontend_Benchmarking\\artifacts\\models\\combo_pre0_mel40_fft2048__V2__s44\\training_metadata.json",
+      "training_metadata_sha256": "8bb453d5093fe0ab2ec9400ca4390ab88f56a317b96a982090a0ba8889d8d1d5",
+      "feature_dir": "D:\\NCKH_2026\\NCKH_2026_AIOT\\Experiments_Benchmarking\\Patient_Node\\Frontend_Benchmarking\\artifacts\\features\\combo_pre0_mel40_fft2048",
+      "train_feature_sha256": "6e91af94a827751ba06217e5d182beb7d07834c782963dd191cda9c166870d78",
+      "train_label_sha256": "89c395891ee661a57ab6b878b73e24aeb97e0c917a8bb7e51203831646f3f5b3",
+      "val_feature_sha256": "2edb7d4c5b8d991259e93f8133b402457ffeee1975c01baa83301a006b7bacc3",
+      "val_label_sha256": "6016bec027a3b5035475737f1369ad1edb2569be86807b12e3b64e2b2678ce78",
+      "train_fingerprint": "8b469b5426dd7d50f93c4d75a0d97b7ea887f7bb690aa2f38c6534e74fdec9c1",
+      "val_fingerprint": "c53c444a98a2f3c69519f8fa4b0afeef8e82daeb01d282153c4eefdf837d513f",
+      "train_min": -80.0,
+      "train_max": 0.0,
+      "input_shape": [
+        40,
+        129,
+        1
+      ],
+      "parameter_count": 7802,
+      "tensorflow_training_version": "2.21.0",
+      "frontend_config": {
+        "low_cut_hz": 100.0,
+        "high_cut_hz": 2000.0,
+        "filter_order": 5,
+        "pre_emphasis": 0.0,
+        "n_mels": 40,
+        "hop_length": 625,
+        "n_fft": 2048
+      },
+      "registered_in_c": true,
+      "priority_rank": 1,
+      "model_role": "EXPLICIT"
+    }
+  ],
+  "notes": [
+    "PTQ representative samples are balanced and selected only from Train.",
+    "QAT never reads Test and uses the frozen FP32 checkpoint as initialization.",
+    "QAT is provided only for full INT8; INT16x8 remains a PTQ comparison branch.",
+    "INT16x8 is not a drop-in replacement for firmware that assumes INT8 input/output.",
+    "Full-C scope reads historical Val/Test summary identity and SHA only; it does not rank checkpoints by Test metrics."
+  ],
+  "plan_sha256": "5f65766e6f61863d01e1526c1314ba1e3f249769a2ea782b007ce8b3e84e1234"
+}

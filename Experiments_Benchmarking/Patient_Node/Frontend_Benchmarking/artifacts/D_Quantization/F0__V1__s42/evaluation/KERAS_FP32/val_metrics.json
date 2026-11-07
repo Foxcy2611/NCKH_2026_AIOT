@@ -1,0 +1,62 @@
+{
+  "status": "VAL_EVALUATION_COMPLETE",
+  "generated_utc": "2026-10-21T16:01:39.849434+00:00",
+  "split": "val",
+  "test_accessed": false,
+  "historical_test_previously_inspected": false,
+  "plan_path": "D:\\NCKH_2026\\NCKH_2026_AIOT\\Experiments_Benchmarking\\Patient_Node\\Frontend_Benchmarking\\results\\D_Quantization\\quantization_plan.json",
+  "plan_sha256": "8258e0c64948a6d2916f84089bd590f40c8b026b22f713e5bfe1845dabbe544d",
+  "confusion_matrix_labels": [
+    "Asthma=0",
+    "Non-Asthma=1"
+  ],
+  "confusion_matrix": [
+    [
+      37,
+      1
+    ],
+    [
+      8,
+      108
+    ]
+  ],
+  "io": {
+    "input": {
+      "dtype": "float32"
+    },
+    "output": {
+      "dtype": "float32"
+    }
+  },
+  "summary_row": {
+    "plan_sha256": "8258e0c64948a6d2916f84089bd590f40c8b026b22f713e5bfe1845dabbe544d",
+    "split": "val",
+    "priority_rank": 1,
+    "model_role": "C_FULL_MATRIX",
+    "trial_id": "F0__V1__s42",
+    "variant_id": "F0",
+    "seed": 42,
+    "method_id": "KERAS_FP32",
+    "training_mode": "FP32",
+    "integer_mode": "FP32",
+    "experimental": false,
+    "accuracy": 0.9415584415584416,
+    "balanced_accuracy": 0.9523593466424682,
+    "macro_f1": 0.9257831325301205,
+    "asthma_precision": 0.8222222222222222,
+    "asthma_recall": 0.9736842105263158,
+    "asthma_f1": 0.891566265060241,
+    "non_asthma_precision": 0.9908256880733946,
+    "non_asthma_recall": 0.9310344827586207,
+    "non_asthma_f1": 0.96,
+    "asthma_fn": 1,
+    "non_asthma_fp": 8,
+    "prediction_changes_vs_fp32": 0,
+    "mean_abs_probability_delta": 0.0,
+    "max_abs_probability_delta": 0.0,
+    "model_size_bytes": 6402662,
+    "input_dtype": "float32",
+    "output_dtype": "float32",
+    "model_sha256": "3dabdca006822e0ea7bdc6f975ea7d290b49e74053599e5777726646b0dedac2"
+  }
+}

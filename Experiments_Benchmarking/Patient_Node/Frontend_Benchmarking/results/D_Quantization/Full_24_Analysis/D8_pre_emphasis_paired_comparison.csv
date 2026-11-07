@@ -1,0 +1,9 @@
+﻿Method,So sánh (bật → tắt),Δ Val Mean (pp),Δ Test Mean (pp),Δ Test Asthma Recall (pp),Δ Val SD (pp)
+PTQ_INT8,F0 → Pre0,-2.16,-2.1,-12.28,3.52
+PTQ_INT8,Mel40 → C1,-1.95,-0.21,3.51,1.17
+PTQ_INT8,FFT2048 → C2,-1.08,-2.52,-6.14,1.12
+PTQ_INT8,C3 → C4,-1.08,-0.84,-3.51,2.15
+QAT_INT8,F0 → Pre0,0.87,0.63,0.0,-0.73
+QAT_INT8,Mel40 → C1,0.22,1.47,1.75,-0.37
+QAT_INT8,FFT2048 → C2,0.22,0.63,0.0,0.0
+QAT_INT8,C3 → C4,-0.43,2.52,1.75,-1.34

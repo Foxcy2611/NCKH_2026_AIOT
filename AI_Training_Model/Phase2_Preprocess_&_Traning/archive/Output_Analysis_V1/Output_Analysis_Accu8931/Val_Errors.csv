@@ -1,0 +1,10 @@
+﻿split,sample_index,file_path,file_name,source_type,data_group,subtype,group_id,true_label,true_class,predicted_label,predicted_class,probability_asthma,probability_non_asthma,predicted_confidence,distance_from_threshold,inside_device_unsure_band_045_065,is_correct,error_type
+val,6,Asthma\val\AST_036__P6AsthmaIU_26__take01.wav,AST_036__P6AsthmaIU_26__take01.wav,Playback,asthma_playback,asthma,P6,0,Asthma,1,Non_Asthma,0.211871505,0.788128495,0.788128495,0.288128495,0,0,ASTHMA_FN
+val,40,Non_Asthma_Disease\val\COPD_009__P33COPDPr_257__take01.wav,COPD_009__P33COPDPr_257__take01.wav,Playback,copd_playback,copd,P33,1,Non_Asthma,0,Asthma,0.996681904,0.003318096,0.996681904,0.496681904,0,0,NON_ASTHMA_FP
+val,41,Non_Asthma_Disease\val\COPD_009__P33COPDPr_257__take02.wav,COPD_009__P33COPDPr_257__take02.wav,Playback,copd_playback,copd,P33,1,Non_Asthma,0,Asthma,0.782544166,0.217455834,0.782544166,0.282544166,0,0,NON_ASTHMA_FP
+val,80,Non_Asthma_Disease\val\P19Pneumonia33O.wav,P19Pneumonia33O.wav,Core,pneumonia_core,pneumonia,P19,1,Non_Asthma,0,Asthma,0.894478887,0.105521113,0.894478887,0.394478887,0,0,NON_ASTHMA_FP
+val,82,Non_Asthma_Disease\val\P19Pneumonia41U.wav,P19Pneumonia41U.wav,Core,pneumonia_core,pneumonia,P19,1,Non_Asthma,0,Asthma,0.594612062,0.405387938,0.594612062,0.094612062,0,0,NON_ASTHMA_FP
+val,84,Non_Asthma_Disease\val\P19Pneumonia90X.wav,P19Pneumonia90X.wav,Core,pneumonia_core,pneumonia,P19,1,Non_Asthma,0,Asthma,0.938176803,0.061823197,0.938176803,0.438176803,0,0,NON_ASTHMA_FP
+val,98,Non_Asthma_Disease\val\P33COPDMc_258.wav,P33COPDMc_258.wav,Core,copd_core,copd,P33,1,Non_Asthma,0,Asthma,0.944232043,0.055767957,0.944232043,0.444232043,0,0,NON_ASTHMA_FP
+val,109,Non_Asthma_Disease\val\P35COPDMc_280.wav,P35COPDMc_280.wav,Core,copd_core,copd,P35,1,Non_Asthma,0,Asthma,0.901969925,0.098030075,0.901969925,0.401969925,0,0,NON_ASTHMA_FP
+val,122,Non_Asthma_Disease\val\P40COPDMc_318.wav,P40COPDMc_318.wav,Core,copd_core,copd,P40,1,Non_Asthma,0,Asthma,0.981104052,0.018895948,0.981104052,0.481104052,0,0,NON_ASTHMA_FP

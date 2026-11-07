@@ -7,12 +7,12 @@
 
 // ==== CẤU HÌNH ====
 #define SAMPLE_RATE     16000
-#define N_FFT           1024
+#define N_FFT           2048
 #define HOP_LENGTH      625
-#define N_MELS          64 // Độ phân giải Mel-Spectrogram - 64 giá trị tiêu chuẩn
+#define N_MELS          40 // C4: 40 dải Mel
 #define F_MIN           100.0f // Lowcut
 #define F_MAX           2000.0f // Highcut
-#define N_FREQ_BINS     513 // FFT đối xứng qua trục giữa (1024 / 2) + 1 ; 513 ô (513 bin)
+#define N_FREQ_BINS     1025 // (N_FFT / 2) + 1
 #define MAX_FRAMES      129
 
 float Hz_to_Mel(float hz);

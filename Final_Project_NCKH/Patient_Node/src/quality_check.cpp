@@ -4,13 +4,13 @@
 #include <math.h>
 
 namespace {
-    // Test chưa phải bản cuối
-    constexpr float kMinRMS = 20.0f;               // RMS dưới mức này -> TOO_WEAK - 150
-    constexpr float kMinActiveRatio = 0.01f;        // < 5% block hoạt động -> INACTIVE
+    // Quality_Gate_Selection.ipynb
+    constexpr float kMinRMS = 20.0f;                // RMS dưới mức này -> TOO_WEAK
+    constexpr float kMinActiveRatio = 0.01f;        // < 1% block hoạt động -> INACTIVE
     constexpr float kMaxClippedRatio = 0.01f;       // > 1% sample clip -> TOO_LOUD - 0.05
 
     constexpr int32_t  kClipLevel = 32000;          // gần max int16 (32767) -> coi là clip     
-    constexpr int32_t  kActiveBlockThreshold = 20;  // biên độ TB/block để coi là "có hoạt động" - 80
+    constexpr int32_t  kActiveBlockThreshold = 20;  // biên độ TB/block để coi là "có hoạt động"
 
     constexpr uint32_t kBlockSize = 256;            // ~16ms/block @16kHz
 

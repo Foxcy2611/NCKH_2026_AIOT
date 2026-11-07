@@ -1,0 +1,23 @@
+{
+  "split": "val",
+  "sample_count": 154,
+  "asthma_count": 38,
+  "non_asthma_count": 116,
+  "experiment": "Patient_Node_Final_V1_Classification_Threshold",
+  "trial_id": "combo_pre0_mel40_fft2048__V1__s44",
+  "model": "combo_pre0_mel40_fft2048__V1__s44_QAT_INT8",
+  "model_path": "Experiments_Benchmarking/Patient_Node/Frontend_Benchmarking/artifacts/D_Quantization/combo_pre0_mel40_fft2048__V1__s44/methods/QAT_INT8/QAT_INT8.tflite",
+  "model_sha256": "d081c1cfcd873c4e2182f9d9e0f8aff07a69ea0b041cf0d6d845d3222efc46b9",
+  "conversion_metadata_path": "Experiments_Benchmarking/Patient_Node/Frontend_Benchmarking/artifacts/D_Quantization/combo_pre0_mel40_fft2048__V1__s44/methods/QAT_INT8/conversion_metadata.json",
+  "feature_dir": "Experiments_Benchmarking/Patient_Node/Frontend_Benchmarking/artifacts/features/combo_pre0_mel40_fft2048",
+  "feature_contract": "Frontend C4: pre=0, mel=40, fft=2048, shape 40x129x1",
+  "normalization_method": "minmax_train_only_then_float32",
+  "train_min": -80.0,
+  "train_max": 0.0,
+  "input_scale": 0.003921568859368563,
+  "input_zero_point": -128,
+  "output_scale": 0.00390625,
+  "output_zero_point": -128,
+  "binary_threshold": 0.5,
+  "prediction_csv": "validation_predictions.csv"
+}

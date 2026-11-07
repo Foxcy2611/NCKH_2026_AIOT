@@ -1,0 +1,13 @@
+1. Quan trọng
+
+- Kết quả cross-correlation đẹp hơn hẳn onset detector: 
++ Toàn bộ 72/72 take Train+Val đều reliable, delay median khoảng 1.02 s, P10–P90 chỉ 1.005–1.035 s, std khoảng 0.022 s. 
++ Train và Val cũng gần như giống nhau.
+=> Tức là playback của mình có một delay hệ thống khoảng 1 giây so với raw source.
+
+- Model hiện tại đã train trên playback bị crop sai từ 0–5 s, nên nó đã phần nào học theo lỗi cũ. Còn cross-correlation so trực tiếp:
+=> raw source ↔ playback take
+
+- Vậy mục tiêu Playback vs raw 0-5s, nên lấy
+Playback: ~1s -> ~6s
+

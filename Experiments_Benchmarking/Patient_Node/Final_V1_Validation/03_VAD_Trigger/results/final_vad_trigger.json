@@ -1,0 +1,20 @@
+{
+  "status": "FROZEN",
+  "experiment": "03_VAD_Trigger",
+  "selection_split": "calibration",
+  "test_used_for_selection": false,
+  "config": {
+    "threshold": 75,
+    "consecutive": 4,
+    "chunk_samples": 256,
+    "sample_rate": 16000,
+    "pre_roll_samples": 16000,
+    "capture_samples": 80000,
+    "warmup_chunks": 100
+  },
+  "source_manifest_sha256": "c2f4b59ebb0f54545b7133cbe400bf1444ea31c8321cfbea2825d2818f0f042f",
+  "calibration_metrics_sha256": "611d68ec6498b0d4ba485e84ee54db693bc501f88652a94492fa99556ed4ee00",
+  "calibration_mav_sha256": "e4d085ee385d57e861c9e6369789f8672af155fe3fdd4c31550a5fb49e5bd1cb",
+  "note": "Đã chọn cấu hình VAD 75/4 dựa trên dữ liệu Calibration. Kích hoạt thành công 119/144 file WAV hô hấp trong bộ Playback, bao gồm 70/72 file Asthma. Âm thanh im lặng có kiểm soát (Controlled Silence) không tạo ra bất kỳ lần kích hoạt nào trong 300 giây. Âm thanh im lặng cũ (Legacy Silence) tạo ra 15 lần kích hoạt trong 300 giây, xác nhận hệ thống nhạy với nhiễu nền. So sánh với các cấu hình 80/4, 85/4, 90/4 và 100/4 cho thấy việc tăng ngưỡng MAV giúp giảm một số kích hoạt do tiếng ồn nền, nhưng lại làm chậm thời điểm kích hoạt trên nhiều bản ghi Playback, bao gồm cả hai mẫu khò khè AST_026. Cấu hình 75/4 được giữ lại nhằm ưu tiên phát hiện và ghi nhận âm thanh hô hấp sớm hơn. VAD chỉ hoạt động ở trạng thái MONITOR_LISTENING, không hoạt động ở trạng thái STANDBY. Do VAD dựa trên năng lượng tín hiệu, hệ thống không thể phân biệt âm thanh hô hấp với các âm thanh môi trường khác. Bộ dữ liệu Test độc lập (held-out Test) không được sử dụng trong quá trình lựa chọn ngưỡng.",
+  "limitations": "Energy-based event activation, not respiratory-content recognition. 3-vote logic is owned by State_Machine."
+}

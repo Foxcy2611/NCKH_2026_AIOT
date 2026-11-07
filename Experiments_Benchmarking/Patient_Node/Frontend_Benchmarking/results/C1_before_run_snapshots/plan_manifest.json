@@ -1,0 +1,8 @@
+{
+  "protocol": "NCKH_FRONTEND_V3_PHASE2_EXACT_2026_10",
+  "candidate_count": 15,
+  "enabled_count": 1,
+  "f0_present": true,
+  "f0_enabled": false,
+  "note": "Test labels are not inspected when building plan. F0 is optional in the training schedule."
+}

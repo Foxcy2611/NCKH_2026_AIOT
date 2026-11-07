@@ -11,6 +11,8 @@ constexpr uint8_t OLED_WIDTH = 128;
 constexpr uint8_t OLED_HEIGHT = 64;
 
 void OLED_Init(void);
+// Bật/tắt panel SSD1306 mà không làm mất framebuffer trong RAM.
+void OLED_SetPower(bool enabled);
 void OLED_Clear_Display(void);
 void OLED_UpdateScreen(void);
 
@@ -36,5 +38,6 @@ void OLED_Show_Monitoring(void);
 void OLED_Show_SoundDetected(void);
 void OLED_Show_ReplyOK(void);
 void OLED_Show_NoReply(void);
+void OLED_Show_MicError(void);
 
 #endif /* NCKH_UI_OLED_H */

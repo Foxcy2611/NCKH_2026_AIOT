@@ -1,0 +1,11 @@
+1. Đồng bộ các lib header AI                    | v
+2. Đồng bộ tiền xử lý C++                       | v
+3. Chạy và chốt thông số Final_V1_Validation    | v
+4. Chốt Deploy_Model/3                          | v
+5. Thêm Code đọc Pin                            | v
+6. Test full luồng lần 2                        | v
+7. Sửa chính tả                                 | v
+8. Đồng bộ Docs tại root                        | v
+9. Thêm Video Demo                              |
+10. Thêm các ảnh về dashboard vào hardware      |
+8. END

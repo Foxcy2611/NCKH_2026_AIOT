@@ -1,6 +1,7 @@
 # Triển khai TinyML trên ESP32-S3
 
-Thư mục được chốt thành ba dự án độc lập:
+Thư mục gồm ba dự án kiểm chứng liên tiếp, hiện cùng dùng model cuối
+`combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8` (C4 V1 s44):
 
 ## 1_Test_Model_Static_Profiling
 
@@ -15,18 +16,19 @@ Bản nghiên cứu và kiểm chứng đầy đủ. Dự án giữ:
 - Tiền xử lý C++ tương ứng pipeline Python.
 - INMP441, VAD, bộ đệm trước kích hoạt 1 giây và bỏ phiếu ba lần.
 - Mẫu PCM16 đối chiếu Python–C++.
-- 108 tensor validation và 113 tensor test.
+- 12 mẫu PCM16 cố định được sinh từ cùng manifest Phase 4.
 - Chế độ đo năng lượng để hiệu chỉnh VAD khi phần cứng hoặc môi trường đổi.
 
-Tài liệu kỹ thuật nằm tại [doc](./2_Test_Model_LiveMic/doc/README.md).
+Tài liệu kỹ thuật nằm tại [Tài liệu kĩ thuật](./2_Test_Model_LiveMic/doc/README.md).
 
 ## 3_Model_Complete
 
 Bản gọn để ghép vào hệ thống IoT. Chỉ giữ đường chạy thật từ micro đến kết quả,
 không chứa dữ liệu thử, nhánh kiểm tensor, hiệu chuẩn hay log lịch sử.
 
-Các tham số hiện tại đã khóa: 16 kHz, 5 giây, Mel 64 x 129, dB từ -80 đến 0,
-ngưỡng model 0,5, VAD 75 với 4 khối liên tiếp, bộ đệm trước kích hoạt 1 giây và
-Tensor Arena 270 KB trong PSRAM.
+Các tham số hiện tại: 16 kHz, 5 giây, FFT 2048, Mel 40 x 129,
+không pre-emphasis, dB từ -80 đến 0,
+VAD 75 với 4 khối liên tiếp, bộ đệm trước kích hoạt 1 giây và Tensor Arena
+280 KiB trong PSRAM. Ngưỡng phân loại phải lấy từ bước Classification Threshold.
 
 Hệ thống chỉ hỗ trợ sàng lọc mẫu âm thanh; không thay thế chẩn đoán y khoa.

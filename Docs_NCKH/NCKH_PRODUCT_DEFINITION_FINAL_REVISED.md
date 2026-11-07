@@ -412,7 +412,7 @@ typedef struct {
     uint32_t session_id;
     Event_Type_t event_type;
     Audio_Quality_t audio_quality;
-    Interface_TinyML_t classification;
+    Inference_TinyML_t classification;
     float model_score;
     bool vitals_valid;
     uint16_t heart_rate;

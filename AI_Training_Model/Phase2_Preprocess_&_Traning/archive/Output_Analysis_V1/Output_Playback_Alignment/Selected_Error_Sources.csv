@@ -1,0 +1,4 @@
+﻿source_rank,source_id,source_file,split,playback_error_count,mean_error_probability_non_asthma,error_files
+1,AST_033,P16WheezingRS_80.wav,val,2,0.990849048,AST_033__P16WheezingRS_80__take01.wav;AST_033__P16WheezingRS_80__take02.wav
+2,AST_039,P24WheezingRS_120.wav,test,2,0.970402598,AST_039__P24WheezingRS_120__take01.wav;AST_039__P24WheezingRS_120__take02.wav
+3,AST_035,P4AsthmaRS_16.wav,val,1,0.683285832,AST_035__P4AsthmaRS_16__take01.wav

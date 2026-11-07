@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "status": "DEPLOYMENT_ARTIFACT_EXPORTED",
+  "generated_utc": "2026-10-21T18:43:35.158314+00:00",
+  "trial_id": "F0__V1__s43",
+  "variant_id": "F0",
+  "method_id": "PTQ_INT8",
+  "training_mode": "PTQ",
+  "integer_mode": "INT8",
+  "experimental": false,
+  "array_name": "model_data",
+  "array_alignment_bytes": 4,
+  "source_tflite": "D:\\NCKH_2026\\NCKH_2026_AIOT\\Experiments_Benchmarking\\Patient_Node\\Frontend_Benchmarking\\artifacts\\D_Quantization\\F0__V1__s43\\methods\\PTQ_INT8\\PTQ_INT8.tflite",
+  "source_tflite_sha256": "68e412047a2bb60fcb090d2bdec190fd08fc2c800b6bddbeac431b414a7ef1ce",
+  "source_tflite_size_bytes": 543976,
+  "header_path": "D:\\NCKH_2026\\NCKH_2026_AIOT\\Experiments_Benchmarking\\Patient_Node\\Frontend_Benchmarking\\artifacts\\D_Deployment\\F0__V1__s43\\PTQ_INT8\\Asthma_Model.h",
+  "header_sha256": "70f83a82ce11c475e4a014e6c4962008bbff8729ea0a9ddea7f13a39c29b58f4",
+  "io": {
+    "input": {
+      "name": "serving_default_input_layer:0",
+      "shape": [
+        1,
+        64,
+        129,
+        1
+      ],
+      "dtype": "int8",
+      "scale": 0.003921568859368563,
+      "zero_point": -128
+    },
+    "output": {
+      "name": "StatefulPartitionedCall_1:0",
+      "shape": [
+        1,
+        1
+      ],
+      "dtype": "int8",
+      "scale": 0.00390625,
+      "zero_point": -128
+    }
+  },
+  "normalization": {
+    "method": "minmax_train_only_then_float32",
+    "train_min": -80.0,
+    "train_max": 0.0
+  },
+  "frontend_config": {
+    "low_cut_hz": 100.0,
+    "high_cut_hz": 2000.0,
+    "filter_order": 5,
+    "pre_emphasis": 0.97,
+    "n_mels": 64,
+    "hop_length": 625,
+    "n_fft": 1024
+  },
+  "input_shape": [
+    64,
+    129,
+    1
+  ],
+  "validation_summary": {
+    "plan_sha256": "8258e0c64948a6d2916f84089bd590f40c8b026b22f713e5bfe1845dabbe544d",
+    "split": "val",
+    "priority_rank": 2,
+    "model_role": "BASELINE",
+    "trial_id": "F0__V1__s43",
+    "variant_id": "F0",
+    "seed": 43,
+    "method_id": "PTQ_INT8",
+    "training_mode": "PTQ",
+    "integer_mode": "INT8",
+    "experimental": false,
+    "accuracy": 0.961038961038961,
+    "balanced_accuracy": 0.947595281306715,
+    "macro_f1": 0.947595281306715,
+    "asthma_precision": 0.9210526315789473,
+    "asthma_recall": 0.9210526315789473,
+    "asthma_f1": 0.9210526315789473,
+    "non_asthma_precision": 0.9741379310344828,
+    "non_asthma_recall": 0.9741379310344828,
+    "non_asthma_f1": 0.9741379310344828,
+    "asthma_fn": 3,
+    "non_asthma_fp": 3,
+    "prediction_changes_vs_fp32": 2,
+    "mean_abs_probability_delta": 0.018344681710004807,
+    "max_abs_probability_delta": 0.7105359435081482,
+    "model_size_bytes": 543976,
+    "input_dtype": "int8",
+    "output_dtype": "int8",
+    "model_sha256": "68e412047a2bb60fcb090d2bdec190fd08fc2c800b6bddbeac431b414a7ef1ce"
+  },
+  "plan_sha256": "8258e0c64948a6d2916f84089bd590f40c8b026b22f713e5bfe1845dabbe544d",
+  "firmware_notes": [
+    "Quantize normalized float input using input scale and zero_point from this manifest.",
+    "Dequantize output before applying p_non_asthma threshold 0.5.",
+    "INT16x8 requires int16_t input/output handling and is not a drop-in INT8 replacement.",
+    "Header export does not prove TFLite Micro operator support or tensor-arena capacity."
+  ]
+}

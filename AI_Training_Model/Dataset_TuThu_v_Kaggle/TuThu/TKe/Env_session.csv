@@ -1,0 +1,36 @@
+file_name,session_id,subtype,capture_type,duration,sample_rate,split,note
+podcast_5min.wav,podcast_old_01,podcast,environment,300.0,16000,unassigned,Master V1 giữ lại làm một session độc lập
+key_fan_5min.wav,keyfan_old_01,fan_keyboard,environment,300.0,16000,unassigned,Master V1 giữ lại làm một session độc lập
+silence_5min.wav,silence_old_01,silence,quality_check_asset,300.0,16000,not_applicable,Chỉ dùng cho Quality Check VAD và augmentation Asthma Train
+podcast_session_02.wav,podcast_session_02,podcast,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+podcast_session_03.wav,podcast_session_03,podcast,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+podcast_session_04.wav,podcast_session_04,podcast,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+podcast_session_05.wav,podcast_session_05,podcast,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+podcast_session_06.wav,podcast_session_06,podcast,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+fan_session_01.wav,fan_session_01,fan,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+fan_session_02.wav,fan_session_02,fan,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+fan_session_03.wav,fan_session_03,fan,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+fan_session_04.wav,fan_session_04,fan,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+clap_session_01.wav,clap_session_01,clap,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+clap_session_02.wav,clap_session_02,clap,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+clap_session_03.wav,clap_session_03,clap,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+clap_session_04.wav,clap_session_04,clap,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+clap_session_05.wav,clap_session_05,clap,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+clap_session_06.wav,clap_session_06,clap,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+knock_session_01.wav,knock_session_01,knock,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+knock_session_02.wav,knock_session_02,knock,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+knock_session_03.wav,knock_session_03,knock,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+knock_session_04.wav,knock_session_04,knock,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+knock_session_05.wav,knock_session_05,knock,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+room_noise_session_01.wav,room_noise_session_01,room_noise,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+room_noise_session_02.wav,room_noise_session_02,room_noise,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+room_noise_session_03.wav,room_noise_session_03,room_noise,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+room_noise_session_04.wav,room_noise_session_04,room_noise,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+room_noise_session_05.wav,room_noise_session_05,room_noise,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+room_noise_session_06.wav,room_noise_session_06,room_noise,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+speech_session_01.wav,speech_session_01,speech,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+speech_session_02.wav,speech_session_02,speech,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+speech_session_03.wav,speech_session_03,speech,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+speech_session_04.wav,speech_session_04,speech,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+speech_session_05.wav,speech_session_05,speech,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2
+fan_session_06.wav,fan_session_06,fan,environment,60.000,16000,unassigned,Thu mới bằng INMP441 cho Environment V2

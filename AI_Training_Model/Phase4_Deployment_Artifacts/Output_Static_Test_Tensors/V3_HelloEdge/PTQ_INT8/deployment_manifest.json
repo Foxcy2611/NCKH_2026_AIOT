@@ -1,0 +1,22 @@
+{
+  "model": "V3_HelloEdge",
+  "method": "PTQ_INT8",
+  "source_tflite": "AI_Training_Model/Phase3_Quantization_Model/Output_Quantize_V3/models/V3_PTQ_INT8.tflite",
+  "source_tflite_size_bytes": 47448,
+  "source_tflite_sha256": "8f618cac5aedeff2d890b5b4edf2572ae86133fcfe5286692d9ee123be9ad0c7",
+  "input_shape": [
+    1,
+    40,
+    129,
+    1
+  ],
+  "input_dtype": "int8",
+  "input_scale": 0.003921568859368563,
+  "input_zero_point": -128,
+  "output_dtype": "int8",
+  "output_scale": 0.00390625,
+  "output_zero_point": -128,
+  "static_tensor_count": 12,
+  "static_tensor_source": "Deploy_Model/1_Test_Model_Static_Profiling/include/combo_pre0_mel40_fft2048__V1__s44/QAT_INT8/Static_Test_Tensors.h",
+  "python_correct": 12
+}

@@ -1,0 +1,2 @@
+﻿file_name,channels,sample_width_bits,sample_rate_hz,frames,duration_seconds,format_ok,duration_30_90s,peak_pcm,rms_pcm,mav_pcm,dc_offset_pcm,peak_dbfs,rms_dbfs,clipped_samples,clipped_ratio,active_blocks,total_blocks,active_ratio,quality_result
+podcast_5min.wav,1,16,16000,4800000,300.0,True,False,1736,140.39821807986027,97.47715666666667,-1.9835983333333334,-25.518004282384897,-47.36176678306148,0,0.0,18750,18750,1.0,AUDIO_OK

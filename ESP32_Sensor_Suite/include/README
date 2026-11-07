@@ -1,0 +1,11 @@
+
+Thư mục `include/` chứa giao diện công khai của từng trình điều khiển mô-đun.
+
+Quy ước hiện hành:
+
+- mỗi mô-đun có một tệp `ESP32_<TEN_MODULE>*.h` tương ứng;
+- phần chú thích đầu tệp nêu chức năng, thư viện phụ thuộc và API dùng nhanh;
+- mã ứng dụng chỉ cần `#include` đúng header rồi gọi API khởi tạo/đọc dữ liệu;
+- phần hiện thực nằm trong tệp cùng tên ở `src/`.
+
+Xem bảng API và ví dụ riêng cho từng mô-đun tại `../README.md`.

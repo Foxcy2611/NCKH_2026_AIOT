@@ -1,0 +1,54 @@
+1. Không cần thu lại Playback
+
+- Waveform của AST_033 và AST_035 cho thấy playback
+=> Có khoảng ~1–1.2 giây đầu gần im lặng, rồi nội dung thật mới bắt đầu.
+
+- Hiện tại process kiểu
+
+playback dài 7.2 s
+↓
+lấy từ 0.0 s
+↓
+chỉ giữ 5 s
+
+- Thực tế 
+
+~1.2 s silence
++
+~3.8 s tín hiệu thật
+
+- Các file gây lẫn chứng minh 
+
+                    crop 0–5      crop 0.5–5.5    crop 1–6
+AST_033 take01       ❌ 0.983       ✅ 0.0005       ✅ 0.0010
+AST_033 take02       ❌ 0.999       ✅ 0.0004       ✅ 0.0053
+
+AST_035 take01       ❌ 0.683       ✅ 0.0009       ✅ 0.0021
+AST_035 take02       ✅ 0.179       ✅ 0.0017       ✅ ~0
+
+2. AST_039 có điều đáng lưu tâm
+
+raw 0–5       → 0.000275 ✅ Asthma
+raw 0.5–5.5   → 0.979863 ❌ Non-Asthma
+raw 1–6       → 0.000356 ✅ Asthma
+
+- Điều đó chứng tỏ tại cùng 1 file 
+
+dịch cửa sổ 0.5 s
+→ Asthma
+
+dịch tiếp 0.5 s
+→ Non-Asthma 98%
+
+dịch tiếp
+→ Asthma
+
+=> Đây là dấu hiệu model hiện tại khá nhạy với vị trí temporal của pattern trong Mel.
+
+3. Tóm gọn 
+
+- Đối vs các wav dài hơn 5s
++ Có sự thay đổi độ chính xác khi ta cắt (crop) vùng 5s khác nhau như AST_39
++ Khi ta cắt 0-5s thì nó nhận là non asthma thay vì asthma ?
+
+=> Điều đó chứng minh là 1 bug do preprocess

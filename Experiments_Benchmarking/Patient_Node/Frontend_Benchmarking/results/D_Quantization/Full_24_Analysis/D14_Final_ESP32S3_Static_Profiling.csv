@@ -1,0 +1,4 @@
+﻿Checkpoint,Vai trò,pre α,Model flash B,Arena used B,Arena allocated B,Invoke avg ms,Invoke OK,Static correct / 12,Python label match / 12,INT8 exact / 12,INT8 MAE LSB,INT8 maxerr LSB,Source log
+C4/V1/s44/QAT INT8,Model cuối nguyên mẫu,0.0,347968,169380,1048576,1164.2035,36,12,12,11,5.083,61,C4_QAT(1).log
+C3/V1/s44/QAT INT8,Đối chứng bật pre,0.97,347968,169380,1048576,1164.1082,36,11,12,7,1.25,6,C3_QAT(1).log
+F0/V1/s43/PTQ INT8,Baseline lịch sử,0.97,543976,268772,1048576,1869.1746,36,11,12,6,3.25,26,F0_PTQ(1).log

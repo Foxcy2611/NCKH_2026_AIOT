@@ -17,9 +17,12 @@ Check
         + NON-ASTHMA
         => Hiển thị
 
-    → OLED: "PLACE FINGER / PRESS CHECK"
-    → Nhấn CHECK lần 2 → MAX30102 ON → đo HR/SpO2
-       (hoặc nhấn SLEEP → bỏ qua, HR/SpO2 = unavailable)
+    → Nhấn CHECK lần 2 → reset phiên MAX30102 → OLED: "PLACE FINGER / HOLD STILL"
+    → đo HR/SpO2 với deadline chung 10 giây
+       + Có kết quả hợp lệ → vitals_valid = 1
+       + Không có ngón tay / FIFO-I2C không tiến triển / kết quả lỗi
+         → hết deadline → vitals_valid = 0, HR/SpO2 = 0
+       + Hoặc nhấn SLEEP → bỏ qua ngay, HR/SpO2 = unavailable
     → Hiển thị data MAX30102
     → [Session hoàn chỉnh → tạo PatientEvent → ESP-NOW → Gateway → về STANDBY]
     → Hiển thị gói tin `đã được gửi qua ESP-NOW` *****(LƯU Ý SẼ NÓI SAU)

@@ -3,10 +3,6 @@
 
 #include <Arduino.h>
 
-const float Pre_Coef = 0.97f;
-
-void Apply_Pre_Emphasis(float* signal, int length);
-
 void Butterworth_Reset(void);
 float Butterworth_Process_Sample(float x_new);
 void Butterworth_Process_Buffer(float* buffer, int length);

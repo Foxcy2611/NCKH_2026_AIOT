@@ -261,6 +261,39 @@ def probability_to_int8_threshold(
     return int(np.clip(quantized, -128, 127))
 
 
+
+def probability_to_int8_decision_bounds(
+    low: float,
+    high: float,
+    output_scale: float,
+    output_zero_point: int,
+) -> tuple[int, int]:
+    """Ngưỡng raw INT8 CHÍNH XÁC theo rule Python, không làm tròn gần nhất.
+
+    So sánh tại firmware (raw được ép lên int):
+    raw <= low_raw -> ASTHMA
+    raw >= high_raw -> NON-ASTHMA
+    còn lại -> UNSURE.
+
+    Dùng quét 256 giá trị vì output quantized, tự xử lý cả biên không thể đạt.
+    """
+    low, high = validate_thresholds(low, high)
+    if output_scale <= 0 or not np.isfinite(output_scale):
+        raise ValueError("output_scale phải hữu hạn và > 0")
+    raw = np.arange(-128, 128, dtype=np.int32)
+    p_non = np.clip((raw - int(output_zero_point)) * output_scale, 0.0, 1.0)
+    a_candidates = raw[p_non <= low]
+    n_candidates = raw[p_non >= high]
+    low_raw = int(a_candidates.max()) if a_candidates.size else -129
+    high_raw = int(n_candidates.min()) if n_candidates.size else 128
+    predicted_raw = np.where(raw <= low_raw, PRED_ASTHMA,
+                             np.where(raw >= high_raw, PRED_NON_ASTHMA, PRED_UNSURE))
+    predicted_float = apply_thresholds(p_non, low, high)
+    if not np.array_equal(predicted_raw, predicted_float):
+        raise AssertionError("Biên INT8 không trùng quyết định float trên toàn bộ 256 giá trị")
+    return low_raw, high_raw
+
+
 def export_final_config(
     path: Path | str,
     low: float,
@@ -274,10 +307,19 @@ def export_final_config(
     output_scale = float(prediction_metadata["output_scale"])
     output_zero = int(prediction_metadata["output_zero_point"])
 
+    low_raw, high_raw = probability_to_int8_decision_bounds(
+        low, high, output_scale, output_zero
+    )
+
     payload = {
         "status": "FROZEN",
         "experiment": "Patient_Node_Final_V1_Classification_Threshold",
-        "model": prediction_metadata.get("model", "V1_PTQ_INT8"),
+        "model": prediction_metadata.get(
+            "model", "combo_pre0_mel40_fft2048__V1__s44_QAT_INT8"
+        ),
+        "trial_id": prediction_metadata.get(
+            "trial_id", "combo_pre0_mel40_fft2048__V1__s44"
+        ),
         "model_sha256": prediction_metadata["model_sha256"],
         "selection_split": "validation",
         "test_used_for_selection": False,
@@ -289,18 +331,38 @@ def export_final_config(
         },
         "low_threshold": low,
         "high_threshold": high,
-        "low_output_int8_approx": probability_to_int8_threshold(
-            low, output_scale, output_zero
-        ),
-        "high_output_int8_approx": probability_to_int8_threshold(
-            high, output_scale, output_zero
-        ),
+        "low_output_int8_inclusive": low_raw,
+        "high_output_int8_inclusive": high_raw,
+        "int8_decision_rule": "raw <= LOW_RAW -> ASTHMA; raw >= HIGH_RAW -> NON_ASTHMA; else UNSURE",
         "output_scale": output_scale,
         "output_zero_point": output_zero,
         "validation_metrics": validation_metrics,
         "selection_note": selection_note,
     }
     path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        existing = json.loads(path.read_text(encoding="utf-8"))
+        if str(existing.get("status", "")).upper() == "FROZEN":
+            same_identity = (
+                existing.get("model_sha256") == payload["model_sha256"]
+                and float(existing.get("low_threshold", -1)) == low
+                and float(existing.get("high_threshold", -1)) == high
+            )
+            if same_identity:
+                if (existing.get("low_output_int8_inclusive") != low_raw
+                        or existing.get("high_output_int8_inclusive") != high_raw):
+                    raise FileExistsError(
+                        "final_threshold.json FROZEN cũ thiếu biên INT8 inclusive "
+                        "hoặc chứa biên không khớp. Hãy sao lưu file cũ, "
+                        "kiểm tra lại đúng model và cùng cặp LOW/HIGH, "
+                        "rồi tạo lại JSON với schema mới; không đổi ngưỡng theo Test."
+                    )
+                # Khóa đã đóng: không ghi đè, kể cả khi lời ghi chú bị thay đổi.
+                return path
+            raise FileExistsError(
+                "final_threshold.json đã FROZEN với model/LOW/HIGH khác. "
+                "Không ghi đè để tránh điều chỉnh ngưỡng sau khi xem Test."
+            )
     path.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",

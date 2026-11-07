@@ -1,0 +1,5 @@
+﻿priority_rank,model_role,trial_id,method_id,actual_asthma_pred_asthma,actual_asthma_pred_non_asthma,actual_non_asthma_pred_asthma,actual_non_asthma_pred_non_asthma
+1,EXPLICIT,combo_pre0_mel40_fft2048__V2__s44,KERAS_FP32,32,6,7,114
+1,EXPLICIT,combo_pre0_mel40_fft2048__V2__s44,PTQ_INT8,32,6,12,109
+1,EXPLICIT,combo_pre0_mel40_fft2048__V2__s44,QAT_INT8,32,6,8,113
+1,EXPLICIT,combo_pre0_mel40_fft2048__V2__s44,PTQ_INT16x8,32,6,7,114

@@ -1,0 +1,19 @@
+Variant: combo_pre0_mel40_fft2048
+Config SHA256: 5ae8a2c91c92b58653d899ddec056485787b6307db2cc0c350382b4ded2576f8
+Test Loss: 0.494811
+Test Accuracy: 0.905660
+Output_Train_V1_SepConv2D_Flatten
+
+Confusion Matrix [Asthma, Non_Asthma]:
+[[ 30   8]
+ [  7 114]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      Asthma     0.8108    0.7895    0.8000        38
+  Non_Asthma     0.9344    0.9421    0.9383       121
+
+    accuracy                         0.9057       159
+   macro avg     0.8726    0.8658    0.8691       159
+weighted avg     0.9049    0.9057    0.9052       159

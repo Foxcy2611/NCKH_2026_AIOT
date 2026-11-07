@@ -1,0 +1,10 @@
+
+Thư mục `lib/` hiện chưa chứa thư viện riêng bổ sung.
+
+Các trình điều khiển mô-đun của bộ thử nghiệm đang được đặt trực tiếp tại:
+
+- `../include/`: khai báo API;
+- `../src/`: hiện thực trình điều khiển và chương trình thử.
+
+Chúng chỉ dùng các thành phần có sẵn của Arduino Core for ESP32 như `Wire`,
+`SPI`, `HardwareSerial` và FreeRTOS, vì vậy hiện không cần khai báo `lib_deps`.

@@ -1,0 +1,2 @@
+﻿file_name,channels,sample_width_bits,sample_rate_hz,frames,duration_seconds,format_ok,duration_30_90s,peak_pcm,rms_pcm,mav_pcm,dc_offset_pcm,peak_dbfs,rms_dbfs,clipped_samples,clipped_ratio,active_blocks,total_blocks,active_ratio,quality_result
+clap_session_01.wav,1,16,16000,960000,60.0,True,True,21095,274.5046597946168,28.166123958333333,-0.5027364583333334,-3.8254081048363626,-41.538004276775446,0,0.0,583,3750,0.15546666666666667,AUDIO_OK

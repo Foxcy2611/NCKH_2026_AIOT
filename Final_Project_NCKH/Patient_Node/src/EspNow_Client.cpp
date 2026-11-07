@@ -17,7 +17,8 @@ constexpr uint8_t ESP_NOW_CHANNEL = 6;
 constexpr uint32_t GATEWAY_DEVICE_ID = 0x47575431UL;
 
 const uint8_t GATEWAY_MAC[6] = {
-    0xD4, 0xE9, 0xF4, 0xE9, 0xE8, 0x80
+    0xD4, 0xE9, 0xF4, 0xE7, 0x37, 0x20
+
 };
 
 const uint8_t KEY_NODE_TO_GATEWAY[AES_128_KEY_SIZE] = {
@@ -216,6 +217,27 @@ bool EspNow_Setup(void){
 
 bool EspNow_IsReady(void){
     return espnow_ready;
+}
+
+bool EspNow_Suspend(void){
+    if(pending_active) return false;
+
+    if(espnow_ready){
+        if(esp_now_deinit() != ESP_OK){
+            Serial.println("[POWER] Không deinit được ESP-NOW trước Light Sleep.");
+            return false;
+        }
+        espnow_ready = false;
+    }
+
+    WiFi.mode(WIFI_OFF);
+    send_status = STATUS_IDLE;
+    return true;
+}
+
+bool EspNow_Resume(void){
+    if(espnow_ready) return true;
+    return EspNow_Setup();
 }
 
 bool EspNow_QueuePatientEvent(const Node_Payload_t* payload){

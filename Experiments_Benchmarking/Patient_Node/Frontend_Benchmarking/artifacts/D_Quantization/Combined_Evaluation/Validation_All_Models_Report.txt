@@ -1,0 +1,1828 @@
+COMBINED VALIDATION CLASSIFICATION REPORT
+Plan SHA256: 8258e0c64948a6d2916f84089bd590f40c8b026b22f713e5bfe1845dabbe544d
+Total expected entries: 96
+Labels: Asthma=0, Non-Asthma=1
+
+========================================================================================
+Priority   : 1
+Model role: C_FULL_MATRIX
+Trial      : F0__V1__s42
+Method     : KERAS_FP32
+Accuracy   : 0.941558
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8222      0.9737      0.8916        38
+Non-Asthma            0.9908      0.9310      0.9600       116
+accuracy                                      0.9416       154
+macro avg             0.9065      0.9524      0.9258       154
+weighted avg          0.9492      0.9416      0.9431       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  37                 1
+Actual Non-Asthma               8               108
+
+========================================================================================
+Priority   : 1
+Model role: C_FULL_MATRIX
+Trial      : F0__V1__s42
+Method     : PTQ_INT8
+Accuracy   : 0.954545
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8780      0.9474      0.9114        38
+Non-Asthma            0.9823      0.9569      0.9694       116
+accuracy                                      0.9545       154
+macro avg             0.9302      0.9521      0.9404       154
+weighted avg          0.9566      0.9545      0.9551       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  36                 2
+Actual Non-Asthma               5               111
+
+========================================================================================
+Priority   : 1
+Model role: C_FULL_MATRIX
+Trial      : F0__V1__s42
+Method     : QAT_INT8
+Accuracy   : 0.954545
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8605      0.9737      0.9136        38
+Non-Asthma            0.9910      0.9483      0.9692       116
+accuracy                                      0.9545       154
+macro avg             0.9257      0.9610      0.9414       154
+weighted avg          0.9588      0.9545      0.9554       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  37                 1
+Actual Non-Asthma               6               110
+
+========================================================================================
+Priority   : 1
+Model role: C_FULL_MATRIX
+Trial      : F0__V1__s42
+Method     : PTQ_INT16x8
+Accuracy   : 0.941558
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8222      0.9737      0.8916        38
+Non-Asthma            0.9908      0.9310      0.9600       116
+accuracy                                      0.9416       154
+macro avg             0.9065      0.9524      0.9258       154
+weighted avg          0.9492      0.9416      0.9431       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  37                 1
+Actual Non-Asthma               8               108
+
+========================================================================================
+Priority   : 2
+Model role: BASELINE
+Trial      : F0__V1__s43
+Method     : KERAS_FP32
+Accuracy   : 0.974026
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9250      0.9737      0.9487        38
+Non-Asthma            0.9912      0.9741      0.9826       116
+accuracy                                      0.9740       154
+macro avg             0.9581      0.9739      0.9657       154
+weighted avg          0.9749      0.9740      0.9742       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  37                 1
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 2
+Model role: BASELINE
+Trial      : F0__V1__s43
+Method     : PTQ_INT8
+Accuracy   : 0.961039
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9211      0.9211      0.9211        38
+Non-Asthma            0.9741      0.9741      0.9741       116
+accuracy                                      0.9610       154
+macro avg             0.9476      0.9476      0.9476       154
+weighted avg          0.9610      0.9610      0.9610       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  35                 3
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 2
+Model role: BASELINE
+Trial      : F0__V1__s43
+Method     : QAT_INT8
+Accuracy   : 0.961039
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9211      0.9211      0.9211        38
+Non-Asthma            0.9741      0.9741      0.9741       116
+accuracy                                      0.9610       154
+macro avg             0.9476      0.9476      0.9476       154
+weighted avg          0.9610      0.9610      0.9610       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  35                 3
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 2
+Model role: BASELINE
+Trial      : F0__V1__s43
+Method     : PTQ_INT16x8
+Accuracy   : 0.974026
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9250      0.9737      0.9487        38
+Non-Asthma            0.9912      0.9741      0.9826       116
+accuracy                                      0.9740       154
+macro avg             0.9581      0.9739      0.9657       154
+weighted avg          0.9749      0.9740      0.9742       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  37                 1
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 3
+Model role: C_FULL_MATRIX
+Trial      : F0__V1__s44
+Method     : KERAS_FP32
+Accuracy   : 1.000000
+
+Class              Precision      Recall    F1-score   Support
+Asthma                1.0000      1.0000      1.0000        38
+Non-Asthma            1.0000      1.0000      1.0000       116
+accuracy                                      1.0000       154
+macro avg             1.0000      1.0000      1.0000       154
+weighted avg          1.0000      1.0000      1.0000       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               0               116
+
+========================================================================================
+Priority   : 3
+Model role: C_FULL_MATRIX
+Trial      : F0__V1__s44
+Method     : PTQ_INT8
+Accuracy   : 0.980519
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9730      0.9474      0.9600        38
+Non-Asthma            0.9829      0.9914      0.9871       116
+accuracy                                      0.9805       154
+macro avg             0.9779      0.9694      0.9736       154
+weighted avg          0.9805      0.9805      0.9804       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  36                 2
+Actual Non-Asthma               1               115
+
+========================================================================================
+Priority   : 3
+Model role: C_FULL_MATRIX
+Trial      : F0__V1__s44
+Method     : QAT_INT8
+Accuracy   : 0.987013
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9500      1.0000      0.9744        38
+Non-Asthma            1.0000      0.9828      0.9913       116
+accuracy                                      0.9870       154
+macro avg             0.9750      0.9914      0.9828       154
+weighted avg          0.9877      0.9870      0.9871       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               2               114
+
+========================================================================================
+Priority   : 3
+Model role: C_FULL_MATRIX
+Trial      : F0__V1__s44
+Method     : PTQ_INT16x8
+Accuracy   : 1.000000
+
+Class              Precision      Recall    F1-score   Support
+Asthma                1.0000      1.0000      1.0000        38
+Non-Asthma            1.0000      1.0000      1.0000       116
+accuracy                                      1.0000       154
+macro avg             1.0000      1.0000      1.0000       154
+weighted avg          1.0000      1.0000      1.0000       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               0               116
+
+========================================================================================
+Priority   : 4
+Model role: C_FULL_MATRIX
+Trial      : pre_0__V1__s42
+Method     : KERAS_FP32
+Accuracy   : 0.961039
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8636      1.0000      0.9268        38
+Non-Asthma            1.0000      0.9483      0.9735       116
+accuracy                                      0.9610       154
+macro avg             0.9318      0.9741      0.9501       154
+weighted avg          0.9664      0.9610      0.9619       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               6               110
+
+========================================================================================
+Priority   : 4
+Model role: C_FULL_MATRIX
+Trial      : pre_0__V1__s42
+Method     : PTQ_INT8
+Accuracy   : 0.896104
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9231      0.6316      0.7500        38
+Non-Asthma            0.8906      0.9828      0.9344       116
+accuracy                                      0.8961       154
+macro avg             0.9069      0.8072      0.8422       154
+weighted avg          0.8986      0.8961      0.8889       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  24                14
+Actual Non-Asthma               2               114
+
+========================================================================================
+Priority   : 4
+Model role: C_FULL_MATRIX
+Trial      : pre_0__V1__s42
+Method     : QAT_INT8
+Accuracy   : 0.967532
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8837      1.0000      0.9383        38
+Non-Asthma            1.0000      0.9569      0.9780       116
+accuracy                                      0.9675       154
+macro avg             0.9419      0.9784      0.9581       154
+weighted avg          0.9713      0.9675      0.9682       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               5               111
+
+========================================================================================
+Priority   : 4
+Model role: C_FULL_MATRIX
+Trial      : pre_0__V1__s42
+Method     : PTQ_INT16x8
+Accuracy   : 0.967532
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8837      1.0000      0.9383        38
+Non-Asthma            1.0000      0.9569      0.9780       116
+accuracy                                      0.9675       154
+macro avg             0.9419      0.9784      0.9581       154
+weighted avg          0.9713      0.9675      0.9682       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               5               111
+
+========================================================================================
+Priority   : 5
+Model role: C_FULL_MATRIX
+Trial      : pre_0__V1__s43
+Method     : KERAS_FP32
+Accuracy   : 0.961039
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9000      0.9474      0.9231        38
+Non-Asthma            0.9825      0.9655      0.9739       116
+accuracy                                      0.9610       154
+macro avg             0.9412      0.9564      0.9485       154
+weighted avg          0.9621      0.9610      0.9614       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  36                 2
+Actual Non-Asthma               4               112
+
+========================================================================================
+Priority   : 5
+Model role: C_FULL_MATRIX
+Trial      : pre_0__V1__s43
+Method     : PTQ_INT8
+Accuracy   : 0.941558
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8718      0.8947      0.8831        38
+Non-Asthma            0.9652      0.9569      0.9610       116
+accuracy                                      0.9416       154
+macro avg             0.9185      0.9258      0.9221       154
+weighted avg          0.9422      0.9416      0.9418       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  34                 4
+Actual Non-Asthma               5               111
+
+========================================================================================
+Priority   : 5
+Model role: C_FULL_MATRIX
+Trial      : pre_0__V1__s43
+Method     : QAT_INT8
+Accuracy   : 0.974026
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9474      0.9474      0.9474        38
+Non-Asthma            0.9828      0.9828      0.9828       116
+accuracy                                      0.9740       154
+macro avg             0.9651      0.9651      0.9651       154
+weighted avg          0.9740      0.9740      0.9740       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  36                 2
+Actual Non-Asthma               2               114
+
+========================================================================================
+Priority   : 5
+Model role: C_FULL_MATRIX
+Trial      : pre_0__V1__s43
+Method     : PTQ_INT16x8
+Accuracy   : 0.961039
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9000      0.9474      0.9231        38
+Non-Asthma            0.9825      0.9655      0.9739       116
+accuracy                                      0.9610       154
+macro avg             0.9412      0.9564      0.9485       154
+weighted avg          0.9621      0.9610      0.9614       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  36                 2
+Actual Non-Asthma               4               112
+
+========================================================================================
+Priority   : 6
+Model role: C_ADDITIONAL
+Trial      : pre_0__V1__s44
+Method     : KERAS_FP32
+Accuracy   : 0.993506
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9744      1.0000      0.9870        38
+Non-Asthma            1.0000      0.9914      0.9957       116
+accuracy                                      0.9935       154
+macro avg             0.9872      0.9957      0.9913       154
+weighted avg          0.9937      0.9935      0.9935       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               1               115
+
+========================================================================================
+Priority   : 6
+Model role: C_ADDITIONAL
+Trial      : pre_0__V1__s44
+Method     : PTQ_INT8
+Accuracy   : 0.993506
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9744      1.0000      0.9870        38
+Non-Asthma            1.0000      0.9914      0.9957       116
+accuracy                                      0.9935       154
+macro avg             0.9872      0.9957      0.9913       154
+weighted avg          0.9937      0.9935      0.9935       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               1               115
+
+========================================================================================
+Priority   : 6
+Model role: C_ADDITIONAL
+Trial      : pre_0__V1__s44
+Method     : QAT_INT8
+Accuracy   : 0.987013
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9500      1.0000      0.9744        38
+Non-Asthma            1.0000      0.9828      0.9913       116
+accuracy                                      0.9870       154
+macro avg             0.9750      0.9914      0.9828       154
+weighted avg          0.9877      0.9870      0.9871       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               2               114
+
+========================================================================================
+Priority   : 6
+Model role: C_ADDITIONAL
+Trial      : pre_0__V1__s44
+Method     : PTQ_INT16x8
+Accuracy   : 0.993506
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9744      1.0000      0.9870        38
+Non-Asthma            1.0000      0.9914      0.9957       116
+accuracy                                      0.9935       154
+macro avg             0.9872      0.9957      0.9913       154
+weighted avg          0.9937      0.9935      0.9935       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               1               115
+
+========================================================================================
+Priority   : 7
+Model role: C_FULL_MATRIX
+Trial      : mel_40__V1__s42
+Method     : KERAS_FP32
+Accuracy   : 0.980519
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9268      1.0000      0.9620        38
+Non-Asthma            1.0000      0.9741      0.9869       116
+accuracy                                      0.9805       154
+macro avg             0.9634      0.9871      0.9745       154
+weighted avg          0.9819      0.9805      0.9808       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 7
+Model role: C_FULL_MATRIX
+Trial      : mel_40__V1__s42
+Method     : PTQ_INT8
+Accuracy   : 0.922078
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9062      0.7632      0.8286        38
+Non-Asthma            0.9262      0.9741      0.9496       116
+accuracy                                      0.9221       154
+macro avg             0.9162      0.8686      0.8891       154
+weighted avg          0.9213      0.9221      0.9197       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  29                 9
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 7
+Model role: C_FULL_MATRIX
+Trial      : mel_40__V1__s42
+Method     : QAT_INT8
+Accuracy   : 0.967532
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8837      1.0000      0.9383        38
+Non-Asthma            1.0000      0.9569      0.9780       116
+accuracy                                      0.9675       154
+macro avg             0.9419      0.9784      0.9581       154
+weighted avg          0.9713      0.9675      0.9682       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               5               111
+
+========================================================================================
+Priority   : 7
+Model role: C_FULL_MATRIX
+Trial      : mel_40__V1__s42
+Method     : PTQ_INT16x8
+Accuracy   : 0.980519
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9268      1.0000      0.9620        38
+Non-Asthma            1.0000      0.9741      0.9869       116
+accuracy                                      0.9805       154
+macro avg             0.9634      0.9871      0.9745       154
+weighted avg          0.9819      0.9805      0.9808       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 8
+Model role: TECHNICAL_CONTROL
+Trial      : mel_40__V1__s43
+Method     : KERAS_FP32
+Accuracy   : 0.961039
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8636      1.0000      0.9268        38
+Non-Asthma            1.0000      0.9483      0.9735       116
+accuracy                                      0.9610       154
+macro avg             0.9318      0.9741      0.9501       154
+weighted avg          0.9664      0.9610      0.9619       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               6               110
+
+========================================================================================
+Priority   : 8
+Model role: TECHNICAL_CONTROL
+Trial      : mel_40__V1__s43
+Method     : PTQ_INT8
+Accuracy   : 0.980519
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9487      0.9737      0.9610        38
+Non-Asthma            0.9913      0.9828      0.9870       116
+accuracy                                      0.9805       154
+macro avg             0.9700      0.9782      0.9740       154
+weighted avg          0.9808      0.9805      0.9806       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  37                 1
+Actual Non-Asthma               2               114
+
+========================================================================================
+Priority   : 8
+Model role: TECHNICAL_CONTROL
+Trial      : mel_40__V1__s43
+Method     : QAT_INT8
+Accuracy   : 0.967532
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8837      1.0000      0.9383        38
+Non-Asthma            1.0000      0.9569      0.9780       116
+accuracy                                      0.9675       154
+macro avg             0.9419      0.9784      0.9581       154
+weighted avg          0.9713      0.9675      0.9682       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               5               111
+
+========================================================================================
+Priority   : 8
+Model role: TECHNICAL_CONTROL
+Trial      : mel_40__V1__s43
+Method     : PTQ_INT16x8
+Accuracy   : 0.961039
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8636      1.0000      0.9268        38
+Non-Asthma            1.0000      0.9483      0.9735       116
+accuracy                                      0.9610       154
+macro avg             0.9318      0.9741      0.9501       154
+weighted avg          0.9664      0.9610      0.9619       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               6               110
+
+========================================================================================
+Priority   : 9
+Model role: C_FULL_MATRIX
+Trial      : mel_40__V1__s44
+Method     : KERAS_FP32
+Accuracy   : 0.954545
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8780      0.9474      0.9114        38
+Non-Asthma            0.9823      0.9569      0.9694       116
+accuracy                                      0.9545       154
+macro avg             0.9302      0.9521      0.9404       154
+weighted avg          0.9566      0.9545      0.9551       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  36                 2
+Actual Non-Asthma               5               111
+
+========================================================================================
+Priority   : 9
+Model role: C_FULL_MATRIX
+Trial      : mel_40__V1__s44
+Method     : PTQ_INT8
+Accuracy   : 0.980519
+
+Class              Precision      Recall    F1-score   Support
+Asthma                1.0000      0.9211      0.9589        38
+Non-Asthma            0.9748      1.0000      0.9872       116
+accuracy                                      0.9805       154
+macro avg             0.9874      0.9605      0.9731       154
+weighted avg          0.9810      0.9805      0.9802       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  35                 3
+Actual Non-Asthma               0               116
+
+========================================================================================
+Priority   : 9
+Model role: C_FULL_MATRIX
+Trial      : mel_40__V1__s44
+Method     : QAT_INT8
+Accuracy   : 0.987013
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9500      1.0000      0.9744        38
+Non-Asthma            1.0000      0.9828      0.9913       116
+accuracy                                      0.9870       154
+macro avg             0.9750      0.9914      0.9828       154
+weighted avg          0.9877      0.9870      0.9871       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               2               114
+
+========================================================================================
+Priority   : 9
+Model role: C_FULL_MATRIX
+Trial      : mel_40__V1__s44
+Method     : PTQ_INT16x8
+Accuracy   : 0.948052
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8750      0.9211      0.8974        38
+Non-Asthma            0.9737      0.9569      0.9652       116
+accuracy                                      0.9481       154
+macro avg             0.9243      0.9390      0.9313       154
+weighted avg          0.9493      0.9481      0.9485       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  35                 3
+Actual Non-Asthma               5               111
+
+========================================================================================
+Priority   : 10
+Model role: C_FULL_MATRIX
+Trial      : fft_2048__V1__s42
+Method     : KERAS_FP32
+Accuracy   : 0.967532
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9231      0.9474      0.9351        38
+Non-Asthma            0.9826      0.9741      0.9784       116
+accuracy                                      0.9675       154
+macro avg             0.9528      0.9608      0.9567       154
+weighted avg          0.9679      0.9675      0.9677       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  36                 2
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 10
+Model role: C_FULL_MATRIX
+Trial      : fft_2048__V1__s42
+Method     : PTQ_INT8
+Accuracy   : 0.941558
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9677      0.7895      0.8696        38
+Non-Asthma            0.9350      0.9914      0.9623       116
+accuracy                                      0.9416       154
+macro avg             0.9514      0.8904      0.9160       154
+weighted avg          0.9430      0.9416      0.9394       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  30                 8
+Actual Non-Asthma               1               115
+
+========================================================================================
+Priority   : 10
+Model role: C_FULL_MATRIX
+Trial      : fft_2048__V1__s42
+Method     : QAT_INT8
+Accuracy   : 0.954545
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9189      0.8947      0.9067        38
+Non-Asthma            0.9658      0.9741      0.9700       116
+accuracy                                      0.9545       154
+macro avg             0.9424      0.9344      0.9383       154
+weighted avg          0.9542      0.9545      0.9543       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  34                 4
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 10
+Model role: C_FULL_MATRIX
+Trial      : fft_2048__V1__s42
+Method     : PTQ_INT16x8
+Accuracy   : 0.967532
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9231      0.9474      0.9351        38
+Non-Asthma            0.9826      0.9741      0.9784       116
+accuracy                                      0.9675       154
+macro avg             0.9528      0.9608      0.9567       154
+weighted avg          0.9679      0.9675      0.9677       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  36                 2
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 11
+Model role: C_FULL_MATRIX
+Trial      : fft_2048__V1__s43
+Method     : KERAS_FP32
+Accuracy   : 0.967532
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8837      1.0000      0.9383        38
+Non-Asthma            1.0000      0.9569      0.9780       116
+accuracy                                      0.9675       154
+macro avg             0.9419      0.9784      0.9581       154
+weighted avg          0.9713      0.9675      0.9682       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               5               111
+
+========================================================================================
+Priority   : 11
+Model role: C_FULL_MATRIX
+Trial      : fft_2048__V1__s43
+Method     : PTQ_INT8
+Accuracy   : 0.961039
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9000      0.9474      0.9231        38
+Non-Asthma            0.9825      0.9655      0.9739       116
+accuracy                                      0.9610       154
+macro avg             0.9412      0.9564      0.9485       154
+weighted avg          0.9621      0.9610      0.9614       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  36                 2
+Actual Non-Asthma               4               112
+
+========================================================================================
+Priority   : 11
+Model role: C_FULL_MATRIX
+Trial      : fft_2048__V1__s43
+Method     : QAT_INT8
+Accuracy   : 0.980519
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9268      1.0000      0.9620        38
+Non-Asthma            1.0000      0.9741      0.9869       116
+accuracy                                      0.9805       154
+macro avg             0.9634      0.9871      0.9745       154
+weighted avg          0.9819      0.9805      0.9808       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 11
+Model role: C_FULL_MATRIX
+Trial      : fft_2048__V1__s43
+Method     : PTQ_INT16x8
+Accuracy   : 0.974026
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9048      1.0000      0.9500        38
+Non-Asthma            1.0000      0.9655      0.9825       116
+accuracy                                      0.9740       154
+macro avg             0.9524      0.9828      0.9662       154
+weighted avg          0.9765      0.9740      0.9744       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               4               112
+
+========================================================================================
+Priority   : 12
+Model role: C_FULL_MATRIX
+Trial      : fft_2048__V1__s44
+Method     : KERAS_FP32
+Accuracy   : 0.974026
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9048      1.0000      0.9500        38
+Non-Asthma            1.0000      0.9655      0.9825       116
+accuracy                                      0.9740       154
+macro avg             0.9524      0.9828      0.9662       154
+weighted avg          0.9765      0.9740      0.9744       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               4               112
+
+========================================================================================
+Priority   : 12
+Model role: C_FULL_MATRIX
+Trial      : fft_2048__V1__s44
+Method     : PTQ_INT8
+Accuracy   : 0.980519
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9268      1.0000      0.9620        38
+Non-Asthma            1.0000      0.9741      0.9869       116
+accuracy                                      0.9805       154
+macro avg             0.9634      0.9871      0.9745       154
+weighted avg          0.9819      0.9805      0.9808       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 12
+Model role: C_FULL_MATRIX
+Trial      : fft_2048__V1__s44
+Method     : QAT_INT8
+Accuracy   : 0.974026
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9048      1.0000      0.9500        38
+Non-Asthma            1.0000      0.9655      0.9825       116
+accuracy                                      0.9740       154
+macro avg             0.9524      0.9828      0.9662       154
+weighted avg          0.9765      0.9740      0.9744       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               4               112
+
+========================================================================================
+Priority   : 12
+Model role: C_FULL_MATRIX
+Trial      : fft_2048__V1__s44
+Method     : PTQ_INT16x8
+Accuracy   : 0.974026
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9048      1.0000      0.9500        38
+Non-Asthma            1.0000      0.9655      0.9825       116
+accuracy                                      0.9740       154
+macro avg             0.9524      0.9828      0.9662       154
+weighted avg          0.9765      0.9740      0.9744       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               4               112
+
+========================================================================================
+Priority   : 13
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_mel40__V1__s42
+Method     : KERAS_FP32
+Accuracy   : 0.967532
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8837      1.0000      0.9383        38
+Non-Asthma            1.0000      0.9569      0.9780       116
+accuracy                                      0.9675       154
+macro avg             0.9419      0.9784      0.9581       154
+weighted avg          0.9713      0.9675      0.9682       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               5               111
+
+========================================================================================
+Priority   : 13
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_mel40__V1__s42
+Method     : PTQ_INT8
+Accuracy   : 0.889610
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8182      0.7105      0.7606        38
+Non-Asthma            0.9091      0.9483      0.9283       116
+accuracy                                      0.8896       154
+macro avg             0.8636      0.8294      0.8444       154
+weighted avg          0.8867      0.8896      0.8869       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  27                11
+Actual Non-Asthma               6               110
+
+========================================================================================
+Priority   : 13
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_mel40__V1__s42
+Method     : QAT_INT8
+Accuracy   : 0.980519
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9268      1.0000      0.9620        38
+Non-Asthma            1.0000      0.9741      0.9869       116
+accuracy                                      0.9805       154
+macro avg             0.9634      0.9871      0.9745       154
+weighted avg          0.9819      0.9805      0.9808       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 13
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_mel40__V1__s42
+Method     : PTQ_INT16x8
+Accuracy   : 0.967532
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8837      1.0000      0.9383        38
+Non-Asthma            1.0000      0.9569      0.9780       116
+accuracy                                      0.9675       154
+macro avg             0.9419      0.9784      0.9581       154
+weighted avg          0.9713      0.9675      0.9682       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               5               111
+
+========================================================================================
+Priority   : 14
+Model role: PRIMARY
+Trial      : combo_pre0_mel40__V1__s43
+Method     : KERAS_FP32
+Accuracy   : 0.987013
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9500      1.0000      0.9744        38
+Non-Asthma            1.0000      0.9828      0.9913       116
+accuracy                                      0.9870       154
+macro avg             0.9750      0.9914      0.9828       154
+weighted avg          0.9877      0.9870      0.9871       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               2               114
+
+========================================================================================
+Priority   : 14
+Model role: PRIMARY
+Trial      : combo_pre0_mel40__V1__s43
+Method     : PTQ_INT8
+Accuracy   : 0.974026
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9474      0.9474      0.9474        38
+Non-Asthma            0.9828      0.9828      0.9828       116
+accuracy                                      0.9740       154
+macro avg             0.9651      0.9651      0.9651       154
+weighted avg          0.9740      0.9740      0.9740       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  36                 2
+Actual Non-Asthma               2               114
+
+========================================================================================
+Priority   : 14
+Model role: PRIMARY
+Trial      : combo_pre0_mel40__V1__s43
+Method     : QAT_INT8
+Accuracy   : 0.967532
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9024      0.9737      0.9367        38
+Non-Asthma            0.9912      0.9655      0.9782       116
+accuracy                                      0.9675       154
+macro avg             0.9468      0.9696      0.9574       154
+weighted avg          0.9693      0.9675      0.9679       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  37                 1
+Actual Non-Asthma               4               112
+
+========================================================================================
+Priority   : 14
+Model role: PRIMARY
+Trial      : combo_pre0_mel40__V1__s43
+Method     : PTQ_INT16x8
+Accuracy   : 0.987013
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9500      1.0000      0.9744        38
+Non-Asthma            1.0000      0.9828      0.9913       116
+accuracy                                      0.9870       154
+macro avg             0.9750      0.9914      0.9828       154
+weighted avg          0.9877      0.9870      0.9871       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               2               114
+
+========================================================================================
+Priority   : 15
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_mel40__V1__s44
+Method     : KERAS_FP32
+Accuracy   : 0.993506
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9744      1.0000      0.9870        38
+Non-Asthma            1.0000      0.9914      0.9957       116
+accuracy                                      0.9935       154
+macro avg             0.9872      0.9957      0.9913       154
+weighted avg          0.9937      0.9935      0.9935       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               1               115
+
+========================================================================================
+Priority   : 15
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_mel40__V1__s44
+Method     : PTQ_INT8
+Accuracy   : 0.961039
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9444      0.8947      0.9189        38
+Non-Asthma            0.9661      0.9828      0.9744       116
+accuracy                                      0.9610       154
+macro avg             0.9553      0.9387      0.9466       154
+weighted avg          0.9608      0.9610      0.9607       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  34                 4
+Actual Non-Asthma               2               114
+
+========================================================================================
+Priority   : 15
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_mel40__V1__s44
+Method     : QAT_INT8
+Accuracy   : 0.980519
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9487      0.9737      0.9610        38
+Non-Asthma            0.9913      0.9828      0.9870       116
+accuracy                                      0.9805       154
+macro avg             0.9700      0.9782      0.9740       154
+weighted avg          0.9808      0.9805      0.9806       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  37                 1
+Actual Non-Asthma               2               114
+
+========================================================================================
+Priority   : 15
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_mel40__V1__s44
+Method     : PTQ_INT16x8
+Accuracy   : 0.993506
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9744      1.0000      0.9870        38
+Non-Asthma            1.0000      0.9914      0.9957       116
+accuracy                                      0.9935       154
+macro avg             0.9872      0.9957      0.9913       154
+weighted avg          0.9937      0.9935      0.9935       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               1               115
+
+========================================================================================
+Priority   : 16
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_fft2048__V1__s42
+Method     : KERAS_FP32
+Accuracy   : 0.974026
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9250      0.9737      0.9487        38
+Non-Asthma            0.9912      0.9741      0.9826       116
+accuracy                                      0.9740       154
+macro avg             0.9581      0.9739      0.9657       154
+weighted avg          0.9749      0.9740      0.9742       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  37                 1
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 16
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_fft2048__V1__s42
+Method     : PTQ_INT8
+Accuracy   : 0.915584
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9630      0.6842      0.8000        38
+Non-Asthma            0.9055      0.9914      0.9465       116
+accuracy                                      0.9156       154
+macro avg             0.9342      0.8378      0.8733       154
+weighted avg          0.9197      0.9156      0.9104       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  26                12
+Actual Non-Asthma               1               115
+
+========================================================================================
+Priority   : 16
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_fft2048__V1__s42
+Method     : QAT_INT8
+Accuracy   : 0.967532
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9231      0.9474      0.9351        38
+Non-Asthma            0.9826      0.9741      0.9784       116
+accuracy                                      0.9675       154
+macro avg             0.9528      0.9608      0.9567       154
+weighted avg          0.9679      0.9675      0.9677       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  36                 2
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 16
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_fft2048__V1__s42
+Method     : PTQ_INT16x8
+Accuracy   : 0.967532
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9024      0.9737      0.9367        38
+Non-Asthma            0.9912      0.9655      0.9782       116
+accuracy                                      0.9675       154
+macro avg             0.9468      0.9696      0.9574       154
+weighted avg          0.9693      0.9675      0.9679       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  37                 1
+Actual Non-Asthma               4               112
+
+========================================================================================
+Priority   : 17
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_fft2048__V1__s43
+Method     : KERAS_FP32
+Accuracy   : 0.980519
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9268      1.0000      0.9620        38
+Non-Asthma            1.0000      0.9741      0.9869       116
+accuracy                                      0.9805       154
+macro avg             0.9634      0.9871      0.9745       154
+weighted avg          0.9819      0.9805      0.9808       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 17
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_fft2048__V1__s43
+Method     : PTQ_INT8
+Accuracy   : 0.961039
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8810      0.9737      0.9250        38
+Non-Asthma            0.9911      0.9569      0.9737       116
+accuracy                                      0.9610       154
+macro avg             0.9360      0.9653      0.9493       154
+weighted avg          0.9639      0.9610      0.9617       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  37                 1
+Actual Non-Asthma               5               111
+
+========================================================================================
+Priority   : 17
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_fft2048__V1__s43
+Method     : QAT_INT8
+Accuracy   : 0.961039
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9000      0.9474      0.9231        38
+Non-Asthma            0.9825      0.9655      0.9739       116
+accuracy                                      0.9610       154
+macro avg             0.9412      0.9564      0.9485       154
+weighted avg          0.9621      0.9610      0.9614       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  36                 2
+Actual Non-Asthma               4               112
+
+========================================================================================
+Priority   : 17
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_fft2048__V1__s43
+Method     : PTQ_INT16x8
+Accuracy   : 0.980519
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9268      1.0000      0.9620        38
+Non-Asthma            1.0000      0.9741      0.9869       116
+accuracy                                      0.9805       154
+macro avg             0.9634      0.9871      0.9745       154
+weighted avg          0.9819      0.9805      0.9808       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 18
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_fft2048__V1__s44
+Method     : KERAS_FP32
+Accuracy   : 0.967532
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8837      1.0000      0.9383        38
+Non-Asthma            1.0000      0.9569      0.9780       116
+accuracy                                      0.9675       154
+macro avg             0.9419      0.9784      0.9581       154
+weighted avg          0.9713      0.9675      0.9682       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               5               111
+
+========================================================================================
+Priority   : 18
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_fft2048__V1__s44
+Method     : PTQ_INT8
+Accuracy   : 0.974026
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9048      1.0000      0.9500        38
+Non-Asthma            1.0000      0.9655      0.9825       116
+accuracy                                      0.9740       154
+macro avg             0.9524      0.9828      0.9662       154
+weighted avg          0.9765      0.9740      0.9744       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               4               112
+
+========================================================================================
+Priority   : 18
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_fft2048__V1__s44
+Method     : QAT_INT8
+Accuracy   : 0.987013
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9737      0.9737      0.9737        38
+Non-Asthma            0.9914      0.9914      0.9914       116
+accuracy                                      0.9870       154
+macro avg             0.9825      0.9825      0.9825       154
+weighted avg          0.9870      0.9870      0.9870       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  37                 1
+Actual Non-Asthma               1               115
+
+========================================================================================
+Priority   : 18
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_fft2048__V1__s44
+Method     : PTQ_INT16x8
+Accuracy   : 0.974026
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9048      1.0000      0.9500        38
+Non-Asthma            1.0000      0.9655      0.9825       116
+accuracy                                      0.9740       154
+macro avg             0.9524      0.9828      0.9662       154
+weighted avg          0.9765      0.9740      0.9744       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               4               112
+
+========================================================================================
+Priority   : 19
+Model role: C_FULL_MATRIX
+Trial      : combo_mel40_fft2048__V1__s42
+Method     : KERAS_FP32
+Accuracy   : 0.961039
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8636      1.0000      0.9268        38
+Non-Asthma            1.0000      0.9483      0.9735       116
+accuracy                                      0.9610       154
+macro avg             0.9318      0.9741      0.9501       154
+weighted avg          0.9664      0.9610      0.9619       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               6               110
+
+========================================================================================
+Priority   : 19
+Model role: C_FULL_MATRIX
+Trial      : combo_mel40_fft2048__V1__s42
+Method     : PTQ_INT8
+Accuracy   : 0.935065
+
+Class              Precision      Recall    F1-score   Support
+Asthma                1.0000      0.7368      0.8485        38
+Non-Asthma            0.9206      1.0000      0.9587       116
+accuracy                                      0.9351       154
+macro avg             0.9603      0.8684      0.9036       154
+weighted avg          0.9402      0.9351      0.9315       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  28                10
+Actual Non-Asthma               0               116
+
+========================================================================================
+Priority   : 19
+Model role: C_FULL_MATRIX
+Trial      : combo_mel40_fft2048__V1__s42
+Method     : QAT_INT8
+Accuracy   : 0.954545
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9189      0.8947      0.9067        38
+Non-Asthma            0.9658      0.9741      0.9700       116
+accuracy                                      0.9545       154
+macro avg             0.9424      0.9344      0.9383       154
+weighted avg          0.9542      0.9545      0.9543       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  34                 4
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 19
+Model role: C_FULL_MATRIX
+Trial      : combo_mel40_fft2048__V1__s42
+Method     : PTQ_INT16x8
+Accuracy   : 0.961039
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8636      1.0000      0.9268        38
+Non-Asthma            1.0000      0.9483      0.9735       116
+accuracy                                      0.9610       154
+macro avg             0.9318      0.9741      0.9501       154
+weighted avg          0.9664      0.9610      0.9619       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               6               110
+
+========================================================================================
+Priority   : 20
+Model role: C_FULL_MATRIX
+Trial      : combo_mel40_fft2048__V1__s43
+Method     : KERAS_FP32
+Accuracy   : 0.974026
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9048      1.0000      0.9500        38
+Non-Asthma            1.0000      0.9655      0.9825       116
+accuracy                                      0.9740       154
+macro avg             0.9524      0.9828      0.9662       154
+weighted avg          0.9765      0.9740      0.9744       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               4               112
+
+========================================================================================
+Priority   : 20
+Model role: C_FULL_MATRIX
+Trial      : combo_mel40_fft2048__V1__s43
+Method     : PTQ_INT8
+Accuracy   : 0.974026
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9474      0.9474      0.9474        38
+Non-Asthma            0.9828      0.9828      0.9828       116
+accuracy                                      0.9740       154
+macro avg             0.9651      0.9651      0.9651       154
+weighted avg          0.9740      0.9740      0.9740       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  36                 2
+Actual Non-Asthma               2               114
+
+========================================================================================
+Priority   : 20
+Model role: C_FULL_MATRIX
+Trial      : combo_mel40_fft2048__V1__s43
+Method     : QAT_INT8
+Accuracy   : 0.987013
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9500      1.0000      0.9744        38
+Non-Asthma            1.0000      0.9828      0.9913       116
+accuracy                                      0.9870       154
+macro avg             0.9750      0.9914      0.9828       154
+weighted avg          0.9877      0.9870      0.9871       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               2               114
+
+========================================================================================
+Priority   : 20
+Model role: C_FULL_MATRIX
+Trial      : combo_mel40_fft2048__V1__s43
+Method     : PTQ_INT16x8
+Accuracy   : 0.974026
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9048      1.0000      0.9500        38
+Non-Asthma            1.0000      0.9655      0.9825       116
+accuracy                                      0.9740       154
+macro avg             0.9524      0.9828      0.9662       154
+weighted avg          0.9765      0.9740      0.9744       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               4               112
+
+========================================================================================
+Priority   : 21
+Model role: C_FULL_MATRIX
+Trial      : combo_mel40_fft2048__V1__s44
+Method     : KERAS_FP32
+Accuracy   : 0.980519
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9268      1.0000      0.9620        38
+Non-Asthma            1.0000      0.9741      0.9869       116
+accuracy                                      0.9805       154
+macro avg             0.9634      0.9871      0.9745       154
+weighted avg          0.9819      0.9805      0.9808       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 21
+Model role: C_FULL_MATRIX
+Trial      : combo_mel40_fft2048__V1__s44
+Method     : PTQ_INT8
+Accuracy   : 0.980519
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9487      0.9737      0.9610        38
+Non-Asthma            0.9913      0.9828      0.9870       116
+accuracy                                      0.9805       154
+macro avg             0.9700      0.9782      0.9740       154
+weighted avg          0.9808      0.9805      0.9806       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  37                 1
+Actual Non-Asthma               2               114
+
+========================================================================================
+Priority   : 21
+Model role: C_FULL_MATRIX
+Trial      : combo_mel40_fft2048__V1__s44
+Method     : QAT_INT8
+Accuracy   : 0.980519
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9730      0.9474      0.9600        38
+Non-Asthma            0.9829      0.9914      0.9871       116
+accuracy                                      0.9805       154
+macro avg             0.9779      0.9694      0.9736       154
+weighted avg          0.9805      0.9805      0.9804       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  36                 2
+Actual Non-Asthma               1               115
+
+========================================================================================
+Priority   : 21
+Model role: C_FULL_MATRIX
+Trial      : combo_mel40_fft2048__V1__s44
+Method     : PTQ_INT16x8
+Accuracy   : 0.980519
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9268      1.0000      0.9620        38
+Non-Asthma            1.0000      0.9741      0.9869       116
+accuracy                                      0.9805       154
+macro avg             0.9634      0.9871      0.9745       154
+weighted avg          0.9819      0.9805      0.9808       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 22
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_mel40_fft2048__V1__s42
+Method     : KERAS_FP32
+Accuracy   : 0.974026
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9474      0.9474      0.9474        38
+Non-Asthma            0.9828      0.9828      0.9828       116
+accuracy                                      0.9740       154
+macro avg             0.9651      0.9651      0.9651       154
+weighted avg          0.9740      0.9740      0.9740       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  36                 2
+Actual Non-Asthma               2               114
+
+========================================================================================
+Priority   : 22
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_mel40_fft2048__V1__s42
+Method     : PTQ_INT8
+Accuracy   : 0.902597
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8966      0.6842      0.7761        38
+Non-Asthma            0.9040      0.9741      0.9378       116
+accuracy                                      0.9026       154
+macro avg             0.9003      0.8292      0.8569       154
+weighted avg          0.9022      0.9026      0.8979       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  26                12
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 22
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_mel40_fft2048__V1__s42
+Method     : QAT_INT8
+Accuracy   : 0.967532
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9024      0.9737      0.9367        38
+Non-Asthma            0.9912      0.9655      0.9782       116
+accuracy                                      0.9675       154
+macro avg             0.9468      0.9696      0.9574       154
+weighted avg          0.9693      0.9675      0.9679       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  37                 1
+Actual Non-Asthma               4               112
+
+========================================================================================
+Priority   : 22
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_mel40_fft2048__V1__s42
+Method     : PTQ_INT16x8
+Accuracy   : 0.974026
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9474      0.9474      0.9474        38
+Non-Asthma            0.9828      0.9828      0.9828       116
+accuracy                                      0.9740       154
+macro avg             0.9651      0.9651      0.9651       154
+weighted avg          0.9740      0.9740      0.9740       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  36                 2
+Actual Non-Asthma               2               114
+
+========================================================================================
+Priority   : 23
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_mel40_fft2048__V1__s43
+Method     : KERAS_FP32
+Accuracy   : 0.980519
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9268      1.0000      0.9620        38
+Non-Asthma            1.0000      0.9741      0.9869       116
+accuracy                                      0.9805       154
+macro avg             0.9634      0.9871      0.9745       154
+weighted avg          0.9819      0.9805      0.9808       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 23
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_mel40_fft2048__V1__s43
+Method     : PTQ_INT8
+Accuracy   : 0.993506
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9744      1.0000      0.9870        38
+Non-Asthma            1.0000      0.9914      0.9957       116
+accuracy                                      0.9935       154
+macro avg             0.9872      0.9957      0.9913       154
+weighted avg          0.9937      0.9935      0.9935       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               1               115
+
+========================================================================================
+Priority   : 23
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_mel40_fft2048__V1__s43
+Method     : QAT_INT8
+Accuracy   : 0.967532
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.8837      1.0000      0.9383        38
+Non-Asthma            1.0000      0.9569      0.9780       116
+accuracy                                      0.9675       154
+macro avg             0.9419      0.9784      0.9581       154
+weighted avg          0.9713      0.9675      0.9682       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               5               111
+
+========================================================================================
+Priority   : 23
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_mel40_fft2048__V1__s43
+Method     : PTQ_INT16x8
+Accuracy   : 0.980519
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9268      1.0000      0.9620        38
+Non-Asthma            1.0000      0.9741      0.9869       116
+accuracy                                      0.9805       154
+macro avg             0.9634      0.9871      0.9745       154
+weighted avg          0.9819      0.9805      0.9808       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 24
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_mel40_fft2048__V1__s44
+Method     : KERAS_FP32
+Accuracy   : 0.987013
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9500      1.0000      0.9744        38
+Non-Asthma            1.0000      0.9828      0.9913       116
+accuracy                                      0.9870       154
+macro avg             0.9750      0.9914      0.9828       154
+weighted avg          0.9877      0.9870      0.9871       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               2               114
+
+========================================================================================
+Priority   : 24
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_mel40_fft2048__V1__s44
+Method     : PTQ_INT8
+Accuracy   : 0.961039
+
+Class              Precision      Recall    F1-score   Support
+Asthma                1.0000      0.8421      0.9143        38
+Non-Asthma            0.9508      1.0000      0.9748       116
+accuracy                                      0.9610       154
+macro avg             0.9754      0.9211      0.9445       154
+weighted avg          0.9630      0.9610      0.9599       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  32                 6
+Actual Non-Asthma               0               116
+
+========================================================================================
+Priority   : 24
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_mel40_fft2048__V1__s44
+Method     : QAT_INT8
+Accuracy   : 0.974026
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9250      0.9737      0.9487        38
+Non-Asthma            0.9912      0.9741      0.9826       116
+accuracy                                      0.9740       154
+macro avg             0.9581      0.9739      0.9657       154
+weighted avg          0.9749      0.9740      0.9742       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  37                 1
+Actual Non-Asthma               3               113
+
+========================================================================================
+Priority   : 24
+Model role: C_FULL_MATRIX
+Trial      : combo_pre0_mel40_fft2048__V1__s44
+Method     : PTQ_INT16x8
+Accuracy   : 0.987013
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9500      1.0000      0.9744        38
+Non-Asthma            1.0000      0.9828      0.9913       116
+accuracy                                      0.9870       154
+macro avg             0.9750      0.9914      0.9828       154
+weighted avg          0.9877      0.9870      0.9871       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  38                 0
+Actual Non-Asthma               2               114

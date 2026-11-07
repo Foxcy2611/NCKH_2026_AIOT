@@ -1,6 +1,7 @@
 #include "Audio_IO/I2S_Mic.h"
 
 #include <esp_heap_caps.h>
+#include <math.h>
 
 namespace {
 constexpr uint32_t kTotalSamples = 80000;
@@ -21,13 +22,90 @@ uint8_t warmup_chunks_remaining = kWarmupChunks;
 uint8_t vad_consecutive_chunks = 0;
 uint32_t pre_roll_write_index = 0;
 uint32_t pre_roll_valid_samples = 0;
+uint32_t vad_candidate_start_index = 0;
+uint32_t vad_candidate_sample_count = 0;
 
 uint8_t asthma_votes = 0;
 uint8_t non_asthma_votes = 0;
 uint8_t unsure_votes = 0;
 uint8_t current_vote_round = 0;
+float p_non_history[kVoteRounds] = {0.0f};
+bool p_non_history_valid[kVoteRounds] = {false};
 
 float mel_spectrogram_buffer[N_MELS][MAX_FRAMES];
+
+void Print_Pcm_Statistics(const int16_t* samples, uint32_t count) {
+    if (samples == nullptr || count == 0) return;
+
+    int16_t min_value = samples[0];
+    int16_t max_value = samples[0];
+    double sum = 0.0;
+    double sum_squares = 0.0;
+
+    for (uint32_t i = 0; i < count; i++) {
+        const double value = static_cast<double>(samples[i]);
+        if (samples[i] < min_value) min_value = samples[i];
+        if (samples[i] > max_value) max_value = samples[i];
+        sum += value;
+        sum_squares += value * value;
+    }
+
+    const double mean = sum / static_cast<double>(count);
+    double variance = sum_squares / static_cast<double>(count) - mean * mean;
+    if (variance < 0.0) variance = 0.0;
+    const double standard_deviation = sqrt(variance);
+    const double rms = sqrt(sum_squares / static_cast<double>(count));
+
+    Serial.printf(
+        "[PCM] samples=%lu | min=%d | max=%d | mean=%.2f | "
+        "std=%.2f | rms=%.2f\n",
+        static_cast<unsigned long>(count),
+        static_cast<int>(min_value),
+        static_cast<int>(max_value),
+        mean,
+        standard_deviation,
+        rms
+    );
+}
+
+void Print_Pnon_Statistics() {
+    float min_value = 1.0f;
+    float max_value = 0.0f;
+    float sum = 0.0f;
+    uint8_t valid_count = 0;
+
+    for (uint8_t i = 0; i < kVoteRounds; i++) {
+        if (!p_non_history_valid[i]) continue;
+        const float value = p_non_history[i];
+        if (value < min_value) min_value = value;
+        if (value > max_value) max_value = value;
+        sum += value;
+        valid_count++;
+    }
+
+    if (valid_count == 0) {
+        Serial.println("[P_NON STATS] Khong co ket qua inference hop le.");
+        return;
+    }
+
+    const float mean = sum / valid_count;
+    float squared_error_sum = 0.0f;
+    for (uint8_t i = 0; i < kVoteRounds; i++) {
+        if (!p_non_history_valid[i]) continue;
+        const float difference = p_non_history[i] - mean;
+        squared_error_sum += difference * difference;
+    }
+    const float standard_deviation = sqrtf(squared_error_sum / valid_count);
+
+    Serial.printf(
+        "[P_NON STATS] n=%u | min=%.9f | max=%.9f | mean=%.9f | std=%.9f\n",
+        static_cast<unsigned int>(valid_count),
+        min_value,
+        max_value,
+        mean,
+        standard_deviation
+    );
+}
 
 void Reset_Capture_State() {
     current_state = STATE_LISTENING;
@@ -35,10 +113,17 @@ void Reset_Capture_State() {
     pre_roll_write_index = 0;
     pre_roll_valid_samples = 0;
     vad_consecutive_chunks = 0;
+    vad_candidate_start_index = 0;
+    vad_candidate_sample_count = 0;
     Serial.println("[VAD] Dang tao lai bo dem 1 giay...");
 }
 
 void Update_Votes(const Asthma_Result& result) {
+    if (current_vote_round < kVoteRounds) {
+        p_non_history[current_vote_round] = result.Non_Asthma_Prob / 100.0f;
+        p_non_history_valid[current_vote_round] = result.Predicted_Class >= 0;
+    }
+
     if (result.Predicted_Class == 0) {
         asthma_votes++;
     } else if (result.Predicted_Class == 1) {
@@ -49,7 +134,7 @@ void Update_Votes(const Asthma_Result& result) {
 
     current_vote_round++;
     Serial.printf(
-        "[BO PHIEU] %u/%u | Asthma=%u | Non-Asthma=%u | Loi=%u\n",
+        "[BO PHIEU] %u/%u | Asthma=%u | Non-Asthma=%u | Unsure=%u\n",
         current_vote_round,
         kVoteRounds,
         asthma_votes,
@@ -59,9 +144,13 @@ void Update_Votes(const Asthma_Result& result) {
 
     if (current_vote_round < kVoteRounds) return;
 
-    if (asthma_votes > non_asthma_votes) {
+    Print_Pnon_Statistics();
+
+    // Ba vong chi ket luan khi co it nhat 2 phieu cung lop. Cac ket qua
+    // UNSURE khong duoc phep bien 1 phieu don le thanh ket luan chac chan.
+    if (asthma_votes >= 2) {
         Serial.println("[KET LUAN] CANH BAO PHAT HIEN MAU ASTHMA.");
-    } else if (non_asthma_votes > asthma_votes) {
+    } else if (non_asthma_votes >= 2) {
         Serial.println("[KET LUAN] KHONG PHAT HIEN MAU ASTHMA.");
     } else {
         Serial.println("[KET LUAN] KHONG CHAC CHAN, CAN DO LAI.");
@@ -71,6 +160,10 @@ void Update_Votes(const Asthma_Result& result) {
     non_asthma_votes = 0;
     unsure_votes = 0;
     current_vote_round = 0;
+    for (uint8_t i = 0; i < kVoteRounds; i++) {
+        p_non_history[i] = 0.0f;
+        p_non_history_valid[i] = false;
+    }
 }
 }
 
@@ -127,25 +220,50 @@ void Process_Audio_Stream(void) {
         const uint32_t average_energy = energy_sum / samples_read;
 
         if (average_energy > kVadThreshold) {
+            // Chunk active dau tien la candidate onset. Chunk nay da nam trong
+            // ring, nen vi tri bat dau cach write index samples_read mau.
+            if (vad_consecutive_chunks == 0) {
+                vad_candidate_start_index =
+                    (pre_roll_write_index + kPreRollSamples
+                     - static_cast<uint32_t>(samples_read))
+                    % kPreRollSamples;
+                vad_candidate_sample_count = 0;
+            }
+
             if (vad_consecutive_chunks < kVadConsecutiveRequired) {
                 vad_consecutive_chunks++;
+                vad_candidate_sample_count += static_cast<uint32_t>(samples_read);
             }
         } else {
             vad_consecutive_chunks = 0;
+            vad_candidate_sample_count = 0;
         }
 
         if (vad_consecutive_chunks >= kVadConsecutiveRequired) {
-            for (uint32_t i = 0; i < kPreRollSamples; i++) {
+            uint32_t onset_samples = vad_candidate_sample_count;
+            if (onset_samples > pre_roll_valid_samples) {
+                onset_samples = pre_roll_valid_samples;
+            }
+            if (onset_samples > kTotalSamples) {
+                onset_samples = kTotalSamples;
+            }
+
+            for (uint32_t i = 0; i < onset_samples; i++) {
                 const uint32_t source_index =
-                    (pre_roll_write_index + i) % kPreRollSamples;
+                    (vad_candidate_start_index + i) % kPreRollSamples;
                 audio_buffer[i] = pre_roll_buffer[source_index];
             }
-            sample_count = kPreRollSamples;
+
+            sample_count = onset_samples;
             vad_consecutive_chunks = 0;
+            vad_candidate_sample_count = 0;
             current_state = STATE_RECORDING;
             Serial.printf(
-                "[VAD] Kich hoat o muc %lu, da giu lai 1 giay dau.\n",
-                static_cast<unsigned long>(average_energy)
+                "[VAD] Xac nhan o muc %lu | onset=%lu mau (%.1f ms) | "
+                "thu tiep den du 5 giay.\n",
+                static_cast<unsigned long>(average_energy),
+                static_cast<unsigned long>(onset_samples),
+                onset_samples * 1000.0f / Sample_Rate
             );
         }
         return;
@@ -159,6 +277,7 @@ void Process_Audio_Stream(void) {
         if (sample_count >= kTotalSamples) {
             current_state = STATE_PROCESSING;
             Serial.println("[MIC] Da thu du 5 giay.");
+            Print_Pcm_Statistics(audio_buffer, kTotalSamples);
         }
         return;
     }
@@ -167,7 +286,7 @@ void Process_Audio_Stream(void) {
         Normalize_To_Float(audio_buffer, audio_float_buffer, kTotalSamples);
         Butterworth_Reset();
         Butterworth_Process_Buffer(audio_float_buffer, kTotalSamples);
-        Apply_Pre_Emphasis(audio_float_buffer, kTotalSamples);
+        // C4 dùng pre_emphasis=0.0, không tiền nhấn tín hiệu.
 
         const int frame_count = Compute_Mel_Power_Spectrogram(
             audio_float_buffer,
@@ -186,11 +305,11 @@ void Process_Audio_Stream(void) {
             mel_spectrogram_buffer,
             frame_count
         );
-        current_state = STATE_INTERFACE;
+        current_state = STATE_INFERENCE;
         return;
     }
 
-    const Asthma_Result result = Run_Asthma_Interface(mel_spectrogram_buffer);
+    const Asthma_Result result = Run_Asthma_Inference(mel_spectrogram_buffer);
     Update_Votes(result);
     Reset_Capture_State();
 }

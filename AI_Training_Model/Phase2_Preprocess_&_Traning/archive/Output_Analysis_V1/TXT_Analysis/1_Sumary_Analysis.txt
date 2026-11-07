@@ -1,0 +1,76 @@
+1. Playback Asthma đang là vấn đề rất rõ
+
+- Ở Val
+
+Asthma Core     = 30/30 đúng
+Asthma Playback = 4/8 đúng
+
+- Nhưng ở Test
+
+Asthma Core     = 30/30 đúng
+Asthma Playback = 4/8 đúng
+
+- Đặc biệt có vài source khi
+
+take01 → sai
+take02 → đúng
+
+=> Cần kiểm tra 
+    1. waveform playback
+    2. Mel playback
+    3. so với raw source tương ứng
+
+2. room_noise không phải toàn bộ Environment đang tệ
+
+- Test:
+
+Knock      10/10 ✅
+Speech     10/10 ✅
+Room noise  4/10 ❌
+
+- Trong Val:
+
+Clap       10/10 ✅
+Fan        10/10 ✅
+Podcast    10/10 ✅
+
+- Và các 6 lỗi room noise đều xuất phát từ session 6 là
+=> mưa nhẹ cửa sổ + một chút tiếng nói
+
+- Điều đó chứng minh là 
++ Không phải: “model không học được environment”.
+=> Mà chính xác hơn là: 
+“model chưa generalize tốt với một acoustic condition mới: rainy mixed ambient.”
+
+3. Bronchial còn thú vị hơn: lỗi theo bệnh nhân
+
+Test có:
+
+Bronchial Core = 5/10 đúng
+
+nhìn qua rất xấu. Nhưng khi soi file:
+
+P12 → 5/5 sai
+P9  → 5/5 đúng
+
+- Tức model không phải random 50%. 
+Nó fail toàn bộ trên một patient Bronchial, nhưng nhận đúng toàn bộ patient còn lại.
+
+4. Asthma Test cũng có pattern theo patient
+
+6 FN Test không rải đều:
+
+P53 → 3 core Asthma bị miss
+P26 → 1 core bị miss
+P24 → 2 playback take bị miss
+
+- Nó tiếp tục củng cố nhận định rằng vấn đề hiện tại là:
+
+patient/domain generalization
++
+playback channel shift
+
+=> Chứ chưa có bằng chứng rằng toàn Dataset V2 bị lỗi thiết kế.
+
+5. Bước tiếp theo
+=> Run script: Analyze_Playback_Alignment.py

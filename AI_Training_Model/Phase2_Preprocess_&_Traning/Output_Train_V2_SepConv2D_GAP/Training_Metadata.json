@@ -1,0 +1,19 @@
+{
+  "variant_id": "combo_pre0_mel40_fft2048",
+  "config_sha256": "5ae8a2c91c92b58653d899ddec056485787b6307db2cc0c350382b4ded2576f8",
+  "architecture": "V2_SepConv2D_GAP",
+  "seed": 44,
+  "input_shape": [
+    40,
+    129,
+    1
+  ],
+  "epochs_requested": 100,
+  "epochs_completed": 43,
+  "best_epoch": 33,
+  "best_val_loss": 0.06753257662057877,
+  "best_val_accuracy": 0.9740259647369385,
+  "test_accuracy": 0.9182389974594116,
+  "parameter_count": 7802,
+  "test_used_for_training": false
+}

@@ -1,33 +1,33 @@
-# Phase 2 — Kiểm thử pipeline C++ và micro trực tiếp
+# 2_Test_Model_LiveMic
 
-Project này kiểm chứng pipeline TinyML trên ESP32-S3 ở hai mức:
-
-1. **Parity có kiểm soát:** nạp tensor INT8 hoặc PCM16 nhúng để đối chiếu với
-   kết quả Python.
-2. **LiveMic:** thu INMP441, kích hoạt bằng VAD, tạo đoạn 5 giây rồi chạy toàn
-   bộ DSP và model trên thiết bị.
+Project kiểm tra đường đi đầy đủ trên ESP32-S3:
 
 ```text
-INMP441 / PCM16
-  → 5 giây audio
-  → normalize + Butterworth + pre-emphasis
-  → Mel-Spectrogram 64 × 129
-  → INT8
-  → DS-CNN / TFLite Micro
+RAW PCM16 nhúng hoặc INMP441
+  -> audio 5 giây / 80.000 mẫu / 16 kHz
+  -> normalize + Butterworth (không pre-emphasis)
+  -> Mel-Spectrogram 40 x 129, FFT 2048
+  -> lượng tử input INT8
+  -> C4 V1 s44 / QAT INT8 trên TensorFlow Lite Micro
 ```
 
-Khi chạy LiveMic, firmware bỏ 100 khối I2S khởi động, tạo bộ đệm vòng 1 giây,
-chờ bốn khối liên tiếp vượt ngưỡng VAD 75 rồi thu thêm 4 giây. Kết luận voting
-được tạo từ ba đoạn capture/inference riêng biệt.
+## Cấu hình cần đổi
 
-Các chế độ kiểm chứng được chọn trong `include/Audio_IO/I2S_Mic.h`; khi chạy
-micro thật, tất cả macro test phải bằng `0`. Model sử dụng là
-`include/Model_AI/Asthma_Model_3.h`.
+- Model đã cố định tại `include/Model_AI/Asthma_Model.h`; header này dùng chung
+  artifact cuối trong `Final_Project_NCKH/AI_Model`.
+- Chọn nguồn kiểm tra tại `include/Audio_IO/I2S_Mic.h`:
+  - `RUN_RAW_PCM16_TEST = 1`: chạy tự động 12 mẫu trong `Raw_PCM16_Test_Samples.h`.
+  - `RUN_RAW_PCM16_TEST = 0`: đọc INMP441 thật, dùng VAD và vote ba lần.
+  - `RUN_VAD_CALIBRATION_TEST = 1`: chỉ đo năng lượng VAD; không chạy model.
 
-- [Tài liệu kỹ thuật](./doc/README.md)
-- [Nhật ký kiểm thử](./logs/README.md)
+Hai header V1/V5 cũ đã được loại bỏ. Bộ RAW 12 mẫu chưa qua preprocess Python,
+vì vậy nó kiểm tra đúng chuỗi
+`PCM16 -> preprocess C++ -> model`. Các tensor Python 108/113 và bộ parity 20 cũ đã
+được xóa khỏi project này; phép thử tensor trực tiếp thuộc
+`../1_Test_Model_Static_Profiling`.
 
-Phase này không phải firmware Patient Node hoàn chỉnh: chưa có Quality Gate,
-MAX30102, OLED, PatientSession hay ESP-NOW. Bản rút gọn sau kiểm chứng nằm ở
-`../3_Model_Complete`; source tích hợp cuối nằm trong
+`platformio.ini` dùng `partitions_16mb.csv` với app partition 8 MiB vì 12 đoạn PCM16
+và một model INT8 có thể vượt giới hạn 3 MiB của `huge_app.csv`.
+
+Không dùng project này làm Patient Node hoàn chỉnh. Firmware tích hợp nằm tại
 `../../Final_Project_NCKH/Patient_Node`.

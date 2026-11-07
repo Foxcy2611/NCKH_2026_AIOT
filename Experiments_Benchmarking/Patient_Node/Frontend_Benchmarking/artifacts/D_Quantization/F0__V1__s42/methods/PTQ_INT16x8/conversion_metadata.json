@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "status": "CONVERSION_COMPLETE",
+  "generated_utc": "2026-10-21T15:07:30.789222+00:00",
+  "trial_id": "F0__V1__s42",
+  "variant_id": "F0",
+  "method_id": "PTQ_INT16x8",
+  "training_mode": "PTQ",
+  "integer_mode": "INT16x8",
+  "experimental": false,
+  "plan_path": "D:\\NCKH_2026\\NCKH_2026_AIOT\\Experiments_Benchmarking\\Patient_Node\\Frontend_Benchmarking\\results\\D_Quantization\\quantization_plan.json",
+  "plan_sha256": "8258e0c64948a6d2916f84089bd590f40c8b026b22f713e5bfe1845dabbe544d",
+  "source_model_sha256": "3dabdca006822e0ea7bdc6f975ea7d290b49e74053599e5777726646b0dedac2",
+  "source_training_metadata_sha256": "d5b7f98047078330e6a738a2929e72fd911c41e59a8788c4696f58c4590736d8",
+  "tflite_path": "D:\\NCKH_2026\\NCKH_2026_AIOT\\Experiments_Benchmarking\\Patient_Node\\Frontend_Benchmarking\\artifacts\\D_Quantization\\F0__V1__s42\\methods\\PTQ_INT16x8\\PTQ_INT16x8.tflite",
+  "tflite_sha256": "9781576fc348267c396556d3b43c41f17ce40d90cdce27880523bc99d14f91b7",
+  "tflite_size_bytes": 547744,
+  "representative_count": 100,
+  "representative_class_counts": {
+    "0": 50,
+    "1": 50
+  },
+  "representative_indices_sha256": "062be8a32e8e68148669b84511783404396b1275d6baaa6d66db948aff3dc387",
+  "representative_source": "normalized Train features only",
+  "normalization": {
+    "method": "minmax_train_only_then_float32",
+    "train_min": -80.0,
+    "train_max": 0.0
+  },
+  "input_shape": [
+    64,
+    129,
+    1
+  ],
+  "io": {
+    "input": {
+      "name": "serving_default_input_layer:0",
+      "shape": [
+        1,
+        64,
+        129,
+        1
+      ],
+      "dtype": "int16",
+      "scale": 3.0518509447574615e-05,
+      "zero_point": 0
+    },
+    "output": {
+      "name": "StatefulPartitionedCall_1:0",
+      "shape": [
+        1,
+        1
+      ],
+      "dtype": "int16",
+      "scale": 3.0517578125e-05,
+      "zero_point": 0
+    }
+  },
+  "tensorflow_version": "2.21.0",
+  "numpy_version": "2.4.4",
+  "test_accessed": false,
+  "qat": null
+}

@@ -1,0 +1,43 @@
+{
+  "training_recipe_id": "V1_phase2_exact_float64_raw_float32_after_normalize_v2",
+  "training_script_sha256": "70b4a1f80ea1dd84897cfd42ab59fe9f95c879ccb9eec4ece7fee7eb9eb3ba52",
+  "normalization_method": "minmax_train_only_then_float32",
+  "preprocess_protocol": "NCKH_FRONTEND_V3_PHASE2_EXACT_2026_10",
+  "phase2_f0_parity": false,
+  "raw_train_dtype": "float64",
+  "raw_val_dtype": "float64",
+  "tf_enable_onednn_opts": "0",
+  "op_determinism_enabled": false,
+  "keras_clear_session_before_build": true,
+  "trial_id": "order_3__V1__s42",
+  "variant_id": "order_3",
+  "architecture": "V1",
+  "builder_path": "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Phase2_Preprocess_&_Traning\\Model_Architectures\\V1_SepConv2D_Flatten.py",
+  "builder_sha256": "ca9acdad3eda14602f1ea9fe32960d1d7a4da2a02191a34e47ea662241d97bfb",
+  "config_sha256": "55e4c6369f6b4131fe35fab2d8f098938e9183f5c57adb04aef67ce5a9260727",
+  "seed": 42,
+  "train_min": -80.0,
+  "train_max": 0.0,
+  "parameter_count": 527994,
+  "input_shape": [
+    64,
+    129,
+    1
+  ],
+  "epochs_requested": 100,
+  "epochs_completed": 25,
+  "best_epoch": 15,
+  "best_val_loss": 0.17477542161941528,
+  "batch_size": 32,
+  "train_seconds": 230.63400009999896,
+  "class_weights": {
+    "0": 1.0,
+    "1": 1.0
+  },
+  "dataset_root": "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_Chia_V2",
+  "train_fingerprint": "8b469b5426dd7d50f93c4d75a0d97b7ea887f7bb690aa2f38c6534e74fdec9c1",
+  "val_fingerprint": "c53c444a98a2f3c69519f8fa4b0afeef8e82daeb01d282153c4eefdf837d513f",
+  "tensorflow_version": "2.21.0",
+  "status": "VALIDATION_CHECKPOINT",
+  "test_used_for_training": false
+}

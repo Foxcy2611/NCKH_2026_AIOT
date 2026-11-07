@@ -1,0 +1,2 @@
+﻿file_name,channels,sample_width_bits,sample_rate_hz,frames,duration_seconds,format_ok,duration_30_90s,peak_pcm,rms_pcm,mav_pcm,dc_offset_pcm,peak_dbfs,rms_dbfs,clipped_samples,clipped_ratio,active_blocks,total_blocks,active_ratio,quality_result
+fan_session_05.wav,1,16,16000,960000,60.0,True,True,7534,685.1970027975227,497.87863854166665,-0.4822739583333333,-12.768486381849382,-33.59268960723453,0,0.0,3742,3750,0.9978666666666667,AUDIO_OK

@@ -1,0 +1,46 @@
+{
+  "variant_id": "combo_pre0_mel40_fft2048",
+  "protocol": "NCKH_FRONTEND_V3_PHASE2_EXACT_2026_10",
+  "config_sha256": "5ae8a2c91c92b58653d899ddec056485787b6307db2cc0c350382b4ded2576f8",
+  "input_shape": [
+    40,
+    129,
+    1
+  ],
+  "pre_emphasis": 0.0,
+  "splits": {
+    "train": {
+      "shape": [
+        1974,
+        40,
+        129,
+        1
+      ],
+      "dtype": "float64",
+      "asthma": 987,
+      "non_asthma": 987
+    },
+    "val": {
+      "shape": [
+        154,
+        40,
+        129,
+        1
+      ],
+      "dtype": "float64",
+      "asthma": 38,
+      "non_asthma": 116
+    },
+    "test": {
+      "shape": [
+        159,
+        40,
+        129,
+        1
+      ],
+      "dtype": "float64",
+      "asthma": 38,
+      "non_asthma": 121
+    }
+  }
+}

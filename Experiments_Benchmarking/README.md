@@ -30,7 +30,7 @@ Experiments_Benchmarking/
 │       ├── config.md
 │       ├── outputs/
 │       └── summary/
-├── Gateway/                 # Ngoài phạm vi hiện tại
+├── Gateway/                 
 └── README.md
 ```
 

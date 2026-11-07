@@ -1,0 +1,37 @@
+Trial: fft_2048__V1__s42
+Split: val | architecture: V1 | seed: 42
+Training recipe: V1_phase2_exact_float64_raw_float32_after_normalize_v2
+Keras val Loss: 0.094083
+Keras val Accuracy: 0.967532
+Labels: 0=Asthma, 1=Non-Asthma; sigmoid output is p(Non-Asthma).
+Confusion Matrix (rows: actual, columns: predicted; order [Asthma, Non-Asthma]):
+[[ 36   2]
+ [  3 113]]
+Asthma missed (FN, actual Asthma -> predicted Non-Asthma): 2
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      Asthma     0.9231    0.9474    0.9351        38
+  Non-Asthma     0.9826    0.9741    0.9784       116
+
+    accuracy                         0.9675       154
+   macro avg     0.9528    0.9608    0.9567       154
+weighted avg     0.9679    0.9675    0.9677       154
+
+
+Summary metrics:
+  accuracy: 0.9675324675324676
+  balanced_accuracy: 0.9607531760435571
+  macro_f1: 0.9567099567099566
+  asthma_recall: 0.9473684210526315
+  non_asthma_recall: 0.9741379310344828
+  asthma_fn: 2
+  non_asthma_fp: 3
+  asthma_count: 38
+  non_asthma_count: 116
+  log_loss: 0.09408283605748818
+  parameter_count: 527994
+  train_seconds: 274.618898499999
+
+NOTE: val metrics only. Not a clinical diagnostic validation.

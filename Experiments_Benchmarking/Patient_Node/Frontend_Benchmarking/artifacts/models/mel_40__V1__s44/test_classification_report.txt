@@ -1,0 +1,37 @@
+Trial: mel_40__V1__s44
+Split: test | architecture: V1 | seed: 44
+Training recipe: V1_phase2_exact_float64_raw_float32_after_normalize_v2
+Keras test Loss: 0.656826
+Keras test Accuracy: 0.830189
+Labels: 0=Asthma, 1=Non-Asthma; sigmoid output is p(Non-Asthma).
+Confusion Matrix (rows: actual, columns: predicted; order [Asthma, Non-Asthma]):
+[[33  5]
+ [22 99]]
+Asthma missed (FN, actual Asthma -> predicted Non-Asthma): 5
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      Asthma     0.6000    0.8684    0.7097        38
+  Non-Asthma     0.9519    0.8182    0.8800       121
+
+    accuracy                         0.8302       159
+   macro avg     0.7760    0.8433    0.7948       159
+weighted avg     0.8678    0.8302    0.8393       159
+
+
+Summary metrics:
+  accuracy: 0.8301886792452831
+  balanced_accuracy: 0.8433014354066986
+  macro_f1: 0.7948387096774194
+  asthma_recall: 0.868421052631579
+  non_asthma_recall: 0.8181818181818182
+  asthma_fn: 5
+  non_asthma_fp: 22
+  asthma_count: 38
+  non_asthma_count: 121
+  log_loss: 0.6568221217620335
+  parameter_count: 331386
+  train_seconds: 102.27363419999892
+
+NOTE: test metrics only. Not a clinical diagnostic validation.

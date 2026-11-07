@@ -1,0 +1,183 @@
+MODEL VERSION HISTORY - ASTHMA AUDIO CLASSIFICATION
+===================================================
+
+Quy ước:
+- V0: baseline cũ trước khi sửa playback alignment và retrain Dataset V2.
+- V1-V5: các experiment kiến trúc sau khi pipeline dữ liệu/preprocess đã được làm sạch hơn.
+- Không coi mọi version là "paper reproduction". Chỗ nào là custom/adaptation đều ghi rõ.
+
+V0 - Legacy baseline trước retrain
+---------------------------------
+Mục đích:
+- Giữ làm mốc lịch sử trước khi sửa lỗi playback crop/alignment.
+- Không dùng làm kiến trúc cuối.
+
+Ghi chú:
+- Đây là model cũ trước khi playback được căn lại từ khoảng 1.0-6.0 s.
+- Chỉ dùng để so mức cải thiện của pipeline mới.
+
+Nguồn:
+- Không có nguồn kiến trúc trực tiếp; đây là baseline nội bộ cũ.
+
+
+V1 - Custom DS-CNN + Flatten
+----------------------------
+Kiến trúc chính:
+- SeparableConv2D 16 -> BN -> MaxPool
+- SeparableConv2D 32 -> BN -> MaxPool
+- SeparableConv2D 64 -> BN -> MaxPool
+- Flatten -> Dense 64 -> Dropout -> Dense 1 sigmoid
+
+Vai trò:
+- Custom DS-CNN baseline sau khi sửa playback alignment.
+- Không được lấy nguyên bản từ một paper cụ thể.
+- Macro-topology 16->32->64 + pooling + Flatten về sau được đối chiếu với CNN stream của E-RespiNet.
+- Việc dùng depthwise-separable convolution có cơ sở từ MobileNet/DS-CNN literature.
+
+Kết quả hiện tại:
+- Params: 527,994
+- Test accuracy: 89.31%
+- Asthma recall: 92.11%
+- Asthma F1: 0.8046
+
+Nguồn tham khảo nguyên lý:
+- MobileNet V1: https://arxiv.org/abs/1704.04861
+- Hello Edge DS-CNN: https://arxiv.org/abs/1711.07128
+- ARM ML-KWS-for-MCU: https://github.com/ARM-software/ML-KWS-for-MCU
+
+
+V2 - V1 + GlobalAveragePooling2D
+--------------------------------
+Thay đổi duy nhất so với V1:
+- Flatten -> GlobalAveragePooling2D
+
+Mục đích:
+- Ablation để kiểm tra ảnh hưởng của việc loại bỏ Flatten và giảm mạnh số tham số.
+
+Kết quả hiện tại:
+- Params: 7,802
+- Test accuracy: 86.79%
+- Asthma recall: 86.84%
+- Asthma F1: 0.7586
+
+Kết luận:
+- Nhẹ hơn rất nhiều nhưng giảm hiệu năng.
+- Không chọn làm model cuối.
+
+Nguồn liên quan:
+- Global average pooling xuất hiện trong nhiều lightweight CNN, nhưng V2 là ablation nội bộ, không phải reproduction của một paper riêng.
+
+
+V3 - Hello Edge DS-CNN
+----------------------
+Kiến trúc:
+- Conv stem
+- 4 depthwise-separable blocks
+- GlobalAveragePooling2D
+- Binary classifier
+
+Mục đích:
+- Thử topology DS-CNN có nguồn rõ cho embedded audio/microcontroller.
+
+Kết quả hiện tại:
+- Params: 23,617
+- Test accuracy: 86.16%
+- Asthma recall: 84.21%
+- Asthma F1: 0.7442
+
+Kết luận:
+- Rất nhẹ, nhưng transfer trực tiếp từ keyword spotting sang respiratory audio không phù hợp bằng V1/V5 trên dataset hiện tại.
+
+Nguồn:
+- Zhang et al., "Hello Edge: Keyword Spotting on Microcontrollers":
+  https://arxiv.org/abs/1711.07128
+- ARM implementation:
+  https://github.com/ARM-software/ML-KWS-for-MCU
+
+
+V4 - MobileNet-style respiratory DS-CNN
+---------------------------------------
+Cơ sở:
+- MobileNet V1 depthwise-separable CNN.
+- Jung et al. 2021 áp dụng shrunk DS-CNN cho lung sounds và scale theo width/depth.
+
+V4.0:
+- alpha = 0.75, beta = 10
+- Params: 1,371,361
+- Test accuracy: 86.79%
+- Asthma recall: 92.11%
+- Asthma F1: 0.7692
+
+V4.1:
+- alpha = 0.50, beta = 8
+- Params: 480,321
+- Test accuracy: 79.87%
+- Asthma recall: 78.95%
+- Asthma F1: 0.6522
+
+Kết luận:
+- Shrinking model không giải quyết được generalization trên dataset hiện tại.
+- Không chọn topology này làm model cuối.
+
+Nguồn:
+- MobileNet V1:
+  https://arxiv.org/abs/1704.04861
+- Jung et al., Diagnostics 2021, lung-sound DS-CNN:
+  https://doi.org/10.3390/diagnostics11040732
+  https://pmc.ncbi.nlm.nih.gov/articles/PMC8074359/
+
+
+V5 - E-RespiNet-style standard CNN reference
+--------------------------------------------
+Lưu ý quan trọng:
+- Đây KHÔNG phải full E-RespiNet.
+- Chỉ dùng CNN encoder/macro-topology kiểu 3 block làm reference, sau đó adapt classifier cho binary Asthma/Non-Asthma.
+
+Kiến trúc dùng trong experiment:
+- Conv2D 16, 3x3 -> BN -> ReLU -> MaxPool 2x2
+- Conv2D 32, 3x3 -> BN -> ReLU -> MaxPool 2x2
+- Conv2D 64, 3x3 -> BN -> ReLU -> MaxPool 2x2
+- Flatten -> Dense 64 -> Dropout -> Dense 1 sigmoid
+
+So với V1:
+- Giữ gần như toàn bộ macro-architecture.
+- Thay SeparableConv2D bằng Conv2D thường.
+- Đây là phép A/B CNN thường vs DS-CNN tương đối sạch.
+
+Kết quả hiện tại:
+- Params: 548,161
+- Test accuracy: 91.82%
+- Asthma recall: 92.11%
+- Asthma precision: 77.78%
+- Asthma F1: 0.8434
+- Confusion matrix: [[35, 3], [10, 111]]
+
+Kết luận hiện tại:
+- V5 đang là model có hiệu năng dự đoán tốt nhất.
+- Params chỉ cao hơn V1 khoảng 4%, nhưng Conv2D thường có compute/MAC cao hơn SeparableConv2D.
+- Vì vậy V5 được chọn để lượng tử hóa INT8 và benchmark trên ESP32-S3.
+
+Nguồn:
+- Tawfik et al., "E-RespiNet: An LLM-ELECTRA driven triple-stream CNN with feature fusion for asthma classification", PLOS ONE, 2025:
+  https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0334528
+  DOI: https://doi.org/10.1371/journal.pone.0334528
+
+
+TÓM TẮT QUYẾT ĐỊNH
+===================
+V0 = Legacy baseline trước retrain/alignment fix
+V1 = Custom DS-CNN + Flatten
+V2 = V1 + GAP
+V3 = Hello Edge DS-CNN
+V4 = MobileNet-style respiratory DS-CNN
+V5 = E-RespiNet-style standard CNN reference
+
+Model chọn cho bước tiếp theo:
+-> V5
+
+Phase 3 hiện tại:
+-> Post-Training Quantization (PTQ) Full INT8
+-> Representative dataset lấy từ Train
+-> Test chỉ dùng để so Keras FP32 với TFLite INT8
+-> Sau đó mới benchmark trên ESP32-S3
+

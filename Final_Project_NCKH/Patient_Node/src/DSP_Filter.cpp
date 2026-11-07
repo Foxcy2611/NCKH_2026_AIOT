@@ -33,16 +33,6 @@ static const double FILTER_A[FILTER_ORDER + 1] = {
 // Trạng thái của Direct Form II Transposed, cùng cấu trúc scipy.signal.lfilter.
 static double filter_state[FILTER_ORDER] = {0.0};
 
-// ==== PRE-EMPHASIS ====
-// y[n] = x[n] - coef . x[n-1]
-void Apply_Pre_Emphasis(float* signal, int length){
-    if(length <= 1) return;
-
-    for(int i = length - 1 ; i >= 1 ; i--){
-        signal[i] = signal[i] - Pre_Coef * signal[i - 1];
-    }
-}
-
 // ==== RESET TRẠNG THÁI BUTTERWORTH ====
 void Butterworth_Reset(void) {
     for(int i = 0; i < FILTER_ORDER; i++){

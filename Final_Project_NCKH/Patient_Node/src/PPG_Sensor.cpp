@@ -33,6 +33,7 @@
 #define FIFO_A_FULL_15                 0x0F
 
 #define MODE_RESET                     0x40
+#define MODE_SHUTDOWN                  0x80
 #define MODE_SP02                      0x03
 
 #define SP02_ADC_RGE_4096              (0b01 << 5)
@@ -52,13 +53,6 @@
 #define MAX30102_NEW_SAMPLES           25
 #define MAX30102_ENABLE_BANDPASS_FILTER 1
 #define MAX30102_FILTER_FS_HZ          25.0f
-
-/*
- * Clone module tím: FIFO/ngắt thường không ổn định như bản chính hãng.
- * Timeout dùng để tự phục hồi nếu I2C/FIFO im lặng quá lâu, thay vì
- * treo mãi như bản blocking cũ.
- */
-#define MAX30102_SAMPLE_TIMEOUT_MS     6000UL
 
 namespace
 {
@@ -580,11 +574,13 @@ static uint16_t MAX30102_writeIndex = 0;      // vị trí đang thu tiếp theo
 static bool MAX30102_bufferReady = false;     // đã từng thu đủ 100 mẫu lần đầu chưa
 static uint32_t MAX30102_lastSampleMillis = 0;
 
-/* ---- Cache kết quả gần nhất, đọc được bất cứ lúc nào ---- */
-static int32_t MAX30102_lastHeartRate = -999;
+/* ---- Cache kết quả gần nhất, giá trị invalid luôn được biểu diễn bằng 0 ---- */
+static int32_t MAX30102_lastHeartRate = 0;
 static int8_t MAX30102_lastValidHR = 0;
-static int32_t MAX30102_lastSpO2 = -999;
+static int32_t MAX30102_lastSpO2 = 0;
 static int8_t MAX30102_lastValidSpO2 = 0;
+static bool MAX30102_initialized = false;
+static bool MAX30102_active = false;
 
 
 static bool MAX30102_IsFingerDetected(uint32_t irSample)
@@ -675,6 +671,12 @@ bool MAX30102_Init(void)
     MAX30102_bufferReady = false;
     MAX30102_writeIndex = 0;
     MAX30102_lastSampleMillis = millis();
+    MAX30102_lastHeartRate = 0;
+    MAX30102_lastValidHR = 0;
+    MAX30102_lastSpO2 = 0;
+    MAX30102_lastValidSpO2 = 0;
+    MAX30102_initialized = false;
+    MAX30102_active = false;
 
     pinMode(PIN_INT_MAX, INPUT_PULLUP);
 
@@ -742,18 +744,91 @@ bool MAX30102_Init(void)
         return false;
     }
 
-    /* START SPO2 MODE (RED + IR) */
-    if (!MAX30102_WriteReg(REG_MODE_CONFIG, MODE_SP02))
+    /* Init chỉ xác minh và cấu hình cảm biến. LED được giữ tắt cho tới CHECK. */
+    if (!MAX30102_WriteReg(REG_MODE_CONFIG, MODE_SHUTDOWN))
     {
         return false;
     }
 
-    /* ENABLE INTERRUPT */
-    configValue = PPG_RDY_EN | A_FULL_EN;
-    if (!MAX30102_WriteReg(REG_INTER_ENABLE_1, configValue)) return false;
-    if (!MAX30102_WriteReg(REG_INTER_ENABLE_2, 0x00)) return false;
+    MAX30102_initialized = true;
+    MAX30102_active = false;
 
     return true;
+}
+
+bool MAX30102_Wake(void)
+{
+    if (!MAX30102_initialized) return false;
+    if (MAX30102_active) return true;
+
+    if (!MAX30102_WriteReg(REG_MODE_CONFIG, MODE_SP02)) return false;
+
+    const uint8_t interruptConfig = PPG_RDY_EN | A_FULL_EN;
+    if (!MAX30102_WriteReg(REG_INTER_ENABLE_1, interruptConfig)
+        || !MAX30102_WriteReg(REG_INTER_ENABLE_2, 0x00))
+    {
+        MAX30102_WriteReg(REG_MODE_CONFIG, MODE_SHUTDOWN);
+        return false;
+    }
+
+    MAX30102_active = true;
+    MAX30102_lastSampleMillis = millis();
+    return true;
+}
+
+bool MAX30102_Shutdown(void)
+{
+    if (!MAX30102_initialized) return false;
+
+    // Thử cả hai thanh ghi độc lập; không bỏ qua lần ghi thứ hai nếu lần đầu lỗi.
+    const bool interrupt1Disabled =
+        MAX30102_WriteReg(REG_INTER_ENABLE_1, 0x00);
+    const bool interrupt2Disabled =
+        MAX30102_WriteReg(REG_INTER_ENABLE_2, 0x00);
+    const bool shutdownWritten =
+        MAX30102_WriteReg(REG_MODE_CONFIG, MODE_SHUTDOWN);
+
+    MAX30102_active = false;
+    MAX30102_ResetBuffer();
+    return interrupt1Disabled && interrupt2Disabled && shutdownWritten;
+}
+
+bool MAX30102_IsActive(void)
+{
+    return MAX30102_initialized && MAX30102_active;
+}
+
+
+bool MAX30102_BeginMeasurement(void)
+{
+    if (!MAX30102_active && !MAX30102_Wake()) return false;
+
+    // Không dùng cửa sổ trượt 75/25 giữa hai phiên CHECK độc lập. Mỗi phiên
+    // phải thu lại đủ 100 mẫu để không trộn dữ liệu cũ/người dùng cũ.
+    MAX30102_is_ready = false;
+    MAX30102_writeIndex = 0;
+    MAX30102_bufferReady = false;
+    MAX30102_lastSampleMillis = millis();
+
+    MAX30102_lastHeartRate = 0;
+    MAX30102_lastValidHR = 0;
+    MAX30102_lastSpO2 = 0;
+    MAX30102_lastValidSpO2 = 0;
+
+    // Flush cả FIFO phần cứng. Chỉ reset index phần mềm là chưa đủ vì MAX30102
+    // vẫn chạy SpO2 và có thể đã tích lũy mẫu từ trước khi người dùng vào CHECK.
+    const bool writePointerReset =
+        MAX30102_WriteReg(REG_WR_PTR_CONF, ERASER_POINTER);
+    const bool overflowReset =
+        MAX30102_WriteReg(REG_OVF_COUNTER, ERASER_POINTER);
+    const bool readPointerReset =
+        MAX30102_WriteReg(REG_RD_PTR_CONF, ERASER_POINTER);
+    const bool interruptCleared = MAX30102_ClearInterrupt();
+
+    return writePointerReset
+        && overflowReset
+        && readPointerReset
+        && interruptCleared;
 }
 
 
@@ -875,9 +950,9 @@ static void MAX30102_RunAlgorithmAndCache(void)
         &validSpO2
     );
 
-    MAX30102_lastHeartRate = heartRate;
+    MAX30102_lastHeartRate = validHeartRate ? heartRate : 0;
     MAX30102_lastValidHR = validHeartRate;
-    MAX30102_lastSpO2 = spo2;
+    MAX30102_lastSpO2 = validSpO2 ? spo2 : 0;
     MAX30102_lastValidSpO2 = validSpO2;
 
     /* GIỮ LẠI 75 MẪU CŨ, dồn về đầu buffer */
@@ -901,8 +976,10 @@ void MAX30102_ResetBuffer(void)
     MAX30102_writeIndex = 0;
     MAX30102_bufferReady = false;
     MAX30102_lastSampleMillis = millis();
-    /* Không xoá cache kết quả cũ - UI vẫn có thể hiển thị giá trị gần
-     * nhất trong lúc chờ đo lại, tuỳ bạn muốn giữ hay clear ở lớp gọi. */
+    MAX30102_lastHeartRate = 0;
+    MAX30102_lastValidHR = 0;
+    MAX30102_lastSpO2 = 0;
+    MAX30102_lastValidSpO2 = 0;
 }
 
 
@@ -916,6 +993,8 @@ void MAX30102_ResetBuffer(void)
 
 MAX30102_State MAX30102_Poll(void)
 {
+    if (!MAX30102_active) return MAX30102_STATE_TIMEOUT;
+
     bool gotAnySampleThisCall = false;
 
     uint32_t red;
@@ -959,7 +1038,7 @@ MAX30102_State MAX30102_Poll(void)
     }
 
     if (!gotAnySampleThisCall &&
-        (millis() - MAX30102_lastSampleMillis) >= MAX30102_SAMPLE_TIMEOUT_MS)
+        (millis() - MAX30102_lastSampleMillis) >= MAX30102_MEASUREMENT_TIMEOUT_MS)
     {
         MAX30102_ResetBuffer();
         return MAX30102_STATE_TIMEOUT;

@@ -1,0 +1,17 @@
+{
+  "fake_quant_semantics": "INT8-aware selective QAT",
+  "epochs_completed": 15,
+  "best_epoch": 13,
+  "best_val_loss": 0.0623229555785656,
+  "bridge_max_abs_diff": 1.0244548320770264e-07,
+  "class_weights": {
+    "0": 1.0,
+    "1": 1.0
+  },
+  "saved_qat_model": "D:\\NCKH_2026\\NCKH_2026_AIOT\\Experiments_Benchmarking\\Patient_Node\\Frontend_Benchmarking\\artifacts\\D_Quantization\\pre_0__V1__s43\\qat\\QAT_Model.keras",
+  "trial_id": "pre_0__V1__s43",
+  "plan_sha256": "8258e0c64948a6d2916f84089bd590f40c8b026b22f713e5bfe1845dabbe544d",
+  "source_model_sha256": "bec8568adcd08d3251d63e0e0da8baa6421a546a500fb4938be53fe6c5d2cb35",
+  "generated_utc": "2026-10-21T15:19:38.209055+00:00",
+  "test_accessed": false
+}

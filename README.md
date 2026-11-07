@@ -1,285 +1,135 @@
-# Edge AI & IoT hỗ trợ theo dõi hen suyễn
+# 🫁 Edge AI & IoT hỗ trợ theo dõi hen suyễn
 
-![ESP32](https://img.shields.io/badge/MCU-ESP32%20%7C%20ESP32--S3-red.svg)
-![RTOS](https://img.shields.io/badge/Gateway-FreeRTOS-blue.svg)
-![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![AI](https://img.shields.io/badge/AI-TensorFlow%20Lite%20Micro-orange.svg)
-![C++](https://img.shields.io/badge/C++-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white)
-![Qt](https://img.shields.io/badge/Qt-6-41CD52?style=for-the-badge&logo=qt&logoColor=white)
-![Network](https://img.shields.io/badge/Network-ESP--NOW%20%7C%20WiFi%20%7C%204G%20LTE%20%7C%20MQTT-brightgreen.svg)
+![ESP32-S3](https://img.shields.io/badge/Patient%20Node-ESP32--S3-E7352C?style=flat&logo=espressif&logoColor=white)
+![ESP32](https://img.shields.io/badge/IoT%20Gateway-ESP32-E7352C?style=flat&logo=espressif&logoColor=white)
+![FreeRTOS](https://img.shields.io/badge/RTOS-FreeRTOS-1784C7?style=flat)
+![TinyML](https://img.shields.io/badge/AI-TinyML-FF8C00?style=flat)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-Lite%20Micro-FF6F00?style=flat&logo=tensorflow&logoColor=white)
 
+![C++](https://img.shields.io/badge/C%2B%2B-Embedded-00599C?style=flat&logo=cplusplus&logoColor=white)
+![Python](https://img.shields.io/badge/Python-AI%20Training-3776AB?style=flat&logo=python&logoColor=white)
+![PlatformIO](https://img.shields.io/badge/PlatformIO-Firmware-F5822A?style=flat&logo=platformio&logoColor=white)
+![Arduino](https://img.shields.io/badge/Arduino-Framework-00878F?style=flat&logo=arduino&logoColor=white)
+![Qt](https://img.shields.io/badge/Qt-6-41CD52?style=flat&logo=qt&logoColor=white)
+![QML](https://img.shields.io/badge/Dashboard-QML-41CD52?style=flat&logo=qt&logoColor=white)
 
-> **Đề tài NCKH:** Nghiên cứu, thiết kế và chế tạo hệ thống IoT ứng dụng
-> TinyML hỗ trợ theo dõi và cảnh báo sớm cho bệnh nhân hen suyễn.
+![ESP-NOW](https://img.shields.io/badge/Network-ESP--NOW-0078D4?style=flat)
+![AES-GCM](https://img.shields.io/badge/Security-AES--128--GCM-405A6B?style=flat)
+![MQTT](https://img.shields.io/badge/Telemetry-MQTT-660066?style=flat&logo=eclipsemosquitto&logoColor=white)
+![Wi-Fi/LTE](https://img.shields.io/badge/Uplink-Wi--Fi%20%2F%204G%20LTE-2E8B57?style=flat)
 
-Dự án xây dựng một hệ thống theo dõi **edge-first**: Patient Node thu và xử lý
-âm thanh hô hấp ngay trên ESP32-S3; Gateway bổ sung dữ liệu môi trường và kết
-nối mạng; Dashboard trình bày phiên đo, sự kiện và lịch sử. Việc suy luận cốt
-lõi không phụ thuộc Internet và raw audio không được truyền liên tục lên cloud.
+> **Mã đề tài:** 42-SV-2026-ĐT1  
+> **Tên đề tài:** Nghiên cứu, thiết kế và chế tạo hệ thống IoT ứng dụng TinyML hỗ trợ theo dõi và cảnh báo sớm cho bệnh nhân hen suyễn.  
+> **Đơn vị:** Học viện Công nghệ Bưu chính Viễn thông (PTIT) – ARM Lab.
 
-> Đây là nguyên mẫu nghiên cứu hỗ trợ sàng lọc và cảnh báo kỹ thuật, không phải
-> thiết bị chẩn đoán y khoa và không thay thế đánh giá của nhân viên y tế.
+## 1. 📖 Giới thiệu dự án
 
-## Kiến trúc hệ thống
+Dự án nghiên cứu và xây dựng một **nguyên mẫu AIoT xử lý tại biên (edge-first)**, có khả năng phân tích âm thanh hô hấp bằng mô hình TinyML chạy trực tiếp trên ESP32-S3, đồng thời kết hợp dữ liệu sinh hiệu và môi trường trong giao diện giám sát. Trọng tâm nghiên cứu gồm **xử lý tín hiệu âm thanh, huấn luyện và lượng tử hóa mô hình, firmware nhúng, truyền thông bảo mật và tích hợp hệ thống**.
 
-```text
-                    AES-GCM / ESP-NOW
-┌──────────────────┐ Secure Event   ┌──────────────────┐    MQTT  ┌─────────────────┐
-│ Patient Edge Node│ ─────────────► │   IoT Gateway    │ ────────►│ Qt6 Dashboard   │
-│                  │ ◄───────────── │                  │          │                 │
-│                  │ Secure ACK/NACK│                  │          │                 │
-│ ESP32-S3         │                │ ESP32            │          │ sessions/history│
-│ INMP441          │                │ environment      │          │ status/alerts   │
-│ MAX30102 + OLED  │                │ Wi-Fi/LTE/GPS    │          └─────────────────┘
-│ DSP + TinyML     │                │ aggregation      │
-└──────────────────┘                └──────────────────┘
-```
+Điểm cốt lõi là **suy luận diễn ra trên Patient Node**, không yêu cầu truyền liên tục âm thanh thô lên máy chủ. Gateway và Dashboard bổ sung khả năng kết nối, tổng hợp dữ liệu và giám sát, khi mất Gateway hoặc Internet, chức năng phân loại và hiển thị cục bộ của Node vẫn có thể hoạt động.
 
-| Thành phần | Trách nhiệm chính | Không đảm nhiệm |
-|---|---|---|
-| **Patient Node** | Thu audio, Quality Gate, VAD, DSP, TinyML, HR/SpO₂ theo phiên, OLED, tạo `Node_Payload_t` và mã hóa AES-128-GCM | MQTT, LTE, GPS, cảm biến môi trường |
-| **Gateway** | Nhận/xác thực/giải mã sự kiện, phản hồi bảo mật, thu môi trường, ghép dữ liệu, lưu/chuyển tiếp và quản lý uplink | Chạy lại mô hình âm thanh thay Patient Node |
-| **Dashboard** | Hiển thị phiên đo, lịch sử, trạng thái thiết bị và cảnh báo | Suy diễn chẩn đoán lâm sàng |
+> Đây là **nguyên mẫu nghiên cứu**, không phải thiết bị chẩn đoán hay dự báo cơn hen đã được kiểm chứng lâm sàng. Kết quả phân loại chỉ hỗ trợ theo dõi, không thay thế đánh giá của nhân viên y tế.
 
-Kiến trúc tách trách nhiệm này giúp Patient Node vẫn đo và suy luận cục bộ khi
-Gateway hoặc Internet tạm thời không khả dụng.
+## 2. 🧩 Kiến trúc tổng thể
 
-## Danh sách mô-đun phần cứng
+![Kiến trúc tổng thể Patient Node – IoT Gateway – Dashboard](./Final_Project_NCKH/Overview/Overview_Workflow.png)
 
-Danh sách dưới đây phản ánh cấu hình và source tích hợp hiện tại. Một mô-đun đã có
-trình điều khiển trong source không đồng nghĩa đã hoàn tất kiểm thử thực địa; đặc biệt,
-GPS, LTE và các cảm biến của Gateway vẫn cần được nghiệm thu trên bộ phần cứng cuối.
+Hệ thống có **ba phân hệ triển khai**: **Patient Node → IoT Gateway → Dashboard**. **AI Model** là thành phần phần mềm được nghiên cứu và đóng gói riêng, sau đó triển khai **bên trong Patient Node**, không phải một thiết bị vật lý thứ tư.
 
-### Patient Node
+Liên kết Node–Gateway sử dụng **ESP-NOW** với bản tin được bảo vệ bằng **AES-128-GCM**, Gateway chuyển tiếp dữ liệu tổng hợp tới Dashboard qua **MQTT**, sử dụng Wi-Fi hoặc LTE theo trạng thái kết nối.
 
-| Mô-đun | Giao tiếp / chân chính | Tác dụng trong hệ thống |
-|---|---|---|
-| **ESP32-S3-N16R8V** | MCU chính, có PSRAM | Điều khiển Patient Node; thu âm, tiền xử lý Mel-spectrogram, chạy DS-CNN INT8 bằng TensorFlow Lite Micro, quản lý máy trạng thái, màn hình và truyền dữ liệu bảo mật. |
-| **INMP441** | I2S: SCK `GPIO14`, WS `GPIO15`, SD `GPIO16` | Thu âm thanh hô hấp ở 16 kHz để kiểm tra chất lượng, phát hiện âm thanh, suy luận CHECK và MONITOR. |
-| **MAX30102** | I2C: SDA `GPIO8`, SCL `GPIO7`; INT `GPIO9` | Đo nhịp tim và SpO₂ theo từng phiên. Kết quả chỉ được đưa vào gói tin khi phép đo hợp lệ. |
-| **OLED SSD1306 128×64** | I2C: SDA `GPIO8`, SCL `GPIO7`; địa chỉ `0x3C` | Hiển thị hướng dẫn thao tác, trạng thái thu âm/xử lý, kết quả AI, chỉ số sinh tồn và trạng thái gửi dữ liệu. |
-| **Ba nút nhấn CHECK, MONITOR, SLEEP/STOP** | Lần lượt `GPIO4`, `GPIO5`, `GPIO6` | Bắt đầu kiểm tra một lần, bật chế độ theo dõi liên tục hoặc dừng/đưa thiết bị về trạng thái nghỉ. |
-| **Wi-Fi 2.4 GHz / ESP-NOW tích hợp** | Bộ thu phát có sẵn trong ESP32-S3 | Gửi `Secure_Packet_t` đã mã hóa AES-128-GCM đến Gateway và nhận phản hồi ACK/NACK; không phải mô-đun rời. |
+Các chi tiết về luồng trạng thái, cấu trúc bản tin, ACK/retry và các kịch bản vận hành nằm trong [đặc tả sản phẩm](./Docs/04_Xay_Dung_He_Thong/) và [tài liệu luồng hệ thống](./Docs/05_Luong_Hoat_Dong).
 
-OLED và MAX30102 dùng chung bus I2C của Patient Node. Phần thu phát ESP-NOW sử dụng
-phần cứng vô tuyến tích hợp trên ESP32-S3, vì vậy Patient Node không cần thêm mô-đun
-Wi-Fi ngoài.
-
-### Gateway
-
-| Mô-đun | Giao tiếp / chân chính | Tác dụng trong hệ thống |
-|---|---|---|
-| **ESP32 Dev Module** | MCU chính | Chạy các tác vụ FreeRTOS; nhận ESP-NOW, xác thực/giải mã sự kiện, gửi ACK/NACK, ghép dữ liệu cảm biến và quản lý đường truyền MQTT. |
-| **DHT22** | Một dây dữ liệu tại `GPIO25` | Đo nhiệt độ và độ ẩm môi trường gần Gateway. |
-| **BMP280** | I2C: SDA `GPIO21`, SCL `GPIO22`; địa chỉ `0x76` | Đo áp suất khí quyển, bổ sung bối cảnh môi trường cho bản ghi tổng hợp. |
-| **SGP30** | I2C: SDA `GPIO21`, SCL `GPIO22` | Đo TVOC và ước lượng eCO₂. Giá trị eCO₂ là chỉ số tương đương, không phải phép đo CO₂ trực tiếp. |
-| **NEO-M8N** | UART: RX `GPIO32`, TX `GPIO33`, 9600 baud | Cung cấp tọa độ GPS và thời gian UTC khi có vị trí hợp lệ; tọa độ được chuyển sang độ thập phân có dấu trước khi đóng gói. |
-| **SIMCom A7680C** | UART: RX `GPIO16`, TX `GPIO26` | Cung cấp đường truyền LTE dự phòng khi Wi-Fi không khả dụng; cần SIM, APN và kiểm thử mạng thực tế. |
-| **TFT ST7735 128×160** | SPI: SCLK `GPIO18`, MOSI `GPIO23`, CS `GPIO15`, DC `GPIO27`, RST `GPIO4` | Hiển thị nhanh kết quả Patient Node, chỉ số sinh tồn, dữ liệu môi trường và trạng thái Wi-Fi/MQTT/LTE tại Gateway. |
-| **Wi-Fi 2.4 GHz / ESP-NOW tích hợp** | Bộ thu phát có sẵn trong ESP32 | Nhận sự kiện từ Patient Node qua ESP-NOW và dùng Wi-Fi làm đường MQTT chính; không phải mô-đun rời. |
-
-BMP280 và SGP30 dùng chung bus I2C của Gateway. Mỗi giá trị cảm biến chỉ được đánh
-dấu hợp lệ trong `sensor_valid_mask` khi phép đọc tương ứng thành công; Dashboard
-không nên coi giá trị mặc định bằng `0` là một phép đo thật.
-
-## Ba trường hợp sử dụng
-
-Patient Node luôn là nơi thu dữ liệu bệnh nhân và chạy TinyML. Điểm khác nhau
-giữa ba trường hợp là vị trí của Patient Node so với Gateway và đường truyền mà
-Gateway dùng để đưa sự kiện lên hệ thống.
-
-| Trường hợp | Patient Node ở đâu? | Gateway ở đâu? | Cơ chế hoạt động |
-|---|---|---|---|
-| **Theo dõi tại nhà** | Người dùng cầm, đặt trên bàn hoặc gần đầu giường, trong vùng ESP-NOW | Đặt cố định trong nhà, cấp nguồn liên tục | Patient Node xử lý tại edge → AES-GCM/ESP-NOW → Gateway → Wi-Fi → MQTT |
-| **Mang theo, không có Gateway** | Đi cùng người dùng, ngoài vùng ESP-NOW của nhà | Vẫn ở nhà hoặc không khả dụng | Patient Node tiếp tục đo, suy luận và hiển thị cục bộ; sự kiện chưa gửi được được đánh dấu chờ đồng bộ |
-| **Mang theo và có kết nối** | Đi cùng người dùng | Cũng được mang theo và nằm trong vùng ESP-NOW của Patient Node | Patient Node → AES-GCM/ESP-NOW → Gateway; Gateway dùng LTE làm uplink và có thể bật GPS khi cần vị trí |
-
-### 1. Theo dõi tại nhà
-
-```text
-Patient Node trong nhà
-  → xử lý audio và tạo Patient Event payload
-  → mã hóa AES-GCM rồi gửi ESP-NOW
-  → Gateway xác thực, giải mã và phản hồi bảo mật
-  → Wi-Fi
-  → MQTT / Dashboard
-```
-
-Gateway có thể đọc cảm biến môi trường định kỳ và ghép snapshot gần thời điểm
-Patient Event đã được xác thực/giải mã. Wi-Fi là uplink chính; LTE chỉ đóng vai trò dự phòng nếu được
-bật trong cấu hình cuối. Patient Node không cần giữ kết nối Wi-Fi.
-
-### 2. Mang theo, hoạt động độc lập
-
-```text
-Patient Node ngoài vùng Gateway
-  → CHECK hoặc MONITOR
-  → Quality Gate + TinyML
-  → hiển thị kết quả trên OLED
-  → mã hóa và lưu `Secure_Packet_t` vào hàng đợi chờ gửi
-```
-
-Trong trường hợp này không có dữ liệu môi trường từ Gateway tại thời điểm đo và
-không có cập nhật realtime lên Dashboard. Khi Patient Node quay lại vùng
-ESP-NOW, các packet mã hóa đang chờ có thể được gửi lại nguyên vẹn theo cơ chế
-sequence, ACK/retry bảo mật và chống trùng lặp.
-
-### 3. Mang theo cả Patient Node và Gateway
-
-```text
-Patient Node mang theo
-  → AES-GCM/ESP-NOW cự ly gần
-  → Gateway mang theo
-  → LTE, tùy chọn GPS
-  → MQTT / Dashboard
-```
-
-Gateway lúc này cung cấp uplink di động và có thể ghép dữ liệu môi trường tại
-vị trí hiện tại. Chế độ này tiêu thụ năng lượng cao hơn do LTE/GPS, nên chỉ bật
-các mô-đun cần thiết thay vì duy trì toàn bộ subsystem liên tục.
-
-Trong cả ba trường hợp, raw audio vẫn ở Patient Node; Gateway chỉ nhận sự kiện
-đã xử lý. Việc mất Gateway hoặc Internet không làm dừng chức năng TinyML cục
-bộ, nhưng sẽ ảnh hưởng khả năng đồng bộ và hiển thị từ xa.
-
-## Luồng hoạt động của Patient Node
-
-Patient Node dùng ba nút riêng: `CHECK`, `MONITOR` và `SLEEP/STOP`.
-
-### CHECK — kiểm tra chủ động
-
-```text
-CHECK
-  → thu đúng 5 giây audio
-  → kiểm tra chất lượng
-  → DSP + DS-CNN INT8
-  → hiển thị kết quả
-  → tùy chọn đo HR/SpO₂ bằng MAX30102
-  → hoàn tất `Patient_Session_t`
-```
-
-HR/SpO₂ là phép đo theo phiên. Nếu người dùng bỏ qua bước đặt ngón tay,
-`vitals_valid = false`; kết quả audio vẫn có thể hợp lệ.
-
-### MONITOR — giám sát âm thanh tự động
-
-```text
-MONITOR
-  → I2S chạy liên tục
-  → bỏ 100 khối khởi động (~1,6 giây)
-  → tạo bộ đệm vòng PSRAM 1 giây
-  → VAD: 4 khối liên tiếp vượt ngưỡng
-  → 1 giây pre-trigger + 4 giây post-trigger
-  → kiểm tra chất lượng + DSP + TinyML
-  → lặp ba chu kỳ capture/inference để bỏ phiếu
-  → tạo Patient Event payload để mã hóa/gửi
-```
-
-Bộ đệm pre-trigger giữ lại phần đầu của sự kiện trong lúc VAD đang chờ xác
-nhận; nó không thay thế VAD và không phải noise baseline. Trong Monitor Mode,
-MAX30102 mặc định không được giả định là đang có ngón tay trên cảm biến.
-
-`SLEEP/STOP` có ưu tiên hủy luồng đang chạy, dừng ngoại vi cần thiết và đưa hệ
-thống về trạng thái an toàn.
-
-## Hợp đồng dữ liệu TinyML
-
-| Thuộc tính | Giá trị hiện tại |
-|---|---|
-| Sample rate | 16 kHz, mono |
-| Độ dài đoạn | 5 giây, 80.000 mẫu PCM16 |
-| Tiền xử lý | Normalize → Butterworth 100–2.000 Hz → pre-emphasis 0,97 |
-| Đặc trưng | Mel-Spectrogram `64 × 129`, Slaney, `top_db = 80` |
-| Tensor đầu vào | INT8 `[1, 64, 129, 1]` |
-| Model | DS-CNN full INT8 |
-| Runtime | TensorFlow Lite Micro trên ESP32-S3 |
-| Quy tắc lớp | `p(Non-Asthma) < 0,5` → lớp 0; ngược lại → lớp 1 |
-
-Ở tầng ứng dụng, hai lớp nên được trình bày là `ASTHMA_LIKE` và
-`NON_ASTHMA`. `NON_ASTHMA` không đồng nghĩa với “hoàn toàn bình thường”, vì
-lớp này còn có thể chứa âm thanh hô hấp khác và âm thanh môi trường.
-
-Pipeline C++ được kiểm chứng để **tương đương về thuật toán** với pipeline
-Python. Dự án không tuyên bố bit-exact trên mọi nền tảng.
-
-## Luồng dữ liệu dự kiến khi tích hợp hoàn chỉnh
-
-```text
-Patient_Session_t
-  → Node_Payload_t 16 byte
-  → AES-128-GCM
-  → Secure_Packet_t 56 byte
-  → ESP-NOW
-  → Gateway xác thực tag + giải mã
-  → Response_Payload_t 16 byte
-  → AES-128-GCM + ESP-NOW phản hồi
-  → ACK/NACK + retry ở Patient Node
-  → EnvironmentSnapshot tại Gateway
-  → CompleteRecord
-  → Wi-Fi hoặc LTE
-  → MQTT
-  → Qt6/QML Dashboard
-```
-
-Raw PCM, Mel-Spectrogram và tensor nội bộ không thuộc payload vận hành bình
-thường.
-
-Hai chiều Node ↔ Gateway sử dụng chung format `Secure_Packet_t`. Trường
-`message_type` xác định ciphertext chứa Patient Event hay Gateway Response.
-`authentication_tag` 16 byte của AES-GCM thay thế CRC32. Chi tiết nằm tại
-[Đặc tả AES-128-GCM](./Docs_NCKH/Encrypt_AES-128-GCM.md).
-
-## Cấu trúc repository
+## 3. 📁 Cấu trúc repository
 
 ```text
 NCKH_2026_AIOT/
-├── AI_Training_Model/        # dataset, train, quantize và đối chiếu Python/C++
-├── Deploy_Model/             # các phase kiểm thử deployment trên ESP32-S3
-│   ├── 1_Test_Model_Static_Profiling/
-│   ├── 2_Test_Model_LiveMic/
-│   └── 3_Model_Complete/
-├── ESP32-Sensor_Suite/       # driver và prototype cảm biến tái sử dụng
-├── ESP32-Qt-Telemetry/       # prototype telemetry MQTT ↔ Qt
-├── ESP32_Pinout/             # tài liệu đấu nối phần cứng
-├── Final_Project_NCKH/       # source tích hợp sản phẩm cuối
-│   ├── AI_Model/
-│   ├── Patient_Node/
-│   ├── Gateway/
-│   └── Dashboard_Qt6/
-├── Docs_NCKH/                # đặc tả và phân công chính thức
-└── Docs_Member/              # ghi chép làm việc theo thành viên
+├── Final_Project_NCKH/             # Source sản phẩm tích hợp cuối cùng
+├── AI_Training_Model/              # Dataset, Train và artifact mô hình
+├── Experiments_Benchmarking/       # Khảo sát, so sánh và kiểm chứng model
+├── Deploy_Model/                   # Kiểm thử TinyML trên ESP32-S3
+├── ESP32_Standalone_Modules_Test/  # Thử nghiệm các chức năng độc lập
+├── ESP32_Sensor_Suite/             # Driver và prototype cảm biến
+├── ESP32_Pinout/                   # Thông tin chân kết nối
+├── Hardware_Design/                # Thiết kế phần cứng
+├── Docs/                           # Tài liệu kỹ thuật trung tâm
+├── Docs_NCKH/                      # Đặc tả và hồ sơ đề tài
+├── Docs_Member/                    # Ghi chép theo thành viên
+├── Assets/                         # Ảnh và video demo
+├── Paperwork/                      # Báo cáo và slide
+└── Committee_QnA/                  # Tài liệu chuẩn bị vấn đáp
 ```
 
-`AIOT_2026/` và các project telemetry/sensor cũ được giữ làm nguồn tham khảo;
-đích tích hợp hiện tại là `Final_Project_NCKH/`.
+**[Final_Project_NCKH](./Final_Project_NCKH/) là thư mục sản phẩm tích hợp hiện hành.** Các thư mục AI Training, Benchmark và standalone test được giữ lại để truy vết quá trình nghiên cứu, kiểm chứng và tái lập kết quả, không phải tất cả đều là thành phần cần chạy khi sử dụng sản phẩm.
 
-## Tài liệu bắt đầu
+## 4. 🔧 Các phân hệ của sản phẩm
 
-- [Đặc tả sản phẩm đã chốt](./Docs_NCKH/NCKH_PRODUCT_DEFINITION_FINAL.md)
-- [Phân công và kế hoạch công việc](./Docs_NCKH/NCKH_PHAN_CONG_CONG_VIEC.md)
-- [Đặc tả mã hóa AES-128-GCM](./Docs_NCKH/Encrypt_AES-128-GCM.md)
-- [Tổng quan Final Project](./Final_Project_NCKH/README.md)
-- [Pipeline huấn luyện AI](./AI_Training_Model/README.md)
-- [Các phase deployment](./Deploy_Model/README.md)
-- [Phase 2: C++ + LiveMic](./Deploy_Model/2_Test_Model_LiveMic/README.md)
-- [Bộ tài liệu kỹ thuật Phase 2](./Deploy_Model/2_Test_Model_LiveMic/doc/README.md)
+### 🔵 Patient Node · ESP32-S3
 
-## Nguyên tắc kỹ thuật
+- **Chức năng:** thu âm thanh hô hấp, kiểm tra chất lượng tín hiệu, tạo đặc trưng Log-Mel và thực hiện suy luận TinyML tại thiết bị.
+- **Tương tác:** hỗ trợ CHECK, MONITOR, đo sinh hiệu theo phiên hợp lệ và hiển thị kết quả trên OLED.
+- **Kết nối:** tạo sự kiện bảo vệ bằng AES-128-GCM để gửi qua ESP-NOW, vẫn xử lý cục bộ khi Gateway không khả dụng.
+- **Mã nguồn:** [`Final_Project_NCKH/Patient_Node/`](./Final_Project_NCKH/Patient_Node/).
 
-1. **Edge-first:** suy luận âm thanh chạy trên Patient Node.
-2. **Quality before inference:** audio không đạt yêu cầu không bị ép phân lớp.
-3. **Session/event based:** HR/SpO₂ không được mô tả như dữ liệu liên tục.
-4. **Near-field:** INMP441 được đánh giá khi đặt gần nguồn âm hô hấp.
-5. **No raw streaming:** chỉ truyền sự kiện đã xử lý trong vận hành bình thường.
-6. **Evidence-based status:** chỉ gọi một phần là ổn định khi đã có phép kiểm thử tương ứng.
-7. **No medical overclaim:** output là mẫu âm thanh gợi ý, không phải chẩn đoán.
-8. **Authenticated event link:** Event và ACK/NACK đều được AES-128-GCM bảo vệ; packet sai tag không được xử lý.
+### 🟢 IoT Gateway · ESP32 / FreeRTOS
 
-## Phát triển
+- **Chức năng:** tiếp nhận và xác thực sự kiện của Patient Node, kết hợp thông tin môi trường và trạng thái kết nối.
+- **Truyền thông:** quản lý kết nối Wi-Fi/LTE, chuyển tiếp bản tin tổng hợp qua MQTT, hỗ trợ các chức năng định vị và cảnh báo theo cấu hình firmware.
+- **Mã nguồn:** [`Final_Project_NCKH/Gateway/`](./Final_Project_NCKH/Gateway/).
 
-- AI: Python 3, TensorFlow/Keras, librosa, SciPy và NumPy.
-- Firmware: PlatformIO, Arduino framework, ESP32/ESP32-S3 và TensorFlow Lite Micro.
-- Dashboard: Qt 6, QML và MQTT.
+### 🟡 Dashboard · Qt 6 / QML
 
-Dự án được phát triển phục vụ nghiên cứu khoa học sinh viên tại Học viện Công
-nghệ Bưu chính Viễn thông (PTIT), ARM Lab.
+- **Chức năng:** tiếp nhận dữ liệu MQTT, hiển thị kết quả phân loại, chỉ số hợp lệ, dữ liệu môi trường và tình trạng thiết bị.
+- **Giao diện:** các màn hình giám sát, lịch sử phiên và thông tin định vị khi có dữ liệu.
+- **Mã nguồn:** [`Final_Project_NCKH/Dashboard_Qt6/`](./Final_Project_NCKH/Dashboard_Qt6/).
+
+## 5. ⚙️ Công nghệ và thông số chính
+
+| Nhóm | Công nghệ / cấu hình hiện hành |
+|---|---|
+| **AI Training** | Python, TensorFlow/Keras, NumPy, SciPy, librosa |
+| **Mô hình TinyML** | DS-CNN V1 + Flatten, cấu hình **C4 / seed 44 / QAT INT8** |
+| **Đầu vào âm thanh** | Mono **16 kHz**, **5 giây**, Butterworth bậc 5, **100–2000 Hz** |
+| **Đặc trưng** | **40 Mel**, FFT **2048**, Hop **625**, không sử dụng pre-emphasis, tensor **40 × 129 × 1** |
+| **Thực thi trên Node** | C/C++, Arduino framework / PlatformIO, TensorFlow Lite Micro |
+| **Firmware Gateway** | C/C++, FreeRTOS, ESP-NOW, AES-128-GCM, Wi-Fi / LTE, MQTT |
+| **Dashboard** | Qt 6, QML |
+
+**Mô hình đang sử dụng:** `combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8`. Kết quả đánh giá trên tập Test gồm 159 mẫu: **Accuracy 95,60% (152/159)** và **Asthma Recall 92,11% (35/38)**. Đây là kết quả **đánh giá mô hình trên tập dữ liệu**, không đồng nghĩa với hiệu năng hoặc độ chính xác lâm sàng của toàn bộ thiết bị khi sử dụng thực tế (Xem thêm thực nghiệm thu mô hình TinyML [tại đây](./Experiments_Benchmarking/Patient_Node/Frontend_Benchmarking/)).
+
+Các chỉ số RAM/Flash, Tensor Arena, DSP, Invoke và độ trễ truyền thông cần được đối chiếu với **firmware, phần cứng và log kiểm thử tương ứng**, không tự động coi số liệu của các bản thử nghiệm cũ là kết quả nghiệm thu cuối.
+
+## 6. 🚀 Bắt đầu với dự án
+
+Để tiếp cận đúng phiên bản sản phẩm, ưu tiên đọc và triển khai theo các hướng dẫn sau:
+
+1. **Toàn bộ hệ thống:** [`Final_Project_NCKH/README.md`](./Final_Project_NCKH/README.md) – điểm bắt đầu để tìm cấu hình và source tích hợp.
+2. **Model & triển khai TinyML:** [`Final_Project_NCKH/AI_Model/README.md`](./Final_Project_NCKH/AI_Model/README.md) và [`Deploy_Model/README.md`](./Deploy_Model/README.md).
+3. **Tài liệu kỹ thuật và nghiệm thu:** [`Docs/README.md`](./Docs/README.md) và [checklist nghiệm thu V1](./Docs/06_Nghiem_Thu/01_Tai_Lap_Va_Chot_V1.md).
+
+> **Lưu ý phiên bản:** Repository có thể còn các thử nghiệm lịch sử với frontend F0 hoặc mô hình/ngưỡng cũ. Khi build và kiểm thử, đối chiếu với source sản phẩm hiện hành và artifact model đã chọn trước khi sử dụng các kết quả đo.
+
+## 7. 📚 Tài liệu, demo và nhóm thực hiện
+
+**Tài liệu chính:**
+
+- 📘 [Tổng mục lục tài liệu kỹ thuật](./Docs/README.md)
+- 🧭 [Đặc tả sản phẩm](./Docs_NCKH/NCKH_PRODUCT_DEFINITION_FINAL_REVISED.md)
+- 🔐 [Đặc tả AES-128-GCM](./Docs_NCKH/Encrypt_AES-128-GCM_REVISED.md)
+- 📄 [Báo cáo NCKH](https://docs.google.com/document/d/1-8gFWI9OEdoooc5TgpuXBp2hJufUYXIVnaVUI4IQDnM/edit?tab=t.w6svx54cg3ib)
+
+**🎬 Video demo:** *Đang cập nhật.* Video và tài nguyên trình bày được quản lý tại [`Assets/`](./Assets/README.md). Sau khi đăng video, bổ sung liên kết tại đây.
+
+## 👥 11. Thành viên thực hiện
+
+**Giảng viên hướng dẫn:** TS. Trần Thị Thúy Hà
+
+**Sinh viên thực hiện:**    
+
+| STT | Họ và tên | Mã sinh viên |
+|:---:|---|:---:|
+| 1 | Nguyễn Ngọc Chiến | B23DCVT061 |
+| 2 | Vũ Hồng Kỳ | B23DCVT248 |
+| 3 | Phan Nhật Linh | B23DCVT252 |
+| 4 | Trần Nguyễn Nhật Tân | B23DCDT231 |
+| 5 | Nguyễn Quang Thắng | B23DCDT246 |

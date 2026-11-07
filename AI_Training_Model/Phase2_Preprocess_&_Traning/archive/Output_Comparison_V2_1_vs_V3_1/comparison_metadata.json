@@ -1,0 +1,31 @@
+{
+  "model_a_name": "V2_1_With_Playback",
+  "model_a_path": "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Phase2_Preprocess_&_Traning\\Output_Train_V1_SepConv2D_Flatten\\Model_Asthma.keras",
+  "model_a_sha256": "cbde3db93a0158faffcc8789481cdb56c7c146c8cbe0b593c796d58f9048d69d",
+  "model_a_normalization": {
+    "train_min": -80.0,
+    "train_max": 0.0
+  },
+  "model_b_name": "V3_1_No_Playback",
+  "model_b_path": "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Phase2_Preprocess_&_Traning\\Output_Train_V3_V1_No_Playback\\Model_Asthma_V3_V1_No_Playback.keras",
+  "model_b_sha256": "783c5f1365a8f0380455e44e5d0e488c6c0e1683c5c2ab508b792b242287c5d6",
+  "model_b_normalization": {
+    "train_min": -80.0,
+    "train_max": 0.0
+  },
+  "binary_threshold": 0.5,
+  "tests": {
+    "common_raw": {
+      "sample_count": 143,
+      "asthma_count": 30,
+      "non_asthma_count": 113
+    },
+    "playback_only": {
+      "sample_count": 16,
+      "asthma_count": 8,
+      "non_asthma_count": 8
+    }
+  },
+  "feature_common_raw": "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Phase2_Preprocess_&_Traning\\Output_Preprocess_V3_No_Playback",
+  "feature_playback_only": "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Phase2_Preprocess_&_Traning\\Output_Preprocess"
+}

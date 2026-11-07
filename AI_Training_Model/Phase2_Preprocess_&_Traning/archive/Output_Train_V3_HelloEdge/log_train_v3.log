@@ -1,0 +1,128 @@
+1. ĐỌC BA TẬP DỮ LIỆU ĐÃ CHIA SẴN
+train: X=(1974, 64, 129, 1), Y=(1974,), Asthma=987, Non_Asthma=987
+val: X=(154, 64, 129, 1), Y=(154,), Asthma=38, Non_Asthma=116
+test: X=(159, 64, 129, 1), Y=(159,), Asthma=38, Non_Asthma=121
+
+2. CHUẨN HÓA VỀ [0, 1]
+TRAIN_MIN=-80.0, TRAIN_MAX=0.0
+
+3. KHỞI TẠO MÔ HÌNH
+WARNING:tensorflow:TensorFlow GPU support is not available on native Windows for TensorFlow >= 2.11. Even if CUDA/cuDNN are installed, GPU will not be used. Please use WSL2 or the TensorFlow-DirectML plugin.
+Model: "sequential"
+┏━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┓
+┃ Layer (type)            ┃ Output Shape     ┃   Param # ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━┩
+│ conv2d (Conv2D)         │ (None, 32, 65,   │     2,560 │
+│                         │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ batch_normalization     │ (None, 32, 65,   │       256 │
+│ (BatchNormalization)    │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ re_lu (ReLU)            │ (None, 32, 65,   │         0 │
+│                         │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ depthwise_conv2d        │ (None, 32, 65,   │       576 │
+│ (DepthwiseConv2D)       │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ batch_normalization_1   │ (None, 32, 65,   │       256 │
+│ (BatchNormalization)    │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ re_lu_1 (ReLU)          │ (None, 32, 65,   │         0 │
+│                         │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ conv2d_1 (Conv2D)       │ (None, 32, 65,   │     4,096 │
+│                         │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ batch_normalization_2   │ (None, 32, 65,   │       256 │
+│ (BatchNormalization)    │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ re_lu_2 (ReLU)          │ (None, 32, 65,   │         0 │
+│                         │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ depthwise_conv2d_1      │ (None, 32, 65,   │       576 │
+│ (DepthwiseConv2D)       │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ batch_normalization_3   │ (None, 32, 65,   │       256 │
+│ (BatchNormalization)    │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ re_lu_3 (ReLU)          │ (None, 32, 65,   │         0 │
+│                         │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ conv2d_2 (Conv2D)       │ (None, 32, 65,   │     4,096 │
+│                         │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ batch_normalization_4   │ (None, 32, 65,   │       256 │
+│ (BatchNormalization)    │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ re_lu_4 (ReLU)          │ (None, 32, 65,   │         0 │
+│                         │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ depthwise_conv2d_2      │ (None, 32, 65,   │       576 │
+│ (DepthwiseConv2D)       │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ batch_normalization_5   │ (None, 32, 65,   │       256 │
+│ (BatchNormalization)    │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ re_lu_5 (ReLU)          │ (None, 32, 65,   │         0 │
+│                         │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ conv2d_3 (Conv2D)       │ (None, 32, 65,   │     4,096 │
+│                         │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ batch_normalization_6   │ (None, 32, 65,   │       256 │
+│ (BatchNormalization)    │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ re_lu_6 (ReLU)          │ (None, 32, 65,   │         0 │
+│                         │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ depthwise_conv2d_3      │ (None, 32, 65,   │       576 │
+│ (DepthwiseConv2D)       │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ batch_normalization_7   │ (None, 32, 65,   │       256 │
+│ (BatchNormalization)    │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ re_lu_7 (ReLU)          │ (None, 32, 65,   │         0 │
+│                         │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ conv2d_4 (Conv2D)       │ (None, 32, 65,   │     4,096 │
+│                         │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ batch_normalization_8   │ (None, 32, 65,   │       256 │
+│ (BatchNormalization)    │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ re_lu_8 (ReLU)          │ (None, 32, 65,   │         0 │
+│                         │ 64)              │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ global_average_pooling… │ (None, 64)       │         0 │
+│ (GlobalAveragePooling2… │                  │           │
+├─────────────────────────┼──────────────────┼───────────┤
+│ dense (Dense)           │ (None, 1)        │        65 │
+└─────────────────────────┴──────────────────┴───────────┘
+ Total params: 23,617 (92.25 KB)
+ Trainable params: 22,465 (87.75 KB)
+ Non-trainable params: 1,152 (4.50 KB)
+Class weights: {np.int64(0): np.float64(1.0), np.int64(1): np.float64(1.0)}
+
+4. BẮT ĐẦU HUẤN LUYỆN
+
+5. ĐÁNH GIÁ TẬP TEST
+1/5 ━━━━━━━━━━━━━━━━━━━━ 1s 441ms/step - accuracy: 0.9062 - lo2/5 ━━━━━━━━━━━━━━━━━━━━ 0s 55ms/step - accuracy: 0.8438 - los3/5 ━━━━━━━━━━━━━━━━━━━━ 0s 55ms/step - accuracy: 0.8333 - los4/5 ━━━━━━━━━━━━━━━━━━━━ 0s 56ms/step - accuracy: 0.8340 - los5/5 ━━━━━━━━━━━━━━━━━━━━ 0s 56ms/step - accuracy: 0.8395 - los5/5 ━━━━━━━━━━━━━━━━━━━━ 1s 60ms/step - accuracy: 0.8616 - loss: 0.5345
+Test Loss: 0.5345
+Test Accuracy: 0.8616 (86.16%)
+
+Ma trận nhầm lẫn [Asthma, Non_Asthma]:
+[[ 32   6]
+ [ 16 105]]
+
+Báo cáo phân loại:
+              precision    recall  f1-score   support
+
+      Asthma     0.6667    0.8421    0.7442        38
+  Non_Asthma     0.9459    0.8678    0.9052       121
+
+    accuracy                         0.8616       159
+   macro avg     0.8063    0.8549    0.8247       159
+weighted avg     0.8792    0.8616    0.8667       159
+
+
+Hoàn thành. Model và báo cáo nằm tại: d:\NCKH_2026\NCKH_2026_AIOT\AI_Training_Model\Phase2_Preprocess_&_Traning\Output_Train_HelloEdge_AI

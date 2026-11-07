@@ -67,7 +67,7 @@ typedef struct {
     uint16_t heart_rate;       // Dữ liệu nhịp tim
     uint8_t spo2;              // Dữ liệu SpO2
 
-    uint8_t battery_node;           // Phần trăm pin hiện hành
+    uint8_t battery_node;      // Phần trăm pin hiện hành
 
 } Node_Payload_t;
 #pragma pack(pop)

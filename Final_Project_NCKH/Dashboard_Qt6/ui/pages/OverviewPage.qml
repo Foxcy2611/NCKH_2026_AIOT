@@ -67,16 +67,16 @@ Flickable {
                 label: "Latest heart rate"
 
                 value:
-                    root.dataSource.vitalsValid
+                    root.dataSource.heartRateAvailable
                     ? root.dataSource.heartRate.toString()
                     : "N/A"
 
                 unit:
-                    root.dataSource.vitalsValid
+                    root.dataSource.heartRateAvailable
                     ? "BPM"
                     : ""
 
-                note: "Latest patient event"
+                note: "Last valid measurement"
                 accentColor: root.theme.red
                 trendData: root.dataSource.hrHistory
             }
@@ -87,16 +87,16 @@ Flickable {
                 label: "Latest SpO₂"
 
                 value:
-                    root.dataSource.vitalsValid
+                    root.dataSource.spo2Available
                     ? root.dataSource.spo2.toString()
                     : "N/A"
 
                 unit:
-                    root.dataSource.vitalsValid
+                    root.dataSource.spo2Available
                     ? "%"
                     : ""
 
-                note: "Latest patient event"
+                note: "Last valid measurement"
                 accentColor: root.theme.green
             }
         }

@@ -44,6 +44,10 @@ void OLED_Init(void){
     OLED_UpdateScreen();
 }
 
+void OLED_SetPower(bool enabled){
+    OLED_SendCommand(enabled ? 0xAF : 0xAE);
+}
+
 void OLED_Clear_Display(void){
     memset(OLED_Buffer, 0x00, sizeof(OLED_Buffer));
 }
@@ -216,7 +220,7 @@ void OLED_Show_PlaceFinger() {
     OLED_Clear_Display();
     // In 2 dòng text
     OLED_PrintCenter("PLACE FINGER", 24);
-    OLED_PrintCenter("PRESS CHECK", 40);
+    OLED_PrintCenter("HOLD STILL", 40);
     OLED_UpdateScreen();
 }
 
@@ -420,5 +424,13 @@ void OLED_Show_NoReply() {
     OLED_DrawBitmap(32, 2, epd_bitmap_552871, 64, 40, true);
     // In chữ NO REPLY
     OLED_PrintCenter("NO REPLY", 46);
+    OLED_UpdateScreen();
+}
+
+void OLED_Show_MicError() {
+    OLED_Clear_Display();
+    OLED_DrawBitmap(32, 2, epd_bitmap_552871, 64, 40, true);
+    OLED_PrintCenter("MIC NOT READY", 44);
+    OLED_PrintCenter("CHECK + RESTART", 54);
     OLED_UpdateScreen();
 }

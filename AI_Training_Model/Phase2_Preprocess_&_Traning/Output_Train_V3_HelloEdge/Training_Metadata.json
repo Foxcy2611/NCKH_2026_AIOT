@@ -1,0 +1,19 @@
+{
+  "variant_id": "combo_pre0_mel40_fft2048",
+  "config_sha256": "5ae8a2c91c92b58653d899ddec056485787b6307db2cc0c350382b4ded2576f8",
+  "architecture": "V3_HelloEdge",
+  "seed": 44,
+  "input_shape": [
+    40,
+    129,
+    1
+  ],
+  "epochs_requested": 100,
+  "epochs_completed": 33,
+  "best_epoch": 23,
+  "best_val_loss": 0.01853358745574951,
+  "best_val_accuracy": 1.0,
+  "test_accuracy": 0.9308176040649414,
+  "parameter_count": 23617,
+  "test_used_for_training": false
+}

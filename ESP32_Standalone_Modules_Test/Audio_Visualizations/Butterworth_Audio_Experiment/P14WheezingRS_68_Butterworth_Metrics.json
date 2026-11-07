@@ -1,0 +1,13 @@
+{
+  "input_wav": "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_Chia_V2\\Asthma\\train\\P14WheezingRS_68.wav",
+  "sample_rate_hz": 16000,
+  "duration_seconds": 5.0,
+  "low_cut_hz": 100.0,
+  "high_cut_hz": 2000.0,
+  "butterworth_order": 5,
+  "filter_function": "scipy.signal.lfilter",
+  "rms_before": 0.17074891924858093,
+  "rms_after": 0.008708517998456955,
+  "in_band_energy_ratio_before": 0.002375467177941192,
+  "in_band_energy_ratio_after": 0.7457815460744787
+}

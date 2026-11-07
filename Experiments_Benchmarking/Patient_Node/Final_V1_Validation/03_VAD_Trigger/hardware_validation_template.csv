@@ -1,0 +1,8 @@
+trial_id,scenario,source_file_or_event,source_group,distance_cm,monitor_ready,stimulus_start_s,triggered,confirmed_time_s,candidate_onset_s,recovered_ms,capture_complete,quality_state,inference_result,vote_count,final_vote,notes
+H01_01,room_silence,,,,,,,,,,,,,,,
+H02_01,playback_asthma,,,,,,,,,,,,,,,
+H03_01,playback_non_asthma,,,,,,,,,,,,,,,
+H04_01,natural_breath_or_cough,,,,,,,,,,,,,,,
+H05_01,fan_speech_podcast,,,,,,,,,,,,,,,
+H06_01,room_noise_clap_knock,,,,,,,,,,,,,,,
+H07_01,three_capture_voting,,,,,,,,,,,,,,,

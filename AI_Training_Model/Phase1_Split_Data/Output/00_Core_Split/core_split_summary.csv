@@ -1,0 +1,16 @@
+﻿label,subtype,split,group_count,file_count
+Asthma,Asthma,train,46,228
+Asthma,Asthma,val,6,30
+Asthma,Asthma,test,6,30
+Non_Asthma_Disease,Bronchial,train,17,84
+Non_Asthma_Disease,Bronchial,val,2,10
+Non_Asthma_Disease,Bronchial,test,2,10
+Non_Asthma_Disease,COPD,train,41,321
+Non_Asthma_Disease,COPD,val,5,40
+Non_Asthma_Disease,COPD,test,5,40
+Non_Asthma_Disease,Healthy,train,22,102
+Non_Asthma_Disease,Healthy,val,2,10
+Non_Asthma_Disease,Healthy,test,3,15
+Non_Asthma_Disease,Pneumonia,train,25,146
+Non_Asthma_Disease,Pneumonia,val,3,18
+Non_Asthma_Disease,Pneumonia,test,3,18

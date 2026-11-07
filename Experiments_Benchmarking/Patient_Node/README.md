@@ -1,630 +1,370 @@
-# Node - Thí nghiệm và đánh giá
+# Patient Node — Experiments & Benchmarking
 
-## 1. Mục tiêu
+Thư mục này quản lý toàn bộ thí nghiệm, phép kiểm chứng và phân tích dùng cho **Patient Node**.
 
-Thư mục `Node` dùng để đánh giá các quyết định kỹ thuật của Patient Node trước khi chốt số liệu đưa vào báo cáo NCKH.
-
-Patient Node hiện đã có pipeline chính:
+Mục tiêu chính là tách rõ hai loại công việc:
 
 ```text
-Âm thanh
-  ↓
-Kiểm tra chất lượng
-  ↓
-Lọc Butterworth
-  ↓
-Pre-emphasis
-  ↓
-Mel-Spectrogram
-  ↓
-DS-CNN
-  ↓
-Kết quả TinyML
-  ↓
-Hiển thị / gửi Gateway
+Patient_Node/
+├── Final_V1_Validation/
+│   └── kiểm chứng baseline hiện hành để đóng băng Patient Node FINAL V1
+│
+└── Extension/
+    └── nghiên cứu các hướng mở rộng sau khi baseline đã được xác định
 ```
 
-Các thí nghiệm trong thư mục này không nhằm viết lại toàn bộ hệ thống, mà dùng để kiểm tra xem những lựa chọn hiện tại có hợp lý hay không.
+Hai nhánh này **không được trộn mục đích**:
+
+- `Final_V1_Validation/`: trả lời câu hỏi *“Cấu hình hiện tại đã đủ bằng chứng để chốt V1 hay chưa?”*
+- `Extension/`: trả lời câu hỏi *“Sau baseline V1, có thể cải thiện hoặc mở rộng hệ thống theo hướng nào?”*
+
+Tài liệu liên quan:
+
+- [Step_Done_V1.md](./Step_Done_V1.md)
+- [Final V1 Validation](./Final_V1_Validation/README.md)
+- [Research Extensions](./Extension/README.md)
 
 ---
 
-## 2. Cấu hình chuẩn để đối chiếu
+## 1. Nguyên tắc tổ chức
 
-Khi một thí nghiệm không thay đổi trực tiếp một tham số nào đó, giữ cấu hình chuẩn hiện tại:
+### 1.1. Baseline không sửa trực tiếp trong experiment
 
-| Thành phần | Cấu hình chuẩn |
-|---|---|
-| Tần số lấy mẫu | 16 kHz |
-| Độ dài mẫu | 5 giây |
-| Bộ lọc | Butterworth band-pass 100-2000 Hz |
-| Bậc Butterworth | 5 |
-| Pre-emphasis | 0.97 |
-| Đặc trưng | Mel-Spectrogram 64 × 129 |
-| Mô hình | DS-CNN |
-| Lượng tử hóa cuối | INT8 |
-| Ngưỡng phân lớp | 0.5 |
-| Voting | 3 lần |
-| Thiết bị đích | ESP32-S3 |
+Source đang dùng cho Patient Node và AI baseline phải được coi là mốc đối chiếu.
 
-Cấu hình này là mốc để so sánh, không có nghĩa mọi tham số trên đều đã được chứng minh là tối ưu.
+Không sửa trực tiếp source baseline chỉ để chạy một thử nghiệm.
+
+Nếu cần thay tham số để khảo sát:
+
+```text
+baseline source
+      ↓
+reusable experiment function
+      ↓
+.ipynb / experiment runner truyền tham số
+      ↓
+artifact + metric + kết luận
+```
+
+Một experiment chỉ nên thay đổi **một nhóm biến chính**.
+
+Ví dụ nếu khảo sát:
+
+```text
+Filter order: 3 / 5 / 7
+```
+
+thì phải giữ nguyên:
+
+- Dataset / split;
+- dải tần;
+- pre-emphasis;
+- Mel;
+- kiến trúc V1;
+- seed;
+- training configuration.
 
 ---
 
-# 3. Các nhóm thí nghiệm
-
-## 3.1. Lượng tử hóa mô hình
-
-Thư mục đề xuất:
-
-```text
-AI/
-└── quantization/
-```
-
-So sánh:
-
-- INT8;
-- INT16 × INT8 nếu pipeline hỗ trợ ổn định.
-
-INT4 chỉ nên xem như hướng khảo sát thêm nếu công cụ và runtime hỗ trợ phù hợp.
-
-Các chỉ số cần lưu:
-
-- Accuracy;
-- Precision;
-- Recall;
-- F1-score;
-- kích thước model;
-- bộ nhớ cần dùng;
-- thời gian suy luận trên ESP32-S3;
-- thời gian toàn pipeline nếu có.
-
-Mục tiêu:
-
-> Xác định mức lượng tử hóa phù hợp giữa độ chính xác và tài nguyên phần cứng.
-
----
-
-## 3.2. Bậc bộ lọc Butterworth
-
-Thư mục đề xuất:
-
-```text
-DSP/
-└── butterworth_order/
-```
-
-Các bản thử:
-
-```text
-Không lọc
-Bậc 3
-Bậc 5
-Bậc 7
-```
-
-Các yếu tố khác giữ nguyên.
-
-Cần so sánh:
-
-- Accuracy;
-- Recall;
-- F1-score;
-- thời gian xử lý DSP;
-- ảnh hưởng trên các mẫu nhiễu.
-
-Mục tiêu:
-
-> Kiểm tra xem Butterworth bậc 5 hiện tại có thực sự hợp lý so với các lựa chọn đơn giản hoặc phức tạp hơn.
-
----
-
-## 3.3. Dải tần band-pass
-
-Thư mục đề xuất:
-
-```text
-DSP/
-└── bandpass_range/
-```
-
-Có thể thử:
-
-```text
-50-2000 Hz
-100-2000 Hz
-100-2500 Hz
-100-4000 Hz
-```
-
-Không cần mở rộng quá nhiều nếu các kết quả đầu tiên đã cho thấy xu hướng rõ.
-
-Cần đánh giá:
-
-- Accuracy;
-- Recall;
-- F1-score;
-- khả năng chống nhiễu;
-- thời gian xử lý.
-
-Mục tiêu:
-
-> Xác định dải tần phù hợp nhất với dữ liệu âm thanh hô hấp đang sử dụng.
-
----
-
-## 3.4. Pre-emphasis
-
-Thư mục đề xuất:
-
-```text
-DSP/
-└── pre_emphasis/
-```
-
-Các bản thử:
-
-```text
-Không dùng
-0.95
-0.97
-```
-
-Mục tiêu:
-
-> Kiểm tra pre-emphasis có thực sự giúp mô hình hay chỉ làm pipeline phức tạp hơn.
-
-Nếu kết quả gần như không thay đổi, có thể cân nhắc loại bỏ bước này.
-
----
-
-## 3.5. Số lượng Mel band
-
-Thư mục đề xuất:
-
-```text
-AI/
-└── mel_bins/
-```
-
-Các bản thử:
-
-```text
-32
-64
-80
-```
-
-Cần so sánh:
-
-- Accuracy;
-- F1-score;
-- kích thước tensor đầu vào;
-- thời gian tạo đặc trưng;
-- bộ nhớ.
-
-Mục tiêu:
-
-> Kiểm tra 64 Mel band có đạt cân bằng tốt giữa thông tin đặc trưng và tài nguyên hay không.
-
----
-
-## 3.6. Tần số lấy mẫu
-
-Thư mục đề xuất:
-
-```text
-AI/
-└── sample_rate/
-```
-
-Các bản thử chính:
-
-```text
-8 kHz
-16 kHz
-```
-
-Cần đo:
-
-- Accuracy;
-- F1-score;
-- thời gian xử lý;
-- kích thước buffer;
-- mức sử dụng RAM.
-
-Mục tiêu:
-
-> Kiểm tra 16 kHz có mang lại lợi ích đủ lớn so với cấu hình nhẹ hơn.
-
----
-
-## 3.7. Độ dài đoạn âm thanh
-
-Thư mục đề xuất:
-
-```text
-AI/
-└── segment_length/
-```
-
-Có thể thử:
-
-```text
-3 giây
-5 giây
-7 giây
-```
-
-Cần xem:
-
-- khả năng chứa đủ mẫu âm thanh hô hấp;
-- Accuracy/F1;
-- thời gian xử lý;
-- RAM;
-- độ trễ từ lúc bắt đầu đo đến khi có kết quả.
-
-Thí nghiệm này chỉ nên thực hiện nếu còn đủ thời gian vì có thể kéo theo việc tạo lại dữ liệu đầu vào và huấn luyện lại.
-
----
-
-## 3.8. Kiểm tra chất lượng âm thanh
-
-Thư mục đề xuất:
-
-```text
-Firmware_System/
-└── quality_gate/
-```
-
-So sánh:
-
-```text
-Không dùng Quality Gate
-Có Quality Gate
-```
-
-Tập đánh giá nên có nhiều tình huống:
-
-- im lặng;
-- tín hiệu quá nhỏ;
-- tín hiệu hợp lệ;
-- clipping;
-- va chạm ngắn;
-- nhiễu môi trường.
-
-Cần đo:
-
-- tỷ lệ chấp nhận audio hợp lệ;
-- tỷ lệ loại audio không hợp lệ;
-- false accept;
-- false reject;
-- ảnh hưởng đến kết quả TinyML.
-
-Đây là một trong các thí nghiệm quan trọng vì Quality Gate là một phần của hệ thống, không chỉ là model.
-
----
-
-## 3.9. Voting
-
-Thư mục đề xuất:
-
-```text
-Firmware_System/
-└── voting/
-```
-
-Các bản thử:
-
-```text
-1 lần
-3 lần
-5 lần
-```
-
-Cần so sánh:
-
-- Accuracy/F1;
-- độ ổn định kết quả;
-- tổng thời gian xử lý;
-- tài nguyên;
-- năng lượng nếu có điều kiện đo.
-
-Mục tiêu:
-
-> Kiểm tra 3 lần voting hiện tại có đáng với chi phí xử lý tăng thêm hay không.
-
----
-
-## 3.10. VAD
-
-Thư mục đề xuất:
-
-```text
-Firmware_System/
-└── vad/
-```
-
-Có thể đánh giá:
-
-- số block liên tiếp để xác nhận trigger;
-- ngưỡng năng lượng;
-- false trigger;
-- missed trigger;
-- thời gian phản ứng.
-
-Ví dụ thử:
-
-```text
-2 block
-4 block
-6 block
-```
-
-Không cần thử quá nhiều tham số cùng lúc.
-
----
-
-## 3.11. Ngưỡng phân lớp
-
-Thư mục đề xuất:
-
-```text
-AI/
-└── classification_threshold/
-```
-
-Có thể thử trên tập validation:
-
-```text
-0.40
-0.45
-0.50
-0.55
-0.60
-```
-
-Theo dõi:
-
-- Precision;
-- Recall;
-- F1;
-- confusion matrix.
-
-Không chọn ngưỡng bằng tập test cuối.
-
----
-
-## 3.12. Độ ổn định trên phần cứng thực tế
-
-Thư mục đề xuất:
-
-```text
-Firmware_System/
-└── hardware_robustness/
-```
-
-Đây là nhóm thí nghiệm rất quan trọng đối với Patient Node.
-
-Có thể kiểm thử theo:
-
-### Khoảng cách microphone
-
-```text
-gần
-trung bình
-xa hơn
-```
-
-Khoảng cách cụ thể chỉ chốt sau khi có enclosure và cách sử dụng cuối.
-
-### Môi trường
+## 2. Quy tắc sử dụng từng loại file
+
+### `.py` — source có thể tái sử dụng
+
+Dùng cho:
+
+- hàm DSP / preprocessing;
+- hàm generate feature;
+- model builder;
+- training / evaluation;
+- threshold utilities;
+- parser log;
+- các tác vụ cần chạy lặp lại và reproducible.
 
 Ví dụ:
 
-- phòng yên;
-- có quạt;
-- có tiếng nói;
-- có TV;
-- có tiếng động nền.
+```python
+apply_bandpass(audio, low_cut=100, high_cut=2000, order=5)
+apply_pre_emphasis(audio, coef=0.97)
+extract_mel(audio, n_mels=64, n_fft=1024, hop_length=625)
+```
 
-### Mức tín hiệu
+Không nên copy cùng một thuật toán vào nhiều notebook khác nhau.
 
-- nhỏ;
-- trung bình;
-- lớn;
-- clipping.
+### `.ipynb` — experiment orchestration + analysis
 
-Theo dõi đồng thời:
+Notebook dùng để:
 
-- VAD;
+- mô tả hypothesis bằng Markdown cell;
+- import hàm từ `.py`;
+- truyền tham số experiment;
+- gọi generate artifact;
+- gọi train/evaluate khi cần;
+- load CSV/JSON/NPY;
+- vẽ biểu đồ;
+- phân tích kết quả;
+- ghi kết luận ngay cạnh phép thử.
+
+Ví dụ:
+
+```python
+from audio_frontend_ablation import build_features
+
+for order in [3, 5, 7]:
+    build_features(filter_order=order)
+```
+
+Notebook **không nên trở thành source chính** của pipeline.
+
+Logic quan trọng phải nằm trong `.py`; notebook chủ yếu điều khiển và phân tích.
+
+### `.npy` — artifact feature trung gian
+
+Trong pipeline hiện tại:
+
+```text
+X_*.npy
+= feature đầu vào model
+= Mel-Spectrogram sau preprocessing
+```
+
+Nếu thay DSP / Mel thì:
+
+```text
+X_train
+X_val
+X_test
+```
+
+có thể thay đổi.
+
+Trong khi đó:
+
+```text
+Y_train
+Y_val
+Y_test
+```
+
+là nhãn nên **không đổi** nếu dataset và split không đổi.
+
+`Files_*.npy` lưu tên/path nguồn tương ứng với từng sample:
+
+```text
+X_val[i]
+Y_val[i]
+Files_val[i]
+```
+
+ba phần tử trên phải luôn cùng chỉ số.
+
+`Files_*.npy` đặc biệt hữu ích để truy vết sample sai, false positive, false negative hoặc sample dùng để vẽ minh họa.
+
+Không cần duplicate `Y_*` và `Files_*` cho từng variant nếu split được giữ cố định; chỉ cần kiểm tra thứ tự file khớp baseline.
+
+### `.csv` — bảng kết quả dễ đọc
+
+Dùng cho:
+
+- prediction từng sample;
+- threshold sweep;
+- benchmark;
+- latency;
 - Quality Gate;
-- kết quả TinyML;
-- thời gian xử lý;
-- lỗi runtime nếu có.
+- VAD;
+- bảng metric tổng hợp.
 
-Mục tiêu:
+CSV nên giữ dữ liệu đủ để có thể phân tích lại mà không phải chạy model/hardware lần nữa.
 
-> Xác định giới hạn hoạt động thực tế của Patient Node thay vì chỉ đánh giá trên file âm thanh sạch.
+### `.json` — cấu hình hoặc kết quả đã chốt
+
+Dùng cho các artifact dạng:
+
+```text
+final_threshold.json
+benchmark_config.json
+experiment_metadata.json
+```
+
+Nên lưu:
+
+- version;
+- model;
+- dataset;
+- seed;
+- tham số experiment;
+- giá trị cuối được chọn;
+- ngày / trạng thái nếu cần.
+
+### `.log` — bằng chứng runtime / hardware
+
+Dùng cho:
+
+- ESP32-S3;
+- Gateway;
+- MQTT;
+- Qt6;
+- long-term test;
+- serial benchmark.
+
+Không dùng log làm nguồn duy nhất nếu có thể parse thành CSV/JSON.
+
+### `.md` — mô tả và kết luận
+
+Mỗi experiment/folder nên có README ngắn gồm:
+
+```text
+1. Mục tiêu
+2. Baseline
+3. Biến thay đổi
+4. Thành phần giữ cố định
+5. Cách chạy
+6. Artifact tạo ra
+7. Kết quả
+8. Kết luận
+```
 
 ---
 
-# 4. Các thí nghiệm ưu tiên
+## 3. Quy tắc Validation / Test
 
-Nếu thời gian NCKH có giới hạn, ưu tiên thực hiện trước:
+Không dùng Test để lựa chọn tham số.
 
-1. Lượng tử hóa;
-2. Bậc Butterworth;
-3. Dải band-pass;
-4. Pre-emphasis;
-5. Quality Gate;
-6. Voting;
-7. Độ ổn định trên phần cứng thực tế.
-
-Các thí nghiệm còn lại được thực hiện khi có đủ thời gian hoặc khi cần làm rõ thêm một quyết định kỹ thuật.
-
----
-
-# 5. Cấu trúc mỗi thí nghiệm
-
-Ví dụ với Butterworth:
-
-```text
-butterworth_order/
-├── butterworth_order.ipynb
-│
-├── outputs/
-│   ├── no_filter/
-│   ├── order_3/
-│   ├── order_5/
-│   └── order_7/
-│
-└── summary/
-    ├── comparison.csv
-    ├── metrics.json
-    ├── f1_comparison.png
-    ├── confusion_matrix.png
-    └── README.md
-```
-
-### `outputs/`
-
-Chứa kết quả riêng của từng cấu hình.
-
-### `summary/`
-
-Chứa kết quả so sánh cuối cùng giữa các cấu hình.
-
-File `summary/README.md` nên trả lời ngắn gọn:
-
-- đã thử những bản nào;
-- kết quả chính;
-- phương án nào được chọn;
-- lý do chọn;
-- giới hạn của phép thử.
-
----
-
-# 6. Quy ước Notebook
-
-Mỗi notebook nên có các phần:
-
-```text
-1. Mục tiêu thí nghiệm
-2. Cấu hình giữ nguyên
-3. Biến cần thay đổi
-4. Tập dữ liệu sử dụng
-5. Thực hiện
-6. Đánh giá
-7. Biểu đồ
-8. Xuất summary
-9. Kết luận
-```
-
-Notebook dùng để điều khiển thí nghiệm và trình bày kết quả.
-
-Nếu một hàm xử lý đã có trong `AI_Training_Model` hoặc source dùng chung, nên gọi lại hàm đó thay vì sao chép code sang notebook.
-
----
-
-# 7. Chỉ số đánh giá chung
-
-Đối với các thí nghiệm AI nên ưu tiên:
-
-```text
-Accuracy
-Precision
-Recall
-F1-score
-Confusion Matrix
-```
-
-Đối với TinyML trên ESP32-S3 cần bổ sung khi phù hợp:
-
-```text
-Kích thước model
-RAM
-Tensor Arena
-Thời gian DSP
-Thời gian inference
-Tổng thời gian pipeline
-```
-
-Đối với VAD/Quality Gate:
-
-```text
-False Trigger
-Missed Trigger
-False Accept
-False Reject
-Trigger Latency
-```
-
-Không phải thí nghiệm nào cũng cần dùng toàn bộ các chỉ số trên.
-
----
-
-# 8. Nguyên tắc quan trọng khi so sánh
-
-Tất cả các phiên bản AI dùng để so sánh phải sử dụng cùng cách chia dữ liệu:
+Luồng chung:
 
 ```text
 Train
+  ↓
 Validation
-Test
+  ↓
+chọn threshold / config
+  ↓
+FREEZE
+  ↓
+Test đúng một lượt để báo cáo
 ```
 
-Không được random lại tập dữ liệu riêng cho từng phiên bản rồi so trực tiếp kết quả.
-
-Nếu có augmentation:
-
-- chỉ áp dụng cho Train;
-- Validation và Test giữ nguyên theo quy tắc đánh giá đã chốt.
-
-Mỗi lần chỉ nên thay đổi một nhóm tham số chính.
+Nếu sau khi xem Test lại quay về chỉnh tham số thì Test không còn là tập đánh giá cuối độc lập.
 
 ---
 
-# 9. Kiến trúc model
+## 4. Quy tắc với experiment có retrain
 
-Hiện tại không bắt buộc tạo thêm thí nghiệm lớn để so sánh nhiều kiến trúc mạng.
+Nếu thay một thành phần làm thay đổi feature distribution, ví dụ:
 
-DS-CNN đã được chọn dựa trên tài liệu tham khảo trước đó và mục tiêu triển khai TinyML.
+```text
+Butterworth order
+pre-emphasis
+Mel bins
+window / hop
+dataset composition
+```
 
-Trong báo cáo nên mô tả:
+và mục tiêu là đánh giá ảnh hưởng thực tới model, cần:
 
-> DS-CNN là kiến trúc được lựa chọn cho hệ thống hiện tại, không tuyên bố đây là kiến trúc tốt nhất trong mọi trường hợp.
+```text
+generate lại X_train / X_val / X_test
+        ↓
+retrain cùng kiến trúc V1
+        ↓
+cùng seed / optimizer / callback / epoch policy
+        ↓
+so sánh metric
+```
 
-Nếu còn thời gian, so sánh kiến trúc model có thể được bổ sung như một thí nghiệm mở rộng, nhưng không phải ưu tiên của giai đoạn hiện tại.
+Không nên lấy model đã train với baseline feature rồi dùng feature distribution mới để kết luận cấu hình mới tốt/xấu, trừ khi mục tiêu chỉ là **sensitivity test**.
 
 ---
 
-# 10. Mục tiêu cuối cùng
+## 5. Quy tắc với experiment chỉ để minh họa / phân tích
 
-Các kết quả trong `Node` phải giúp trả lời được:
+Không phải mục nào cũng cần retrain.
 
-> Vì sao Patient Node cuối cùng sử dụng cấu hình hiện tại?
-
-Thay vì chỉ trình bày:
+Ví dụ phân tích cơ sở chọn dải tần `100–2000 Hz` có thể chỉ cần:
 
 ```text
-Butterworth order 5
-Pre-emphasis 0.97
-Mel 64
-INT8
-Voting 3
+raw waveform
+frequency spectrum
+filter response
+filtered spectrum
+Mel visualization
 ```
 
-báo cáo cần có cơ sở để nói:
+Nếu mục tiêu chỉ là giải thích lựa chọn kỹ thuật, không cần tạo thêm một model mới.
+
+Khi đó báo cáo phải ghi rõ đây là:
+
+> phân tích / visual justification
+
+không phải:
+
+> chứng minh cấu hình tối ưu bằng metric phân loại.
+
+---
+
+## 6. Cấu trúc khuyến nghị
 
 ```text
-Đã khảo sát các phương án khác
-        ↓
-Đánh giá bằng cùng dữ liệu và điều kiện
-        ↓
-So sánh độ chính xác + tài nguyên + độ ổn định
-        ↓
-Chọn cấu hình cuối
+Experiments_Benchmarking/
+└── Patient_Node/
+    ├── README.md
+    ├── Step_Done_V1.md
+    │
+    ├── Final_V1_Validation/
+    │   ├── README.md
+    │   ├── 01_Classification_Threshold/
+    │   ├── 02_Quality_Gate/
+    │   ├── 03_VAD_Distance/
+    │   ├── 04_MAX30102/
+    │   ├── 05_End_to_End/
+    │   └── 06_Long_Term_Stability/
+    │
+    └── Extension/
+        ├── README.md
+        ├── 01_Quantization/
+        ├── 02_Model_Architecture/
+        ├── 03_DSP_Audio_Frontend/
+        ├── 04_Mel_Ablation/
+        ├── 05_Dataset_Ablation/
+        ├── 06_RealWorld_Challenge/
+        └── ...
 ```
 
-Đây là mục tiêu chính của toàn bộ phần `Experiments_Benchmarking/Node`.
+---
+
+## 7. Quy tắc đặt trạng thái
+
+Dùng thống nhất:
+
+```text
+TODO
+RUNNING
+DONE
+FROZEN
+FUTURE
+```
+
+| Trạng thái | Ý nghĩa |
+|---|---|
+| `TODO` | chưa thực hiện |
+| `RUNNING` | đang chạy / đang thu dữ liệu |
+| `DONE` | đã có kết quả và kết luận |
+| `FROZEN` | đã được chấp nhận làm baseline chính thức |
+| `FUTURE` | chỉ giữ làm hướng phát triển |
+
+`DONE` chưa chắc đồng nghĩa `FROZEN`.
+
+Một experiment có thể hoàn thành nhưng không được chọn làm baseline mới.
+
+---
+
+## 8. Quy tắc cuối
+
+Mỗi thay đổi phải trả lời được ba câu:
+
+```text
+1. Thay cái gì?
+2. Giữ cố định cái gì?
+3. Kết quả có đủ bằng chứng để thay baseline không?
+```
+
+Nếu không trả lời được ba câu này thì experiment chưa đủ rõ để dùng trong báo cáo hoặc để thay cấu hình FINAL.

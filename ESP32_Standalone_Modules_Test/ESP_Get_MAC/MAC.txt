@@ -1,0 +1,6 @@
+- Node MAC
+44:1B:F6:81:E8:B0
+
+
+- Gateway MAC
+28:05:A5:E3:0F:48

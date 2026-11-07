@@ -1,0 +1,19 @@
+{
+  "variant_id": "combo_pre0_mel40_fft2048",
+  "config_sha256": "5ae8a2c91c92b58653d899ddec056485787b6307db2cc0c350382b4ded2576f8",
+  "architecture": "V4_1_MobileNet",
+  "seed": 44,
+  "input_shape": [
+    40,
+    129,
+    1
+  ],
+  "epochs_requested": 100,
+  "epochs_completed": 22,
+  "best_epoch": 12,
+  "best_val_loss": 0.03935187682509422,
+  "best_val_accuracy": 0.9870129823684692,
+  "test_accuracy": 0.8679245114326477,
+  "parameter_count": 480321,
+  "test_used_for_training": false
+}

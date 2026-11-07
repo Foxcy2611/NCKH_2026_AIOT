@@ -14,13 +14,22 @@ Rectangle {
 
     color: root.theme.page
 
+    Rectangle {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        height: 1
+        color: root.theme.border
+    }
+
     function pageTitle() {
         switch (root.currentPage) {
         case 0: return "Overview"
         case 1: return "Patient monitoring"
-        case 2: return "Environment"
-        case 3: return "Gateway & Network"
-        case 4: return "Location"
+        case 2: return "Patient profile"
+        case 3: return "Environment"
+        case 4: return "Gateway & Network"
+        case 5: return "Location"
         default: return "Dashboard"
         }
     }

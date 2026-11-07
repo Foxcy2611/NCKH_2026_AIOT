@@ -136,19 +136,19 @@ Flickable {
                 label: "Heart rate"
 
                 value:
-                    root.dataSource.vitalsValid
+                    root.dataSource.heartRateAvailable
                     ? root.dataSource.heartRate.toString()
                     : "N/A"
 
                 unit:
-                    root.dataSource.vitalsValid
+                    root.dataSource.heartRateAvailable
                     ? "BPM"
                     : ""
 
                 note:
-                    root.dataSource.vitalsValid
-                    ? "Valid measurement"
-                    : "Vitals unavailable"
+                    root.dataSource.heartRateAvailable
+                    ? "Last valid measurement"
+                    : "Heart rate unavailable"
 
                 accentColor: root.theme.red
                 trendData: root.dataSource.hrHistory
@@ -161,19 +161,19 @@ Flickable {
                 label: "SpO₂"
 
                 value:
-                    root.dataSource.vitalsValid
+                    root.dataSource.spo2Available
                     ? root.dataSource.spo2.toString()
                     : "N/A"
 
                 unit:
-                    root.dataSource.vitalsValid
+                    root.dataSource.spo2Available
                     ? "%"
                     : ""
 
                 note:
-                    root.dataSource.vitalsValid
-                    ? "Valid measurement"
-                    : "Vitals unavailable"
+                    root.dataSource.spo2Available
+                    ? "Last valid measurement"
+                    : "SpO2 unavailable"
 
                 accentColor: root.theme.green
             }

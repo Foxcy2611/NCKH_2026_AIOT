@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "status": "CONVERSION_COMPLETE",
+  "generated_utc": "2026-10-21T15:52:58.620165+00:00",
+  "trial_id": "combo_mel40_fft2048__V1__s44",
+  "variant_id": "combo_mel40_fft2048",
+  "method_id": "QAT_INT8",
+  "training_mode": "QAT",
+  "integer_mode": "INT8",
+  "experimental": false,
+  "plan_path": "D:\\NCKH_2026\\NCKH_2026_AIOT\\Experiments_Benchmarking\\Patient_Node\\Frontend_Benchmarking\\results\\D_Quantization\\quantization_plan.json",
+  "plan_sha256": "8258e0c64948a6d2916f84089bd590f40c8b026b22f713e5bfe1845dabbe544d",
+  "source_model_sha256": "55028fe6f65fb2c2e716ca22149e8815f701d3467e680495e170194d134360f1",
+  "source_training_metadata_sha256": "54d5abe2a161a2d1479c08ecf63048378868d2fb45aca0dddfc35b7eaba1e198",
+  "tflite_path": "D:\\NCKH_2026\\NCKH_2026_AIOT\\Experiments_Benchmarking\\Patient_Node\\Frontend_Benchmarking\\artifacts\\D_Quantization\\combo_mel40_fft2048__V1__s44\\methods\\QAT_INT8\\QAT_INT8.tflite",
+  "tflite_sha256": "6fc72750da3cd8c4217ed7ed327da72279252ab09d9ef878b742c14051fb2c0c",
+  "tflite_size_bytes": 347968,
+  "representative_count": 100,
+  "representative_class_counts": {
+    "0": 50,
+    "1": 50
+  },
+  "representative_indices_sha256": "062be8a32e8e68148669b84511783404396b1275d6baaa6d66db948aff3dc387",
+  "representative_source": "normalized Train features only",
+  "normalization": {
+    "method": "minmax_train_only_then_float32",
+    "train_min": -80.0,
+    "train_max": 0.0
+  },
+  "input_shape": [
+    40,
+    129,
+    1
+  ],
+  "io": {
+    "input": {
+      "name": "serving_default_input_21:0",
+      "shape": [
+        1,
+        40,
+        129,
+        1
+      ],
+      "dtype": "int8",
+      "scale": 0.003921568859368563,
+      "zero_point": -128
+    },
+    "output": {
+      "name": "StatefulPartitionedCall:0",
+      "shape": [
+        1,
+        1
+      ],
+      "dtype": "int8",
+      "scale": 0.00390625,
+      "zero_point": -128
+    }
+  },
+  "tensorflow_version": "2.21.0",
+  "numpy_version": "2.4.4",
+  "test_accessed": false,
+  "qat": {
+    "fake_quant_semantics": "INT8-aware selective QAT",
+    "epochs_completed": 8,
+    "best_epoch": 3,
+    "best_val_loss": 0.0587603785097599,
+    "bridge_max_abs_diff": 1.4901161193847656e-07,
+    "class_weights": {
+      "0": 1.0,
+      "1": 1.0
+    },
+    "saved_qat_model": "D:\\NCKH_2026\\NCKH_2026_AIOT\\Experiments_Benchmarking\\Patient_Node\\Frontend_Benchmarking\\artifacts\\D_Quantization\\combo_mel40_fft2048__V1__s44\\qat\\QAT_Model.keras"
+  }
+}

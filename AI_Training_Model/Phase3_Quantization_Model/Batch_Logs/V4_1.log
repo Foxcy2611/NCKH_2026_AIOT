@@ -1,0 +1,961 @@
+WARNING:tensorflow:TensorFlow GPU support is not available on native Windows for TensorFlow >= 2.11. Even if CUDA/cuDNN are installed, GPU will not be used. Please use WSL2 or the TensorFlow-DirectML plugin.
+
+============================================================
+1. LOAD MODEL + DATA
+============================================================
+Model:
+D:\NCKH_2026\NCKH_2026_AIOT\AI_Training_Model\Phase2_Preprocess_&_Traning\Output_Train_V4_1_MobileNet\Model_Asthma.keras
+
+Train: (1974, 40, 129, 1)
+Val:   (154, 40, 129, 1)
+Test:  (159, 40, 129, 1)
+
+TRAIN_MIN=-80.0
+TRAIN_MAX=0.0
+
+============================================================
+2. KERAS -> TFLITE FP32
+============================================================
+Saved artifact at 'C:\Users\nguye\AppData\Local\Temp\tmpu__wi72e'. The following endpoints are available:
+
+* Endpoint 'serve'
+  args_0 (POSITIONAL_ONLY): TensorSpec(shape=(None, 40, 129, 1), dtype=tf.float32, name='input_layer')
+Output Type:
+  TensorSpec(shape=(None, 1), dtype=tf.float32, name=None)
+Captures:
+  2282667113360: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668360528: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282667113936: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668360720: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282667114320: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668361488: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668364176: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668364368: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668363600: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668362256: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668364752: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668365712: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668365904: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668365136: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668362448: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668364944: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668367248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668367056: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668366672: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668367824: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668366480: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668368784: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668368976: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668367440: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668363792: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668369168: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668371664: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668371856: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668371088: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668370128: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668373392: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668375696: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668374544: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668375504: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668374928: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688892560: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688893520: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688894480: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668368592: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688892368: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688894864: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688895056: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688893712: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688894672: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688895632: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688896016: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688896208: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688895248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688895824: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688896784: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688893904: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688896400: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688896592: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688893136: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688897744: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688897168: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282667112592: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282667112976: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282667111248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282667112784: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688894288: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688897552: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688897360: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688898704: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688899280: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688897936: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688900048: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688899856: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688899088: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688900624: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688898320: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688900240: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688900432: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688899664: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688901584: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688901008: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688901200: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688901392: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688899472: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688902544: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688901968: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688902160: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688902352: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688898896: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688903504: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688902928: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688900816: TensorSpec(shape=(), dtype=tf.resource, name=None)
+
+============================================================
+3. PTQ FULL INT8
+============================================================
+Saved artifact at 'C:\Users\nguye\AppData\Local\Temp\tmpsokhu3gc'. The following endpoints are available:
+
+* Endpoint 'serve'
+  args_0 (POSITIONAL_ONLY): TensorSpec(shape=(None, 40, 129, 1), dtype=tf.float32, name='input_layer')
+Output Type:
+  TensorSpec(shape=(None, 1), dtype=tf.float32, name=None)
+Captures:
+  2282667113360: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668360528: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282667113936: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668360720: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282667114320: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668361488: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668364176: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668364368: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668363600: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668362256: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668364752: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668365712: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668365904: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668365136: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668362448: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668364944: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668367248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668367056: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668366672: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668367824: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668366480: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668368784: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668368976: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668367440: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668363792: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668369168: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668371664: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668371856: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668371088: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668370128: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668373392: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668375696: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668374544: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668375504: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668374928: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688892560: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688893520: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688894480: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668368592: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688892368: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688894864: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688895056: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688893712: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688894672: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688895632: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688896016: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688896208: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688895248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688895824: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688896784: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688893904: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688896400: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688896592: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688893136: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688897744: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688897168: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282667112592: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282667112976: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282667111248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282667112784: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688894288: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688897552: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688897360: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688898704: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688899280: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688897936: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688900048: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688899856: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688899088: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688900624: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688898320: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688900240: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688900432: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688899664: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688901584: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688901008: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688901200: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688901392: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688899472: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688902544: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688901968: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688902160: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688902352: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688898896: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688903504: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688902928: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688900816: TensorSpec(shape=(), dtype=tf.resource, name=None)
+C:\Users\nguye\AppData\Local\Programs\Python\Python311\Lib\site-packages\tensorflow\lite\python\convert.py:846: UserWarning: Statistics for quantized inputs were expected, but not specified; continuing anyway.
+  warnings.warn(
+fully_quantize: 0, inference_type: 6, input_inference_type: INT8, output_inference_type: INT8
+WARNING:tensorflow:From C:\Users\nguye\AppData\Local\Programs\Python\Python311\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+WARNING:tensorflow:From C:\Users\nguye\AppData\Local\Programs\Python\Python311\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+WARNING:tensorflow:From C:\Users\nguye\AppData\Local\Programs\Python\Python311\Lib\site-packages\tf_keras\src\backend.py:1400: The name tf.executing_eagerly_outside_functions is deprecated. Please use tf.compat.v1.executing_eagerly_outside_functions instead.
+
+WARNING:tensorflow:From C:\Users\nguye\AppData\Local\Programs\Python\Python311\Lib\site-packages\tf_keras\src\backend.py:1400: The name tf.executing_eagerly_outside_functions is deprecated. Please use tf.compat.v1.executing_eagerly_outside_functions instead.
+
+WARNING:tensorflow:From C:\Users\nguye\AppData\Local\Programs\Python\Python311\Lib\site-packages\tf_keras\src\layers\normalization\batch_normalization.py:979: The name tf.nn.fused_batch_norm is deprecated. Please use tf.compat.v1.nn.fused_batch_norm instead.
+
+WARNING:tensorflow:From C:\Users\nguye\AppData\Local\Programs\Python\Python311\Lib\site-packages\tf_keras\src\layers\normalization\batch_normalization.py:979: The name tf.nn.fused_batch_norm is deprecated. Please use tf.compat.v1.nn.fused_batch_norm instead.
+
+
+============================================================
+4. QAT INT8
+============================================================
+
+Keras 3 -> legacy tf_keras bridge: OK
+Model : sequential
+Input : (40, 129, 1)
+
+============================================================
+QAT BRIDGE SANITY CHECK
+============================================================
+Samples              : 154
+Mean abs difference  : 0.0000000474
+Max abs difference   : 0.0000016540
+Prediction changed   : 0/154
+QAT bridge verification: PASS
+
+Selective QAT annotation: OK
+Quantized layers:
+  + conv2d (Conv2D)
+  + depthwise_conv2d (DepthwiseConv2D)
+  + conv2d_1 (Conv2D)
+  + depthwise_conv2d_1 (DepthwiseConv2D)
+  + conv2d_2 (Conv2D)
+  + depthwise_conv2d_2 (DepthwiseConv2D)
+  + conv2d_3 (Conv2D)
+  + depthwise_conv2d_3 (DepthwiseConv2D)
+  + conv2d_4 (Conv2D)
+  + depthwise_conv2d_4 (DepthwiseConv2D)
+  + conv2d_5 (Conv2D)
+  + depthwise_conv2d_5 (DepthwiseConv2D)
+  + conv2d_6 (Conv2D)
+  + depthwise_conv2d_6 (DepthwiseConv2D)
+  + conv2d_7 (Conv2D)
+  + depthwise_conv2d_7 (DepthwiseConv2D)
+  + conv2d_8 (Conv2D)
+  + dense (Dense)
+Float/pass-through layers:
+  - batch_normalization (BatchNormalization)
+  - re_lu (ReLU)
+  - batch_normalization_1 (BatchNormalization)
+  - re_lu_1 (ReLU)
+  - batch_normalization_2 (BatchNormalization)
+  - re_lu_2 (ReLU)
+  - zero_padding2d (ZeroPadding2D)
+  - batch_normalization_3 (BatchNormalization)
+  - re_lu_3 (ReLU)
+  - batch_normalization_4 (BatchNormalization)
+  - re_lu_4 (ReLU)
+  - batch_normalization_5 (BatchNormalization)
+  - re_lu_5 (ReLU)
+  - batch_normalization_6 (BatchNormalization)
+  - re_lu_6 (ReLU)
+  - zero_padding2d_1 (ZeroPadding2D)
+  - batch_normalization_7 (BatchNormalization)
+  - re_lu_7 (ReLU)
+  - batch_normalization_8 (BatchNormalization)
+  - re_lu_8 (ReLU)
+  - batch_normalization_9 (BatchNormalization)
+  - re_lu_9 (ReLU)
+  - batch_normalization_10 (BatchNormalization)
+  - re_lu_10 (ReLU)
+  - zero_padding2d_2 (ZeroPadding2D)
+  - batch_normalization_11 (BatchNormalization)
+  - re_lu_11 (ReLU)
+  - batch_normalization_12 (BatchNormalization)
+  - re_lu_12 (ReLU)
+  - zero_padding2d_3 (ZeroPadding2D)
+  - batch_normalization_13 (BatchNormalization)
+  - re_lu_13 (ReLU)
+  - batch_normalization_14 (BatchNormalization)
+  - re_lu_14 (ReLU)
+  - batch_normalization_15 (BatchNormalization)
+  - re_lu_15 (ReLU)
+  - batch_normalization_16 (BatchNormalization)
+  - re_lu_16 (ReLU)
+  - global_average_pooling2d (GlobalAveragePooling2D)
+QAT class weights: {np.int64(0): np.float64(1.0), np.int64(1): np.float64(1.0)}
+Epoch 1/15
+WARNING:tensorflow:From C:\Users\nguye\AppData\Local\Programs\Python\Python311\Lib\site-packages\tf_keras\src\utils\tf_utils.py:492: The name tf.ragged.RaggedTensorValue is deprecated. Please use tf.compat.v1.ragged.RaggedTensorValue instead.
+
+WARNING:tensorflow:From C:\Users\nguye\AppData\Local\Programs\Python\Python311\Lib\site-packages\tf_keras\src\utils\tf_utils.py:492: The name tf.ragged.RaggedTensorValue is deprecated. Please use tf.compat.v1.ragged.RaggedTensorValue instead.
+
+WARNING:tensorflow:From C:\Users\nguye\AppData\Local\Programs\Python\Python311\Lib\site-packages\tf_keras\src\engine\base_layer_utils.py:384: The name tf.executing_eagerly_outside_functions is deprecated. Please use tf.compat.v1.executing_eagerly_outside_functions instead.
+
+WARNING:tensorflow:From C:\Users\nguye\AppData\Local\Programs\Python\Python311\Lib\site-packages\tf_keras\src\engine\base_layer_utils.py:384: The name tf.executing_eagerly_outside_functions is deprecated. Please use tf.compat.v1.executing_eagerly_outside_functions instead.
+
+
+ 1/62 [..............................] - ETA: 5:22 - loss: 0.4228 - accuracy: 0.9062
+ 2/62 [..............................] - ETA: 5s - loss: 0.4424 - accuracy: 0.8906  
+ 3/62 [>.............................] - ETA: 5s - loss: 0.3534 - accuracy: 0.9062
+ 4/62 [>.............................] - ETA: 5s - loss: 0.3765 - accuracy: 0.8984
+ 5/62 [=>............................] - ETA: 5s - loss: 0.3403 - accuracy: 0.9000
+ 6/62 [=>............................] - ETA: 5s - loss: 0.3267 - accuracy: 0.8958
+ 7/62 [==>...........................] - ETA: 5s - loss: 0.3386 - accuracy: 0.9018
+ 8/62 [==>...........................] - ETA: 5s - loss: 0.4065 - accuracy: 0.8867
+ 9/62 [===>..........................] - ETA: 5s - loss: 0.4012 - accuracy: 0.8854
+10/62 [===>..........................] - ETA: 4s - loss: 0.3657 - accuracy: 0.8938
+11/62 [====>.........................] - ETA: 4s - loss: 0.3458 - accuracy: 0.9006
+12/62 [====>.........................] - ETA: 4s - loss: 0.3431 - accuracy: 0.9036
+13/62 [=====>........................] - ETA: 4s - loss: 0.3409 - accuracy: 0.9062
+14/62 [=====>........................] - ETA: 4s - loss: 0.3369 - accuracy: 0.9085
+15/62 [======>.......................] - ETA: 4s - loss: 0.3371 - accuracy: 0.9021
+16/62 [======>.......................] - ETA: 4s - loss: 0.3339 - accuracy: 0.9023
+17/62 [=======>......................] - ETA: 4s - loss: 0.3426 - accuracy: 0.9026
+18/62 [=======>......................] - ETA: 4s - loss: 0.3357 - accuracy: 0.9045
+19/62 [========>.....................] - ETA: 4s - loss: 0.3207 - accuracy: 0.9095
+20/62 [========>.....................] - ETA: 3s - loss: 0.3309 - accuracy: 0.9062
+21/62 [=========>....................] - ETA: 3s - loss: 0.3297 - accuracy: 0.9062
+22/62 [=========>....................] - ETA: 3s - loss: 0.3185 - accuracy: 0.9077
+23/62 [==========>...................] - ETA: 3s - loss: 0.3356 - accuracy: 0.9022
+24/62 [==========>...................] - ETA: 3s - loss: 0.3314 - accuracy: 0.9023
+25/62 [===========>..................] - ETA: 3s - loss: 0.3191 - accuracy: 0.9062
+26/62 [===========>..................] - ETA: 3s - loss: 0.3267 - accuracy: 0.9038
+27/62 [============>.................] - ETA: 3s - loss: 0.3343 - accuracy: 0.9016
+28/62 [============>.................] - ETA: 3s - loss: 0.3451 - accuracy: 0.8996
+29/62 [=============>................] - ETA: 3s - loss: 0.3436 - accuracy: 0.9009
+30/62 [=============>................] - ETA: 3s - loss: 0.3444 - accuracy: 0.9000
+31/62 [==============>...............] - ETA: 2s - loss: 0.3485 - accuracy: 0.9002
+32/62 [==============>...............] - ETA: 2s - loss: 0.3558 - accuracy: 0.8994
+33/62 [==============>...............] - ETA: 2s - loss: 0.3511 - accuracy: 0.9006
+34/62 [===============>..............] - ETA: 2s - loss: 0.3493 - accuracy: 0.9007
+35/62 [===============>..............] - ETA: 2s - loss: 0.3493 - accuracy: 0.9009
+36/62 [================>.............] - ETA: 2s - loss: 0.3434 - accuracy: 0.9019
+37/62 [================>.............] - ETA: 2s - loss: 0.3433 - accuracy: 0.9020
+38/62 [=================>............] - ETA: 2s - loss: 0.3497 - accuracy: 0.9005
+39/62 [=================>............] - ETA: 2s - loss: 0.3530 - accuracy: 0.8998
+40/62 [==================>...........] - ETA: 2s - loss: 0.3512 - accuracy: 0.9008
+41/62 [==================>...........] - ETA: 1s - loss: 0.3443 - accuracy: 0.9024
+42/62 [===================>..........] - ETA: 1s - loss: 0.3390 - accuracy: 0.9033
+43/62 [===================>..........] - ETA: 1s - loss: 0.3463 - accuracy: 0.9012
+44/62 [====================>.........] - ETA: 1s - loss: 0.3486 - accuracy: 0.8999
+45/62 [====================>.........] - ETA: 1s - loss: 0.3521 - accuracy: 0.8993
+46/62 [=====================>........] - ETA: 1s - loss: 0.3536 - accuracy: 0.9001
+47/62 [=====================>........] - ETA: 1s - loss: 0.3572 - accuracy: 0.9003
+48/62 [======================>.......] - ETA: 1s - loss: 0.3585 - accuracy: 0.8997
+49/62 [======================>.......] - ETA: 1s - loss: 0.3564 - accuracy: 0.9011
+50/62 [=======================>......] - ETA: 1s - loss: 0.3605 - accuracy: 0.9006
+51/62 [=======================>......] - ETA: 1s - loss: 0.3654 - accuracy: 0.8995
+52/62 [========================>.....] - ETA: 0s - loss: 0.3650 - accuracy: 0.8984
+53/62 [========================>.....] - ETA: 0s - loss: 0.3616 - accuracy: 0.8998
+54/62 [=========================>....] - ETA: 0s - loss: 0.3637 - accuracy: 0.8999
+55/62 [=========================>....] - ETA: 0s - loss: 0.3606 - accuracy: 0.9000
+56/62 [==========================>...] - ETA: 0s - loss: 0.3648 - accuracy: 0.8979
+57/62 [==========================>...] - ETA: 0s - loss: 0.3656 - accuracy: 0.8975
+58/62 [===========================>..] - ETA: 0s - loss: 0.3634 - accuracy: 0.8966
+59/62 [===========================>..] - ETA: 0s - loss: 0.3628 - accuracy: 0.8962
+60/62 [============================>.] - ETA: 0s - loss: 0.3584 - accuracy: 0.8969
+61/62 [============================>.] - ETA: 0s - loss: 0.3568 - accuracy: 0.8970
+62/62 [==============================] - ETA: 0s - loss: 0.3530 - accuracy: 0.8982
+62/62 [==============================] - 12s 110ms/step - loss: 0.3530 - accuracy: 0.8982 - val_loss: 0.0855 - val_accuracy: 0.9610 - lr: 1.0000e-05
+Epoch 2/15
+
+ 1/62 [..............................] - ETA: 5s - loss: 0.6358 - accuracy: 0.8438
+ 2/62 [..............................] - ETA: 5s - loss: 0.4983 - accuracy: 0.8750
+ 3/62 [>.............................] - ETA: 5s - loss: 0.6097 - accuracy: 0.8438
+ 4/62 [>.............................] - ETA: 5s - loss: 0.5972 - accuracy: 0.8594
+ 5/62 [=>............................] - ETA: 5s - loss: 0.5937 - accuracy: 0.8562
+ 6/62 [=>............................] - ETA: 5s - loss: 0.5627 - accuracy: 0.8646
+ 7/62 [==>...........................] - ETA: 5s - loss: 0.5972 - accuracy: 0.8616
+ 8/62 [==>...........................] - ETA: 5s - loss: 0.5581 - accuracy: 0.8711
+ 9/62 [===>..........................] - ETA: 4s - loss: 0.5304 - accuracy: 0.8785
+10/62 [===>..........................] - ETA: 4s - loss: 0.5342 - accuracy: 0.8750
+11/62 [====>.........................] - ETA: 4s - loss: 0.5132 - accuracy: 0.8750
+12/62 [====>.........................] - ETA: 4s - loss: 0.4955 - accuracy: 0.8776
+13/62 [=====>........................] - ETA: 4s - loss: 0.4740 - accuracy: 0.8822
+14/62 [=====>........................] - ETA: 4s - loss: 0.4468 - accuracy: 0.8862
+15/62 [======>.......................] - ETA: 4s - loss: 0.4517 - accuracy: 0.8854
+16/62 [======>.......................] - ETA: 4s - loss: 0.4636 - accuracy: 0.8828
+17/62 [=======>......................] - ETA: 4s - loss: 0.4555 - accuracy: 0.8824
+18/62 [=======>......................] - ETA: 4s - loss: 0.4465 - accuracy: 0.8837
+19/62 [========>.....................] - ETA: 4s - loss: 0.4559 - accuracy: 0.8783
+20/62 [========>.....................] - ETA: 4s - loss: 0.4487 - accuracy: 0.8797
+21/62 [=========>....................] - ETA: 4s - loss: 0.4336 - accuracy: 0.8839
+22/62 [=========>....................] - ETA: 4s - loss: 0.4500 - accuracy: 0.8821
+23/62 [==========>...................] - ETA: 4s - loss: 0.4381 - accuracy: 0.8818
+24/62 [==========>...................] - ETA: 3s - loss: 0.4221 - accuracy: 0.8854
+25/62 [===========>..................] - ETA: 3s - loss: 0.4288 - accuracy: 0.8850
+26/62 [===========>..................] - ETA: 3s - loss: 0.4239 - accuracy: 0.8858
+27/62 [============>.................] - ETA: 3s - loss: 0.4229 - accuracy: 0.8877
+28/62 [============>.................] - ETA: 3s - loss: 0.4257 - accuracy: 0.8862
+29/62 [=============>................] - ETA: 3s - loss: 0.4221 - accuracy: 0.8879
+30/62 [=============>................] - ETA: 3s - loss: 0.4224 - accuracy: 0.8865
+31/62 [==============>...............] - ETA: 3s - loss: 0.4216 - accuracy: 0.8861
+32/62 [==============>...............] - ETA: 3s - loss: 0.4166 - accuracy: 0.8877
+33/62 [==============>...............] - ETA: 2s - loss: 0.4083 - accuracy: 0.8892
+34/62 [===============>..............] - ETA: 2s - loss: 0.4056 - accuracy: 0.8888
+35/62 [===============>..............] - ETA: 2s - loss: 0.4040 - accuracy: 0.8893
+36/62 [================>.............] - ETA: 2s - loss: 0.4124 - accuracy: 0.8872
+37/62 [================>.............] - ETA: 2s - loss: 0.4129 - accuracy: 0.8877
+38/62 [=================>............] - ETA: 2s - loss: 0.4102 - accuracy: 0.8865
+39/62 [=================>............] - ETA: 2s - loss: 0.4059 - accuracy: 0.8886
+40/62 [==================>...........] - ETA: 2s - loss: 0.4008 - accuracy: 0.8898
+41/62 [==================>...........] - ETA: 2s - loss: 0.4042 - accuracy: 0.8902
+42/62 [===================>..........] - ETA: 2s - loss: 0.4088 - accuracy: 0.8899
+43/62 [===================>..........] - ETA: 1s - loss: 0.4020 - accuracy: 0.8910
+44/62 [====================>.........] - ETA: 1s - loss: 0.3980 - accuracy: 0.8920
+45/62 [====================>.........] - ETA: 1s - loss: 0.3937 - accuracy: 0.8931
+46/62 [=====================>........] - ETA: 1s - loss: 0.4074 - accuracy: 0.8906
+47/62 [=====================>........] - ETA: 1s - loss: 0.4038 - accuracy: 0.8916
+48/62 [======================>.......] - ETA: 1s - loss: 0.4113 - accuracy: 0.8900
+49/62 [======================>.......] - ETA: 1s - loss: 0.4128 - accuracy: 0.8903
+50/62 [=======================>......] - ETA: 1s - loss: 0.4100 - accuracy: 0.8900
+51/62 [=======================>......] - ETA: 1s - loss: 0.4099 - accuracy: 0.8897
+52/62 [========================>.....] - ETA: 1s - loss: 0.4083 - accuracy: 0.8906
+53/62 [========================>.....] - ETA: 0s - loss: 0.4053 - accuracy: 0.8915
+54/62 [=========================>....] - ETA: 0s - loss: 0.4058 - accuracy: 0.8912
+55/62 [=========================>....] - ETA: 0s - loss: 0.4030 - accuracy: 0.8915
+56/62 [==========================>...] - ETA: 0s - loss: 0.4021 - accuracy: 0.8917
+57/62 [==========================>...] - ETA: 0s - loss: 0.3956 - accuracy: 0.8936
+58/62 [===========================>..] - ETA: 0s - loss: 0.3925 - accuracy: 0.8939
+59/62 [===========================>..] - ETA: 0s - loss: 0.3927 - accuracy: 0.8935
+60/62 [============================>.] - ETA: 0s - loss: 0.3902 - accuracy: 0.8932
+61/62 [============================>.] - ETA: 0s - loss: 0.3857 - accuracy: 0.8940
+62/62 [==============================] - ETA: 0s - loss: 0.3845 - accuracy: 0.8936
+62/62 [==============================] - 6s 104ms/step - loss: 0.3845 - accuracy: 0.8936 - val_loss: 0.1759 - val_accuracy: 0.9286 - lr: 1.0000e-05
+Epoch 3/15
+
+ 1/62 [..............................] - ETA: 5s - loss: 0.6786 - accuracy: 0.8750
+ 2/62 [..............................] - ETA: 5s - loss: 0.6054 - accuracy: 0.8750
+ 3/62 [>.............................] - ETA: 5s - loss: 0.4832 - accuracy: 0.8958
+ 4/62 [>.............................] - ETA: 5s - loss: 0.4571 - accuracy: 0.8906
+ 5/62 [=>............................] - ETA: 5s - loss: 0.4667 - accuracy: 0.8813
+ 6/62 [=>............................] - ETA: 5s - loss: 0.4955 - accuracy: 0.8750
+ 7/62 [==>...........................] - ETA: 5s - loss: 0.4670 - accuracy: 0.8705
+ 8/62 [==>...........................] - ETA: 5s - loss: 0.4690 - accuracy: 0.8750
+ 9/62 [===>..........................] - ETA: 5s - loss: 0.4173 - accuracy: 0.8889
+10/62 [===>..........................] - ETA: 5s - loss: 0.4442 - accuracy: 0.8844
+11/62 [====>.........................] - ETA: 4s - loss: 0.4222 - accuracy: 0.8864
+12/62 [====>.........................] - ETA: 4s - loss: 0.4558 - accuracy: 0.8828
+13/62 [=====>........................] - ETA: 4s - loss: 0.4404 - accuracy: 0.8846
+14/62 [=====>........................] - ETA: 4s - loss: 0.4317 - accuracy: 0.8839
+15/62 [======>.......................] - ETA: 4s - loss: 0.4373 - accuracy: 0.8833
+16/62 [======>.......................] - ETA: 4s - loss: 0.4233 - accuracy: 0.8848
+17/62 [=======>......................] - ETA: 4s - loss: 0.4182 - accuracy: 0.8860
+18/62 [=======>......................] - ETA: 4s - loss: 0.3974 - accuracy: 0.8924
+19/62 [========>.....................] - ETA: 4s - loss: 0.3913 - accuracy: 0.8931
+20/62 [========>.....................] - ETA: 4s - loss: 0.3846 - accuracy: 0.8953
+21/62 [=========>....................] - ETA: 4s - loss: 0.3864 - accuracy: 0.8943
+22/62 [=========>....................] - ETA: 3s - loss: 0.3817 - accuracy: 0.8949
+23/62 [==========>...................] - ETA: 3s - loss: 0.3719 - accuracy: 0.8967
+24/62 [==========>...................] - ETA: 3s - loss: 0.3677 - accuracy: 0.8971
+25/62 [===========>..................] - ETA: 3s - loss: 0.3754 - accuracy: 0.8950
+26/62 [===========>..................] - ETA: 3s - loss: 0.3749 - accuracy: 0.8954
+27/62 [============>.................] - ETA: 3s - loss: 0.3773 - accuracy: 0.8970
+28/62 [============>.................] - ETA: 3s - loss: 0.3776 - accuracy: 0.8973
+29/62 [=============>................] - ETA: 3s - loss: 0.3696 - accuracy: 0.8998
+30/62 [=============>................] - ETA: 3s - loss: 0.3857 - accuracy: 0.8969
+31/62 [==============>...............] - ETA: 3s - loss: 0.3868 - accuracy: 0.8952
+32/62 [==============>...............] - ETA: 2s - loss: 0.3877 - accuracy: 0.8955
+33/62 [==============>...............] - ETA: 2s - loss: 0.3812 - accuracy: 0.8968
+34/62 [===============>..............] - ETA: 2s - loss: 0.3860 - accuracy: 0.8961
+35/62 [===============>..............] - ETA: 2s - loss: 0.3849 - accuracy: 0.8964
+36/62 [================>.............] - ETA: 2s - loss: 0.3812 - accuracy: 0.8950
+37/62 [================>.............] - ETA: 2s - loss: 0.3745 - accuracy: 0.8953
+38/62 [=================>............] - ETA: 2s - loss: 0.3796 - accuracy: 0.8956
+39/62 [=================>............] - ETA: 2s - loss: 0.3781 - accuracy: 0.8950
+40/62 [==================>...........] - ETA: 2s - loss: 0.3772 - accuracy: 0.8953
+41/62 [==================>...........] - ETA: 2s - loss: 0.3782 - accuracy: 0.8956
+42/62 [===================>..........] - ETA: 1s - loss: 0.3711 - accuracy: 0.8966
+43/62 [===================>..........] - ETA: 1s - loss: 0.3710 - accuracy: 0.8961
+44/62 [====================>.........] - ETA: 1s - loss: 0.3701 - accuracy: 0.8970
+45/62 [====================>.........] - ETA: 1s - loss: 0.3651 - accuracy: 0.8972
+46/62 [=====================>........] - ETA: 1s - loss: 0.3660 - accuracy: 0.8961
+47/62 [=====================>........] - ETA: 1s - loss: 0.3608 - accuracy: 0.8976
+48/62 [======================>.......] - ETA: 1s - loss: 0.3556 - accuracy: 0.8991
+49/62 [======================>.......] - ETA: 1s - loss: 0.3500 - accuracy: 0.9005
+50/62 [=======================>......] - ETA: 1s - loss: 0.3516 - accuracy: 0.9000
+51/62 [=======================>......] - ETA: 1s - loss: 0.3554 - accuracy: 0.8989
+52/62 [========================>.....] - ETA: 0s - loss: 0.3490 - accuracy: 0.9008
+53/62 [========================>.....] - ETA: 0s - loss: 0.3455 - accuracy: 0.9009
+54/62 [=========================>....] - ETA: 0s - loss: 0.3519 - accuracy: 0.8999
+55/62 [=========================>....] - ETA: 0s - loss: 0.3541 - accuracy: 0.8994
+56/62 [==========================>...] - ETA: 0s - loss: 0.3580 - accuracy: 0.8990
+57/62 [==========================>...] - ETA: 0s - loss: 0.3579 - accuracy: 0.8986
+58/62 [===========================>..] - ETA: 0s - loss: 0.3609 - accuracy: 0.8982
+59/62 [===========================>..] - ETA: 0s - loss: 0.3660 - accuracy: 0.8972
+60/62 [============================>.] - ETA: 0s - loss: 0.3669 - accuracy: 0.8974
+61/62 [============================>.] - ETA: 0s - loss: 0.3630 - accuracy: 0.8975
+62/62 [==============================] - ETA: 0s - loss: 0.3643 - accuracy: 0.8977
+Epoch 3: ReduceLROnPlateau reducing learning rate to 4.999999873689376e-06.
+
+62/62 [==============================] - 6s 100ms/step - loss: 0.3643 - accuracy: 0.8977 - val_loss: 0.2322 - val_accuracy: 0.9286 - lr: 1.0000e-05
+Epoch 4/15
+
+ 1/62 [..............................] - ETA: 5s - loss: 0.2022 - accuracy: 0.9375
+ 2/62 [..............................] - ETA: 5s - loss: 0.3677 - accuracy: 0.9062
+ 3/62 [>.............................] - ETA: 5s - loss: 0.6789 - accuracy: 0.8438
+ 4/62 [>.............................] - ETA: 5s - loss: 0.5843 - accuracy: 0.8672
+ 5/62 [=>............................] - ETA: 5s - loss: 0.4999 - accuracy: 0.8750
+ 6/62 [=>............................] - ETA: 5s - loss: 0.4350 - accuracy: 0.8906
+ 7/62 [==>...........................] - ETA: 5s - loss: 0.4519 - accuracy: 0.8884
+ 8/62 [==>...........................] - ETA: 5s - loss: 0.4227 - accuracy: 0.8945
+ 9/62 [===>..........................] - ETA: 4s - loss: 0.4179 - accuracy: 0.8889
+10/62 [===>..........................] - ETA: 4s - loss: 0.4580 - accuracy: 0.8750
+11/62 [====>.........................] - ETA: 4s - loss: 0.4460 - accuracy: 0.8778
+12/62 [====>.........................] - ETA: 4s - loss: 0.4316 - accuracy: 0.8854
+13/62 [=====>........................] - ETA: 4s - loss: 0.4393 - accuracy: 0.8798
+14/62 [=====>........................] - ETA: 4s - loss: 0.4545 - accuracy: 0.8772
+15/62 [======>.......................] - ETA: 4s - loss: 0.4385 - accuracy: 0.8792
+16/62 [======>.......................] - ETA: 4s - loss: 0.4209 - accuracy: 0.8828
+17/62 [=======>......................] - ETA: 4s - loss: 0.4122 - accuracy: 0.8860
+18/62 [=======>......................] - ETA: 4s - loss: 0.4276 - accuracy: 0.8854
+19/62 [========>.....................] - ETA: 4s - loss: 0.4350 - accuracy: 0.8849
+20/62 [========>.....................] - ETA: 4s - loss: 0.4353 - accuracy: 0.8844
+21/62 [=========>....................] - ETA: 3s - loss: 0.4362 - accuracy: 0.8839
+22/62 [=========>....................] - ETA: 3s - loss: 0.4168 - accuracy: 0.8892
+23/62 [==========>...................] - ETA: 3s - loss: 0.4233 - accuracy: 0.8886
+24/62 [==========>...................] - ETA: 3s - loss: 0.4089 - accuracy: 0.8919
+25/62 [===========>..................] - ETA: 3s - loss: 0.3934 - accuracy: 0.8963
+26/62 [===========>..................] - ETA: 3s - loss: 0.3830 - accuracy: 0.8978
+27/62 [============>.................] - ETA: 3s - loss: 0.3778 - accuracy: 0.8993
+28/62 [============>.................] - ETA: 3s - loss: 0.3740 - accuracy: 0.8984
+29/62 [=============>................] - ETA: 3s - loss: 0.3637 - accuracy: 0.9009
+30/62 [=============>................] - ETA: 3s - loss: 0.3727 - accuracy: 0.9010
+31/62 [==============>...............] - ETA: 2s - loss: 0.3769 - accuracy: 0.9022
+32/62 [==============>...............] - ETA: 2s - loss: 0.3657 - accuracy: 0.9053
+33/62 [==============>...............] - ETA: 2s - loss: 0.3593 - accuracy: 0.9062
+34/62 [===============>..............] - ETA: 2s - loss: 0.3737 - accuracy: 0.9026
+35/62 [===============>..............] - ETA: 2s - loss: 0.3660 - accuracy: 0.9045
+36/62 [================>.............] - ETA: 2s - loss: 0.3643 - accuracy: 0.9028
+37/62 [================>.............] - ETA: 2s - loss: 0.3571 - accuracy: 0.9037
+38/62 [=================>............] - ETA: 2s - loss: 0.3681 - accuracy: 0.9013
+39/62 [=================>............] - ETA: 2s - loss: 0.3632 - accuracy: 0.9022
+40/62 [==================>...........] - ETA: 2s - loss: 0.3602 - accuracy: 0.9031
+41/62 [==================>...........] - ETA: 2s - loss: 0.3612 - accuracy: 0.9032
+42/62 [===================>..........] - ETA: 1s - loss: 0.3575 - accuracy: 0.9048
+43/62 [===================>..........] - ETA: 1s - loss: 0.3501 - accuracy: 0.9070
+44/62 [====================>.........] - ETA: 1s - loss: 0.3476 - accuracy: 0.9070
+45/62 [====================>.........] - ETA: 1s - loss: 0.3541 - accuracy: 0.9062
+46/62 [=====================>........] - ETA: 1s - loss: 0.3527 - accuracy: 0.9076
+47/62 [=====================>........] - ETA: 1s - loss: 0.3456 - accuracy: 0.9096
+48/62 [======================>.......] - ETA: 1s - loss: 0.3413 - accuracy: 0.9102
+49/62 [======================>.......] - ETA: 1s - loss: 0.3397 - accuracy: 0.9107
+50/62 [=======================>......] - ETA: 1s - loss: 0.3368 - accuracy: 0.9106
+51/62 [=======================>......] - ETA: 1s - loss: 0.3453 - accuracy: 0.9087
+52/62 [========================>.....] - ETA: 0s - loss: 0.3438 - accuracy: 0.9087
+53/62 [========================>.....] - ETA: 0s - loss: 0.3401 - accuracy: 0.9086
+54/62 [=========================>....] - ETA: 0s - loss: 0.3419 - accuracy: 0.9091
+55/62 [=========================>....] - ETA: 0s - loss: 0.3358 - accuracy: 0.9108
+56/62 [==========================>...] - ETA: 0s - loss: 0.3405 - accuracy: 0.9090
+57/62 [==========================>...] - ETA: 0s - loss: 0.3356 - accuracy: 0.9101
+58/62 [===========================>..] - ETA: 0s - loss: 0.3307 - accuracy: 0.9111
+59/62 [===========================>..] - ETA: 0s - loss: 0.3302 - accuracy: 0.9121
+60/62 [============================>.] - ETA: 0s - loss: 0.3308 - accuracy: 0.9120
+61/62 [============================>.] - ETA: 0s - loss: 0.3258 - accuracy: 0.9134
+62/62 [==============================] - ETA: 0s - loss: 0.3224 - accuracy: 0.9144
+62/62 [==============================] - 6s 98ms/step - loss: 0.3224 - accuracy: 0.9144 - val_loss: 0.2126 - val_accuracy: 0.9221 - lr: 5.0000e-06
+Epoch 5/15
+
+ 1/62 [..............................] - ETA: 5s - loss: 0.0274 - accuracy: 1.0000
+ 2/62 [..............................] - ETA: 5s - loss: 0.2180 - accuracy: 0.9688
+ 3/62 [>.............................] - ETA: 5s - loss: 0.2002 - accuracy: 0.9688
+ 4/62 [>.............................] - ETA: 5s - loss: 0.3142 - accuracy: 0.9375
+ 5/62 [=>............................] - ETA: 5s - loss: 0.4047 - accuracy: 0.9187
+ 6/62 [=>............................] - ETA: 5s - loss: 0.3584 - accuracy: 0.9271
+ 7/62 [==>...........................] - ETA: 5s - loss: 0.3627 - accuracy: 0.9241
+ 8/62 [==>...........................] - ETA: 5s - loss: 0.3696 - accuracy: 0.9219
+ 9/62 [===>..........................] - ETA: 4s - loss: 0.3530 - accuracy: 0.9201
+10/62 [===>..........................] - ETA: 4s - loss: 0.4009 - accuracy: 0.9156
+11/62 [====>.........................] - ETA: 4s - loss: 0.3765 - accuracy: 0.9205
+12/62 [====>.........................] - ETA: 4s - loss: 0.3606 - accuracy: 0.9245
+13/62 [=====>........................] - ETA: 4s - loss: 0.3439 - accuracy: 0.9255
+14/62 [=====>........................] - ETA: 4s - loss: 0.3248 - accuracy: 0.9286
+15/62 [======>.......................] - ETA: 4s - loss: 0.3051 - accuracy: 0.9333
+16/62 [======>.......................] - ETA: 4s - loss: 0.3317 - accuracy: 0.9277
+17/62 [=======>......................] - ETA: 4s - loss: 0.3408 - accuracy: 0.9283
+18/62 [=======>......................] - ETA: 4s - loss: 0.3343 - accuracy: 0.9271
+19/62 [========>.....................] - ETA: 4s - loss: 0.3441 - accuracy: 0.9260
+20/62 [========>.....................] - ETA: 4s - loss: 0.3351 - accuracy: 0.9266
+21/62 [=========>....................] - ETA: 3s - loss: 0.3252 - accuracy: 0.9286
+22/62 [=========>....................] - ETA: 3s - loss: 0.3349 - accuracy: 0.9247
+23/62 [==========>...................] - ETA: 3s - loss: 0.3365 - accuracy: 0.9239
+24/62 [==========>...................] - ETA: 3s - loss: 0.3270 - accuracy: 0.9245
+25/62 [===========>..................] - ETA: 3s - loss: 0.3299 - accuracy: 0.9237
+26/62 [===========>..................] - ETA: 3s - loss: 0.3237 - accuracy: 0.9231
+27/62 [============>.................] - ETA: 3s - loss: 0.3150 - accuracy: 0.9248
+28/62 [============>.................] - ETA: 3s - loss: 0.3076 - accuracy: 0.9263
+29/62 [=============>................] - ETA: 3s - loss: 0.3066 - accuracy: 0.9256
+30/62 [=============>................] - ETA: 3s - loss: 0.3019 - accuracy: 0.9271
+31/62 [==============>...............] - ETA: 2s - loss: 0.3056 - accuracy: 0.9264
+32/62 [==============>...............] - ETA: 2s - loss: 0.3060 - accuracy: 0.9258
+33/62 [==============>...............] - ETA: 2s - loss: 0.3047 - accuracy: 0.9271
+34/62 [===============>..............] - ETA: 2s - loss: 0.2985 - accuracy: 0.9283
+35/62 [===============>..............] - ETA: 2s - loss: 0.2993 - accuracy: 0.9268
+36/62 [================>.............] - ETA: 2s - loss: 0.2970 - accuracy: 0.9271
+37/62 [================>.............] - ETA: 2s - loss: 0.2930 - accuracy: 0.9274
+38/62 [=================>............] - ETA: 2s - loss: 0.2898 - accuracy: 0.9276
+39/62 [=================>............] - ETA: 2s - loss: 0.2859 - accuracy: 0.9279
+40/62 [==================>...........] - ETA: 2s - loss: 0.2857 - accuracy: 0.9266
+41/62 [==================>...........] - ETA: 2s - loss: 0.2832 - accuracy: 0.9253
+42/62 [===================>..........] - ETA: 1s - loss: 0.2849 - accuracy: 0.9241
+43/62 [===================>..........] - ETA: 1s - loss: 0.2831 - accuracy: 0.9222
+44/62 [====================>.........] - ETA: 1s - loss: 0.2861 - accuracy: 0.9219
+45/62 [====================>.........] - ETA: 1s - loss: 0.2842 - accuracy: 0.9229
+46/62 [=====================>........] - ETA: 1s - loss: 0.2810 - accuracy: 0.9239
+47/62 [=====================>........] - ETA: 1s - loss: 0.2833 - accuracy: 0.9229
+48/62 [======================>.......] - ETA: 1s - loss: 0.2821 - accuracy: 0.9232
+49/62 [======================>.......] - ETA: 1s - loss: 0.2831 - accuracy: 0.9235
+50/62 [=======================>......] - ETA: 1s - loss: 0.2777 - accuracy: 0.9250
+51/62 [=======================>......] - ETA: 1s - loss: 0.2734 - accuracy: 0.9259
+52/62 [========================>.....] - ETA: 0s - loss: 0.2693 - accuracy: 0.9267
+53/62 [========================>.....] - ETA: 0s - loss: 0.2659 - accuracy: 0.9269
+54/62 [=========================>....] - ETA: 0s - loss: 0.2624 - accuracy: 0.9271
+55/62 [=========================>....] - ETA: 0s - loss: 0.2608 - accuracy: 0.9273
+56/62 [==========================>...] - ETA: 0s - loss: 0.2596 - accuracy: 0.9269
+57/62 [==========================>...] - ETA: 0s - loss: 0.2635 - accuracy: 0.9260
+58/62 [===========================>..] - ETA: 0s - loss: 0.2662 - accuracy: 0.9262
+59/62 [===========================>..] - ETA: 0s - loss: 0.2644 - accuracy: 0.9264
+60/62 [============================>.] - ETA: 0s - loss: 0.2643 - accuracy: 0.9260
+61/62 [============================>.] - ETA: 0s - loss: 0.2675 - accuracy: 0.9252
+62/62 [==============================] - ETA: 0s - loss: 0.2736 - accuracy: 0.9235
+Epoch 5: ReduceLROnPlateau reducing learning rate to 2.499999936844688e-06.
+
+62/62 [==============================] - 6s 99ms/step - loss: 0.2736 - accuracy: 0.9235 - val_loss: 0.1238 - val_accuracy: 0.9610 - lr: 5.0000e-06
+Epoch 6/15
+
+ 1/62 [..............................] - ETA: 5s - loss: 0.1160 - accuracy: 0.9062
+ 2/62 [..............................] - ETA: 5s - loss: 0.2650 - accuracy: 0.9219
+ 3/62 [>.............................] - ETA: 5s - loss: 0.1993 - accuracy: 0.9375
+ 4/62 [>.............................] - ETA: 5s - loss: 0.2301 - accuracy: 0.9375
+ 5/62 [=>............................] - ETA: 5s - loss: 0.2055 - accuracy: 0.9438
+ 6/62 [=>............................] - ETA: 5s - loss: 0.1850 - accuracy: 0.9479
+ 7/62 [==>...........................] - ETA: 5s - loss: 0.1655 - accuracy: 0.9509
+ 8/62 [==>...........................] - ETA: 5s - loss: 0.1664 - accuracy: 0.9492
+ 9/62 [===>..........................] - ETA: 4s - loss: 0.1561 - accuracy: 0.9479
+10/62 [===>..........................] - ETA: 4s - loss: 0.1688 - accuracy: 0.9469
+11/62 [====>.........................] - ETA: 4s - loss: 0.1807 - accuracy: 0.9432
+12/62 [====>.........................] - ETA: 4s - loss: 0.1886 - accuracy: 0.9349
+13/62 [=====>........................] - ETA: 4s - loss: 0.2017 - accuracy: 0.9351
+14/62 [=====>........................] - ETA: 4s - loss: 0.2105 - accuracy: 0.9353
+15/62 [======>.......................] - ETA: 4s - loss: 0.2046 - accuracy: 0.9354
+16/62 [======>.......................] - ETA: 4s - loss: 0.2286 - accuracy: 0.9297
+17/62 [=======>......................] - ETA: 4s - loss: 0.2257 - accuracy: 0.9301
+18/62 [=======>......................] - ETA: 4s - loss: 0.2341 - accuracy: 0.9288
+19/62 [========>.....................] - ETA: 4s - loss: 0.2385 - accuracy: 0.9276
+20/62 [========>.....................] - ETA: 4s - loss: 0.2331 - accuracy: 0.9281
+21/62 [=========>....................] - ETA: 3s - loss: 0.2234 - accuracy: 0.9315
+22/62 [=========>....................] - ETA: 3s - loss: 0.2198 - accuracy: 0.9304
+23/62 [==========>...................] - ETA: 3s - loss: 0.2203 - accuracy: 0.9321
+24/62 [==========>...................] - ETA: 3s - loss: 0.2279 - accuracy: 0.9297
+25/62 [===========>..................] - ETA: 3s - loss: 0.2347 - accuracy: 0.9262
+26/62 [===========>..................] - ETA: 3s - loss: 0.2292 - accuracy: 0.9279
+27/62 [============>.................] - ETA: 3s - loss: 0.2293 - accuracy: 0.9294
+28/62 [============>.................] - ETA: 3s - loss: 0.2267 - accuracy: 0.9308
+29/62 [=============>................] - ETA: 3s - loss: 0.2276 - accuracy: 0.9321
+30/62 [=============>................] - ETA: 3s - loss: 0.2204 - accuracy: 0.9344
+31/62 [==============>...............] - ETA: 2s - loss: 0.2313 - accuracy: 0.9335
+32/62 [==============>...............] - ETA: 2s - loss: 0.2373 - accuracy: 0.9336
+33/62 [==============>...............] - ETA: 2s - loss: 0.2520 - accuracy: 0.9299
+34/62 [===============>..............] - ETA: 2s - loss: 0.2627 - accuracy: 0.9283
+35/62 [===============>..............] - ETA: 2s - loss: 0.2636 - accuracy: 0.9250
+36/62 [================>.............] - ETA: 2s - loss: 0.2698 - accuracy: 0.9227
+37/62 [================>.............] - ETA: 2s - loss: 0.2643 - accuracy: 0.9231
+38/62 [=================>............] - ETA: 2s - loss: 0.2603 - accuracy: 0.9243
+39/62 [=================>............] - ETA: 2s - loss: 0.2553 - accuracy: 0.9255
+40/62 [==================>...........] - ETA: 2s - loss: 0.2521 - accuracy: 0.9266
+41/62 [==================>...........] - ETA: 2s - loss: 0.2541 - accuracy: 0.9261
+42/62 [===================>..........] - ETA: 1s - loss: 0.2493 - accuracy: 0.9278
+43/62 [===================>..........] - ETA: 1s - loss: 0.2586 - accuracy: 0.9259
+44/62 [====================>.........] - ETA: 1s - loss: 0.2533 - accuracy: 0.9276
+45/62 [====================>.........] - ETA: 1s - loss: 0.2537 - accuracy: 0.9278
+46/62 [=====================>........] - ETA: 1s - loss: 0.2515 - accuracy: 0.9287
+47/62 [=====================>........] - ETA: 1s - loss: 0.2515 - accuracy: 0.9282
+48/62 [======================>.......] - ETA: 1s - loss: 0.2594 - accuracy: 0.9264
+49/62 [======================>.......] - ETA: 1s - loss: 0.2616 - accuracy: 0.9254
+50/62 [=======================>......] - ETA: 1s - loss: 0.2679 - accuracy: 0.9237
+51/62 [=======================>......] - ETA: 1s - loss: 0.2711 - accuracy: 0.9240
+52/62 [========================>.....] - ETA: 0s - loss: 0.2665 - accuracy: 0.9255
+53/62 [========================>.....] - ETA: 0s - loss: 0.2619 - accuracy: 0.9269
+54/62 [=========================>....] - ETA: 0s - loss: 0.2609 - accuracy: 0.9277
+55/62 [=========================>....] - ETA: 0s - loss: 0.2611 - accuracy: 0.9278
+56/62 [==========================>...] - ETA: 0s - loss: 0.2596 - accuracy: 0.9280
+57/62 [==========================>...] - ETA: 0s - loss: 0.2659 - accuracy: 0.9271
+58/62 [===========================>..] - ETA: 0s - loss: 0.2652 - accuracy: 0.9273
+59/62 [===========================>..] - ETA: 0s - loss: 0.2640 - accuracy: 0.9264
+60/62 [============================>.] - ETA: 0s - loss: 0.2605 - accuracy: 0.9271
+61/62 [============================>.] - ETA: 0s - loss: 0.2623 - accuracy: 0.9262
+62/62 [==============================] - ETA: 0s - loss: 0.2597 - accuracy: 0.9271
+62/62 [==============================] - 6s 99ms/step - loss: 0.2597 - accuracy: 0.9271 - val_loss: 0.1720 - val_accuracy: 0.9351 - lr: 2.5000e-06
+Epoch 6: early stopping
+Restoring model weights from the end of the best epoch: 1.
+C:\Users\nguye\AppData\Local\Programs\Python\Python311\Lib\site-packages\tensorflow\lite\python\convert.py:846: UserWarning: Statistics for quantized inputs were expected, but not specified; continuing anyway.
+  warnings.warn(
+fully_quantize: 0, inference_type: 6, input_inference_type: INT8, output_inference_type: INT8
+
+============================================================
+5. PTQ INT16x8
+============================================================
+Saved artifact at 'C:\Users\nguye\AppData\Local\Temp\tmpcyyshvpw'. The following endpoints are available:
+
+* Endpoint 'serve'
+  args_0 (POSITIONAL_ONLY): TensorSpec(shape=(None, 40, 129, 1), dtype=tf.float32, name='input_layer')
+Output Type:
+  TensorSpec(shape=(None, 1), dtype=tf.float32, name=None)
+Captures:
+  2282667113360: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668360528: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282667113936: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668360720: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282667114320: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668361488: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668364176: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668364368: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668363600: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668362256: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668364752: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668365712: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668365904: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668365136: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668362448: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668364944: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668367248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668367056: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668366672: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668367824: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668366480: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668368784: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668368976: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668367440: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668363792: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668369168: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668371664: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668371856: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668371088: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668370128: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668373392: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668375696: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668374544: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668375504: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668374928: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688892560: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688893520: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688894480: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282668368592: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688892368: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688894864: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688895056: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688893712: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688894672: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688895632: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688896016: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688896208: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688895248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688895824: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688896784: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688893904: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688896400: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688896592: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688893136: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688897744: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688897168: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282667112592: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282667112976: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282667111248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282667112784: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688894288: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688897552: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688897360: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688898704: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688899280: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688897936: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688900048: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688899856: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688899088: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688900624: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688898320: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688900240: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688900432: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688899664: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688901584: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688901008: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688901200: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688901392: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688899472: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688902544: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688901968: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688902160: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688902352: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688898896: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688903504: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688902928: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  2282688900816: TensorSpec(shape=(), dtype=tf.resource, name=None)
+C:\Users\nguye\AppData\Local\Programs\Python\Python311\Lib\site-packages\tensorflow\lite\python\interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+
+============================================================
+6. EVALUATE ALL MODELS
+============================================================
+
+============================================================
+FINAL RESULT
+============================================================
+Keras_FP32       : 86.79%
+TFLite_FP32      : 86.79%
+PTQ_INT8         : 86.79%
+QAT_INT8         : 92.45%
+PTQ_INT16x8      : 88.05%
+
+============================================================
+QUANTIZATION COMPARISON
+============================================================
+
+Representative samples: 100
+TRAIN_MIN: -80.0
+TRAIN_MAX: 0.0
+Threshold: 0.5
+
+MODEL SIZE
+------------------------------------------------------------
+Keras_FP32: 5953673 bytes
+  Reduction vs FP32 TFLite: -212.89%
+TFLite_FP32: 1902780 bytes
+PTQ_INT8: 568360 bytes
+  Reduction vs FP32 TFLite: 70.13%
+QAT_INT8: 575872 bytes
+  Reduction vs FP32 TFLite: 69.74%
+PTQ_INT16x8: 604144 bytes
+  Reduction vs FP32 TFLite: 68.25%
+
+============================================================
+Keras_FP32
+============================================================
+Accuracy: 0.867925
+
+Confusion Matrix:
+[[ 32   6]
+ [ 15 106]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      Asthma     0.6809    0.8421    0.7529        38
+  Non_Asthma     0.9464    0.8760    0.9099       121
+
+    accuracy                         0.8679       159
+   macro avg     0.8136    0.8591    0.8314       159
+weighted avg     0.8830    0.8679    0.8724       159
+
+
+============================================================
+TFLite_FP32
+============================================================
+Accuracy: 0.867925
+
+Confusion Matrix:
+[[ 32   6]
+ [ 15 106]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      Asthma     0.6809    0.8421    0.7529        38
+  Non_Asthma     0.9464    0.8760    0.9099       121
+
+    accuracy                         0.8679       159
+   macro avg     0.8136    0.8591    0.8314       159
+weighted avg     0.8830    0.8679    0.8724       159
+
+
+============================================================
+PTQ_INT8
+============================================================
+Accuracy: 0.867925
+
+Confusion Matrix:
+[[ 32   6]
+ [ 15 106]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      Asthma     0.6809    0.8421    0.7529        38
+  Non_Asthma     0.9464    0.8760    0.9099       121
+
+    accuracy                         0.8679       159
+   macro avg     0.8136    0.8591    0.8314       159
+weighted avg     0.8830    0.8679    0.8724       159
+
+
+============================================================
+QAT_INT8
+============================================================
+Accuracy: 0.924528
+
+Confusion Matrix:
+[[ 36   2]
+ [ 10 111]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      Asthma     0.7826    0.9474    0.8571        38
+  Non_Asthma     0.9823    0.9174    0.9487       121
+
+    accuracy                         0.9245       159
+   macro avg     0.8825    0.9324    0.9029       159
+weighted avg     0.9346    0.9245    0.9268       159
+
+
+============================================================
+PTQ_INT16x8
+============================================================
+Accuracy: 0.880503
+
+Confusion Matrix:
+[[ 33   5]
+ [ 14 107]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      Asthma     0.7021    0.8684    0.7765        38
+  Non_Asthma     0.9554    0.8843    0.9185       121
+
+    accuracy                         0.8805       159
+   macro avg     0.8287    0.8764    0.8475       159
+weighted avg     0.8948    0.8805    0.8845       159
+
+
+============================================================
+PREDICTION CHANGES VS FP32
+============================================================
+Keras_FP32: 0/159
+PTQ_INT8: 4/159
+QAT_INT8: 13/159
+PTQ_INT16x8: 2/159
+
+PTQ_INT8 vs QAT_INT8: 15/159 changed
+PTQ_INT8 vs PTQ_INT16x8: 2/159 changed

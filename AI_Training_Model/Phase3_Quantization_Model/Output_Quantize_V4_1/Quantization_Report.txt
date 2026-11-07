@@ -1,0 +1,131 @@
+============================================================
+QUANTIZATION COMPARISON
+============================================================
+Output_Quantize_V4_1
+Representative samples: 100
+TRAIN_MIN: -80.0
+TRAIN_MAX: 0.0
+Threshold: 0.5
+
+MODEL SIZE
+------------------------------------------------------------
+Keras_FP32: 5953673 bytes
+  Reduction vs FP32 TFLite: -212.89%
+TFLite_FP32: 1902780 bytes
+PTQ_INT8: 568360 bytes
+  Reduction vs FP32 TFLite: 70.13%
+QAT_INT8: 575872 bytes
+  Reduction vs FP32 TFLite: 69.74%
+PTQ_INT16x8: 604144 bytes
+  Reduction vs FP32 TFLite: 68.25%
+
+============================================================
+Keras_FP32
+============================================================
+Accuracy: 0.867925
+
+Confusion Matrix:
+[[ 32   6]
+ [ 15 106]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      Asthma     0.6809    0.8421    0.7529        38
+  Non_Asthma     0.9464    0.8760    0.9099       121
+
+    accuracy                         0.8679       159
+   macro avg     0.8136    0.8591    0.8314       159
+weighted avg     0.8830    0.8679    0.8724       159
+
+
+============================================================
+TFLite_FP32
+============================================================
+Accuracy: 0.867925
+
+Confusion Matrix:
+[[ 32   6]
+ [ 15 106]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      Asthma     0.6809    0.8421    0.7529        38
+  Non_Asthma     0.9464    0.8760    0.9099       121
+
+    accuracy                         0.8679       159
+   macro avg     0.8136    0.8591    0.8314       159
+weighted avg     0.8830    0.8679    0.8724       159
+
+
+============================================================
+PTQ_INT8
+============================================================
+Accuracy: 0.867925
+
+Confusion Matrix:
+[[ 32   6]
+ [ 15 106]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      Asthma     0.6809    0.8421    0.7529        38
+  Non_Asthma     0.9464    0.8760    0.9099       121
+
+    accuracy                         0.8679       159
+   macro avg     0.8136    0.8591    0.8314       159
+weighted avg     0.8830    0.8679    0.8724       159
+
+
+============================================================
+QAT_INT8
+============================================================
+Accuracy: 0.924528
+
+Confusion Matrix:
+[[ 36   2]
+ [ 10 111]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      Asthma     0.7826    0.9474    0.8571        38
+  Non_Asthma     0.9823    0.9174    0.9487       121
+
+    accuracy                         0.9245       159
+   macro avg     0.8825    0.9324    0.9029       159
+weighted avg     0.9346    0.9245    0.9268       159
+
+
+============================================================
+PTQ_INT16x8
+============================================================
+Accuracy: 0.880503
+
+Confusion Matrix:
+[[ 33   5]
+ [ 14 107]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      Asthma     0.7021    0.8684    0.7765        38
+  Non_Asthma     0.9554    0.8843    0.9185       121
+
+    accuracy                         0.8805       159
+   macro avg     0.8287    0.8764    0.8475       159
+weighted avg     0.8948    0.8805    0.8845       159
+
+
+============================================================
+PREDICTION CHANGES VS FP32
+============================================================
+Keras_FP32: 0/159
+PTQ_INT8: 4/159
+QAT_INT8: 13/159
+PTQ_INT16x8: 2/159
+
+PTQ_INT8 vs QAT_INT8: 15/159 changed
+PTQ_INT8 vs PTQ_INT16x8: 2/159 changed

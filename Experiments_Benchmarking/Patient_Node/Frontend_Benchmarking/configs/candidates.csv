@@ -1,0 +1,19 @@
+variant_id,group,enabled,low_cut_hz,high_cut_hz,filter_order,pre_emphasis,n_mels,hop_length,n_fft,hypothesis
+F0,baseline,1,100,2000,5,0.97,64,625,1024,Official immutable V1 reference
+bp_50_2000,bandpass,0,50,2000,5,0.97,64,625,1024,Does low frequency preserve useful information
+bp_100_2500,bandpass,0,100,2500,5,0.97,64,625,1024,Does >2000 Hz improve discrimination
+bp_100_4000,bandpass,0,100,4000,5,0.97,64,625,1024,Broad high frequency control
+order_bypass,filter_order,0,100,2000,0,0.97,64,625,1024,Is Butterworth necessary
+order_3,filter_order,0,100,2000,3,0.97,64,625,1024,Lower filter cost
+order_7,filter_order,0,100,2000,7,0.97,64,625,1024,Steeper transition effect
+pre_0,pre_emphasis,0,100,2000,5,0,64,625,1024,No preemphasis control
+pre_095,pre_emphasis,0,100,2000,5,0.95,64,625,1024,Nearby coefficient control
+mel_40,n_mels,0,100,2000,5,0.97,40,625,1024,Lower memory Mel resolution
+mel_80,n_mels,0,100,2000,5,0.97,80,625,1024,Higher Mel resolution
+hop_400,hop_length,0,100,2000,5,0.97,64,400,1024,Finer time sampling
+hop_800,hop_length,0,100,2000,5,0.97,64,800,1024,Cheaper time sampling
+fft_2048,n_fft,0,100,2000,5,0.97,64,625,2048,Longer time frequency window
+combo_pre0_mel40,combination,1,100,2000,5,0,40,625,1024,2x2 interaction no preemphasis and 40 Mel bins
+combo_pre0_fft2048,combination,1,100,2000,5,0,64,625,2048,C2 interaction no preemphasis and FFT 2048
+combo_mel40_fft2048,combination,1,100,2000,5,0.97,40,625,2048,C3 interaction 40 Mel bins and FFT 2048
+combo_pre0_mel40_fft2048,combination,1,100,2000,5,0,40,625,2048,C4 interaction no preemphasis 40 Mel bins and FFT 2048

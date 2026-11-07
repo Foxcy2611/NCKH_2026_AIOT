@@ -1,0 +1,223 @@
+{
+  "protocol": "NCKH_FRONTEND_V2_2026_10",
+  "dataset": "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_Chia_V2",
+  "train_only": true,
+  "sampling_policy": {
+    "raw_per_class": 12,
+    "asthma_raw_core": 12,
+    "non_asthma_raw_core": 12,
+    "asthma_playback": 1,
+    "non_asthma_playback": 2,
+    "non_asthma_environment": 3,
+    "asthma_augmentation": 0,
+    "primary_comparison": "12 Asthma raw vs 12 Non-Asthma raw",
+    "supplementary_domain_audit": "1 Asthma + 2 Non-Asthma playback and 3 environment by default",
+    "non_asthma_raw": "stratified round-robin by disease group",
+    "environment": "stratified round-robin by environment type",
+    "playback": "one take per source; prefer a source whose raw file is included in the raw quota"
+  },
+  "selected_files": [
+    {
+      "file": "Asthma\\train\\P9AsthmaIE_41.wav",
+      "label": 0,
+      "sample_group": "raw:asthma",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Asthma\\train\\P15WheezingIU_74.wav",
+      "label": 0,
+      "sample_group": "raw:asthma",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Asthma\\train\\P20WheezingIE_97.wav",
+      "label": 0,
+      "sample_group": "raw:asthma",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Asthma\\train\\P22WheezingRS_108.wav",
+      "label": 0,
+      "sample_group": "raw:asthma",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Asthma\\train\\P2AsthmaIE_9.wav",
+      "label": 0,
+      "sample_group": "raw:asthma",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Asthma\\train\\P34WheezingIU_166.wav",
+      "label": 0,
+      "sample_group": "raw:asthma",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Asthma\\train\\P39WheezingRL_195.wav",
+      "label": 0,
+      "sample_group": "raw:asthma",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Asthma\\train\\P43WheezingIU_214.wav",
+      "label": 0,
+      "sample_group": "raw:asthma",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Asthma\\train\\P44WheezingIU_218.wav",
+      "label": 0,
+      "sample_group": "raw:asthma",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Asthma\\train\\P46WheezingIU_230.wav",
+      "label": 0,
+      "sample_group": "raw:asthma",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Asthma\\train\\P54WheezingIE_269.wav",
+      "label": 0,
+      "sample_group": "raw:asthma",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Asthma\\train\\P58WheezingRL_287.wav",
+      "label": 0,
+      "sample_group": "raw:asthma",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Asthma\\train\\AST_032__P9AsthmaIE_41__take02.wav",
+      "label": 0,
+      "sample_group": "playback:asthma",
+      "paired_raw_file": "Asthma\\train\\P9AsthmaIE_41.wav"
+    },
+    {
+      "file": "Non_Asthma_Disease\\train\\P27Pneumonia62C.wav",
+      "label": 1,
+      "sample_group": "raw:pneumonia",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Non_Asthma_Disease\\train\\P21BronchialTc_101.wav",
+      "label": 1,
+      "sample_group": "raw:bronchial",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Non_Asthma_Disease\\train\\P10COPDPr_73.wav",
+      "label": 1,
+      "sample_group": "raw:copd",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Non_Asthma_Disease\\train\\P1Healthy99S.wav",
+      "label": 1,
+      "sample_group": "raw:healthy",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Non_Asthma_Disease\\train\\P2BronchialSc_6.wav",
+      "label": 1,
+      "sample_group": "raw:bronchial",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Non_Asthma_Disease\\train\\P7COPDMc_50.wav",
+      "label": 1,
+      "sample_group": "raw:copd",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Non_Asthma_Disease\\train\\P7Healthy85S.wav",
+      "label": 1,
+      "sample_group": "raw:healthy",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Non_Asthma_Disease\\train\\P31Pneumonia47J.wav",
+      "label": 1,
+      "sample_group": "raw:pneumonia",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Non_Asthma_Disease\\train\\P16BronchialSc_78.wav",
+      "label": 1,
+      "sample_group": "raw:bronchial",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Non_Asthma_Disease\\train\\P39COPDPr_311.wav",
+      "label": 1,
+      "sample_group": "raw:copd",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Non_Asthma_Disease\\train\\P13Healthy28S.wav",
+      "label": 1,
+      "sample_group": "raw:healthy",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Non_Asthma_Disease\\train\\P13Pneumonia26N.wav",
+      "label": 1,
+      "sample_group": "raw:pneumonia",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Non_Asthma_Disease\\train\\PNE_004__P27Pneumonia62C__take01.wav",
+      "label": 1,
+      "sample_group": "playback:non_asthma",
+      "paired_raw_file": "Non_Asthma_Disease\\train\\P27Pneumonia62C.wav"
+    },
+    {
+      "file": "Non_Asthma_Disease\\train\\BRO_008__P21BronchialTc_101__take01.wav",
+      "label": 1,
+      "sample_group": "playback:non_asthma",
+      "paired_raw_file": "Non_Asthma_Disease\\train\\P21BronchialTc_101.wav"
+    },
+    {
+      "file": "Non_Asthma_Disease\\train\\ENV__room_noise__room_noise_session_05__clip05.wav",
+      "label": 1,
+      "sample_group": "environment:room_noise",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Non_Asthma_Disease\\train\\ENV__speech__speech_session_02__clip06.wav",
+      "label": 1,
+      "sample_group": "environment:speech",
+      "paired_raw_file": null
+    },
+    {
+      "file": "Non_Asthma_Disease\\train\\ENV__clap__clap_session_05__clip01.wav",
+      "label": 1,
+      "sample_group": "environment:clap",
+      "paired_raw_file": null
+    }
+  ],
+  "selected_group_counts": {
+    "label_0:raw:asthma": 12,
+    "label_0:playback:asthma": 1,
+    "label_1:raw:pneumonia": 3,
+    "label_1:raw:bronchial": 3,
+    "label_1:raw:copd": 3,
+    "label_1:raw:healthy": 3,
+    "label_1:playback:non_asthma": 2,
+    "label_1:environment:room_noise": 1,
+    "label_1:environment:speech": 1,
+    "label_1:environment:clap": 1
+  },
+  "total_counts_by_label": {
+    "0": 13,
+    "1": 17
+  },
+  "raw_counts_by_label": {
+    "0": 12,
+    "1": 12
+  },
+  "seed": 42,
+  "note": "Plots use real train WAVs; not diagnostic or proof of optimal classification."
+}

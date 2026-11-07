@@ -281,7 +281,7 @@ void Power_To_dB_RefMax(
         }
     }
     /*
-    Đây là output cuối cùng để làm input Interface
+    Đây là output cuối cùng để làm input Inference
     Gồm 129 x 64 = 8256 phần tử
     */
 }

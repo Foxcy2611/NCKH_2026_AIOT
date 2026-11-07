@@ -1,0 +1,34 @@
+{
+  "audit": "B0_DATASET_METADATA_AND_V1_PADDING",
+  "protocol": "NCKH_FRONTEND_V2_2026_10",
+  "generated_utc": "2026-10-10T17:48:51.002597+00:00",
+  "dataset_root": "D:\\NCKH_2026\\NCKH_2026_AIOT\\AI_Training_Model\\Dataset_Chia_V2",
+  "splits": [
+    "train",
+    "val"
+  ],
+  "read_only": true,
+  "waveforms_decoded": false,
+  "test_accessed": false,
+  "original_sr_from_header": true,
+  "window_s": 5.0,
+  "playback_offset_s": 1.0,
+  "valid_file_count": 2128,
+  "metadata_error_count": 0,
+  "counts_by_split_label": {
+    "train:Asthma": 987,
+    "train:Non-Asthma": 987,
+    "val:Asthma": 38,
+    "val:Non-Asthma": 116
+  },
+  "train_fingerprint": "8b469b5426dd7d50f93c4d75a0d97b7ea887f7bb690aa2f38c6534e74fdec9c1",
+  "val_fingerprint": "c53c444a98a2f3c69519f8fa4b0afeef8e82daeb01d282153c4eefdf837d513f",
+  "source_kind_inferred_from_filename": true,
+  "limitations": [
+    "Header durations estimate padding inserted by V1, not existing silence.",
+    "Filename classification does not establish independent source/patient identity.",
+    "Resampling to 16 kHz cannot restore missing source bandwidth.",
+    "A read error makes group distributions potentially incomplete.",
+    "No training, Test inspection or dataset modification."
+  ]
+}

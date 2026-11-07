@@ -89,13 +89,13 @@ power, hệ số đúng là 10, không phải 20.
 
 ## 6. Layout sang model
 
-Output được lưu theo thứ tự `[mel][frame]`. `Interface_Asthma.cpp` flatten bằng:
+Output được lưu theo thứ tự `[mel][frame]`. `Inference_Asthma.cpp` flatten bằng:
 
 ```text
 index = mel_index × 129 + frame_index
 ```
 
-tạo 8.256 phần tử cho tensor `[1, 64, 129, 1]`.
+tạo 5.160 phần tử cho tensor `[1, 40, 129, 1]`.
 
 ## Điều kiện giữ parity
 

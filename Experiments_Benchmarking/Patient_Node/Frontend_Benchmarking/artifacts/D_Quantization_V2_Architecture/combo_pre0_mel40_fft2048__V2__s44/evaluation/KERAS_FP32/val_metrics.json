@@ -1,0 +1,62 @@
+{
+  "status": "VAL_EVALUATION_COMPLETE",
+  "generated_utc": "2026-10-22T10:01:04.315311+00:00",
+  "split": "val",
+  "test_accessed": false,
+  "historical_test_previously_inspected": false,
+  "plan_path": "D:\\NCKH_2026\\NCKH_2026_AIOT\\Experiments_Benchmarking\\Patient_Node\\Frontend_Benchmarking\\results\\D_Quantization_V2_Architecture\\quantization_plan.json",
+  "plan_sha256": "5f65766e6f61863d01e1526c1314ba1e3f249769a2ea782b007ce8b3e84e1234",
+  "confusion_matrix_labels": [
+    "Asthma=0",
+    "Non-Asthma=1"
+  ],
+  "confusion_matrix": [
+    [
+      37,
+      1
+    ],
+    [
+      3,
+      113
+    ]
+  ],
+  "io": {
+    "input": {
+      "dtype": "float32"
+    },
+    "output": {
+      "dtype": "float32"
+    }
+  },
+  "summary_row": {
+    "plan_sha256": "5f65766e6f61863d01e1526c1314ba1e3f249769a2ea782b007ce8b3e84e1234",
+    "split": "val",
+    "priority_rank": 1,
+    "model_role": "EXPLICIT",
+    "trial_id": "combo_pre0_mel40_fft2048__V2__s44",
+    "variant_id": "combo_pre0_mel40_fft2048",
+    "seed": 44,
+    "method_id": "KERAS_FP32",
+    "training_mode": "FP32",
+    "integer_mode": "FP32",
+    "experimental": false,
+    "accuracy": 0.974025974025974,
+    "balanced_accuracy": 0.9739110707803993,
+    "macro_f1": 0.9656633221850612,
+    "asthma_precision": 0.925,
+    "asthma_recall": 0.9736842105263158,
+    "asthma_f1": 0.9487179487179487,
+    "non_asthma_precision": 0.9912280701754386,
+    "non_asthma_recall": 0.9741379310344828,
+    "non_asthma_f1": 0.9826086956521739,
+    "asthma_fn": 1,
+    "non_asthma_fp": 3,
+    "prediction_changes_vs_fp32": 0,
+    "mean_abs_probability_delta": 0.0,
+    "max_abs_probability_delta": 0.0,
+    "model_size_bytes": 160355,
+    "input_dtype": "float32",
+    "output_dtype": "float32",
+    "model_sha256": "70034ade214b22b2ee4e2de53966187cf18dbae57cc3af92aaf8af13fba4de58"
+  }
+}

@@ -1,4 +1,4 @@
 {
     "python-envs.defaultEnvManager": "ms-python.python:system",
-    "cmake.sourceDirectory": "D:/github project/NCKH_2026_AIOT-1/Final_Project_NCKH/Dashboard_Qt6"
+    "cmake.sourceDirectory": "D:/NCKH_2026/NCKH_2026_AIOT/ESP32_Standalone_Modules_Test/Test_Qt_Location"
 }

@@ -23,6 +23,7 @@ qt_add_qml_module(
         components/Sparkline.qml
         components/MetricTile.qml
         components/StatusLine.qml
+        components/InfoRow.qml
         components/SensorChip.qml
         components/NavItem.qml
         components/Sidebar.qml
@@ -30,6 +31,7 @@ qt_add_qml_module(
 
         pages/OverviewPage.qml
         pages/PatientPage.qml
+        pages/PatientProfilePage.qml
         pages/EnvironmentPage.qml
         pages/GatewayNetworkPage.qml
         pages/LocationPage.qml

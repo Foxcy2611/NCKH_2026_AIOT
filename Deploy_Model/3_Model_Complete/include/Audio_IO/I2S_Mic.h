@@ -6,7 +6,7 @@
 
 #include "DSP_Preprocessing/DSP_Filter.h"
 #include "DSP_Preprocessing/Mel_Scale.h"
-#include "Model_AI/Interface_Asthma.h"
+#include "Model_AI/Inference_Asthma.h"
 
 #define I2S_WS 15
 #define I2S_SD 16
@@ -16,7 +16,7 @@ enum System_State {
     STATE_LISTENING,
     STATE_RECORDING,
     STATE_PROCESSING,
-    STATE_INTERFACE,
+    STATE_INFERENCE,
 };
 
 const uint16_t Buffer_Samples = 256;

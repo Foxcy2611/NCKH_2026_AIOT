@@ -1,0 +1,77 @@
+1. ĐỌC BA TẬP DỮ LIỆU ĐÃ CHIA SẴN
+train: X=(1846, 64, 129, 1), Y=(1846,), Asthma=923, Non_Asthma=923, Playback=0
+val: X=(138, 64, 129, 1), Y=(138,), Asthma=30, Non_Asthma=108, Playback=0
+test: X=(143, 64, 129, 1), Y=(143,), Asthma=30, Non_Asthma=113, Playback=0
+
+2. CHUẨN HÓA VỀ [0, 1]
+TRAIN_MIN=-80.0, TRAIN_MAX=0.0
+
+3. KHỞI TẠO MÔ HÌNH: V1_SepConv2D_Flatten
+WARNING:tensorflow:TensorFlow GPU support is not available on native Windows for TensorFlow >= 2.11. Even if CUDA/cuDNN are installed, GPU will not be used. Please use WSL2 or the TensorFlow-DirectML plugin.
+Model: "sequential"
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+┃ Layer (type)             ┃ Output Shape       ┃    Param # ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━┩
+│ separable_conv2d         │ (None, 64, 129,    │         41 │
+│ (SeparableConv2D)        │ 16)                │            │
+├──────────────────────────┼────────────────────┼────────────┤
+│ batch_normalization      │ (None, 64, 129,    │         64 │
+│ (BatchNormalization)     │ 16)                │            │
+├──────────────────────────┼────────────────────┼────────────┤
+│ max_pooling2d            │ (None, 32, 64, 16) │          0 │
+│ (MaxPooling2D)           │                    │            │
+├──────────────────────────┼────────────────────┼────────────┤
+│ separable_conv2d_1       │ (None, 32, 64, 32) │        688 │
+│ (SeparableConv2D)        │                    │            │
+├──────────────────────────┼────────────────────┼────────────┤
+│ batch_normalization_1    │ (None, 32, 64, 32) │        128 │
+│ (BatchNormalization)     │                    │            │
+├──────────────────────────┼────────────────────┼────────────┤
+│ max_pooling2d_1          │ (None, 16, 32, 32) │          0 │
+│ (MaxPooling2D)           │                    │            │
+├──────────────────────────┼────────────────────┼────────────┤
+│ separable_conv2d_2       │ (None, 16, 32, 64) │      2,400 │
+│ (SeparableConv2D)        │                    │            │
+├──────────────────────────┼────────────────────┼────────────┤
+│ batch_normalization_2    │ (None, 16, 32, 64) │        256 │
+│ (BatchNormalization)     │                    │            │
+├──────────────────────────┼────────────────────┼────────────┤
+│ max_pooling2d_2          │ (None, 8, 16, 64)  │          0 │
+│ (MaxPooling2D)           │                    │            │
+├──────────────────────────┼────────────────────┼────────────┤
+│ flatten (Flatten)        │ (None, 8192)       │          0 │
+├──────────────────────────┼────────────────────┼────────────┤
+│ dense (Dense)            │ (None, 64)         │    524,352 │
+├──────────────────────────┼────────────────────┼────────────┤
+│ dropout (Dropout)        │ (None, 64)         │          0 │
+├──────────────────────────┼────────────────────┼────────────┤
+│ dense_1 (Dense)          │ (None, 1)          │         65 │
+└──────────────────────────┴────────────────────┴────────────┘
+ Total params: 527,994 (2.01 MB)
+ Trainable params: 527,770 (2.01 MB)
+ Non-trainable params: 224 (896.00 B)
+Class weights: {np.int64(0): np.float64(1.0), np.int64(1): np.float64(1.0)}
+
+4. BẮT ĐẦU HUẤN LUYỆN
+
+5. ĐÁNH GIÁ TẬP TEST
+5/5 ━━━━━━━━━━━━━━━━━━━━ 0s 23ms/step - accuracy: 0.9231 - loss: 0.7958 
+Test Loss: 0.7958
+Test Accuracy: 0.9231 (92.31%)
+
+Ma trận nhầm lẫn [Asthma, Non_Asthma]:
+[[ 27   3]
+ [  8 105]]
+
+Báo cáo phân loại:
+              precision    recall  f1-score   support
+
+      Asthma     0.7714    0.9000    0.8308        30
+  Non_Asthma     0.9722    0.9292    0.9502       113
+
+    accuracy                         0.9231       143
+   macro avg     0.8718    0.9146    0.8905       143
+weighted avg     0.9301    0.9231    0.9252       143
+
+
+Hoàn thành. Model và báo cáo nằm tại: d:\NCKH_2026\NCKH_2026_AIOT\AI_Training_Model\Phase2_Preprocess_&_Traning\Output_Train_V3_V1_No_Playback

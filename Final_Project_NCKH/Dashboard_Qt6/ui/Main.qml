@@ -24,6 +24,28 @@ ApplicationWindow {
     property string patientName: "Nguyễn Văn A"
     property string patientId: "Patient #001"
 
+    // Hồ sơ hiển thị cục bộ. Có thể thay bằng database/API sau này
+    // mà không ảnh hưởng luồng MQTT đang vận hành.
+    property var patientProfile: ({
+        "name": root.patientName,
+        "patientId": root.patientId,
+        "dateOfBirth": "15/08/2002",
+        "age": "24",
+        "sex": "Male",
+        "bloodGroup": "O+",
+        "phone": "0901 234 567",
+        "address": "Hà Đông, Hà Nội",
+        "diagnosis": "Bronchial asthma",
+        "severity": "Mild persistent",
+        "triggers": "Dust, cold air, exercise",
+        "allergies": "House-dust mite",
+        "medication": "Reliever inhaler as prescribed",
+        "careNote": "Follow the personal asthma action plan and monitor symptoms after exposure to known triggers.",
+        "emergencyName": "Nguyễn Thị B",
+        "emergencyRelation": "Family",
+        "emergencyPhone": "0909 876 543"
+    })
+
     // QObject C++ được đăng ký trong main.cpp. QML chỉ hiển thị dữ liệu.
     property var dataSource: dashboardBackend
 
@@ -57,6 +79,16 @@ ApplicationWindow {
     }
 
     Component {
+        id: patientProfilePageComponent
+
+        PatientProfilePage {
+            theme: appTheme
+            dataSource: root.dataSource
+            profile: root.patientProfile
+        }
+    }
+
+    Component {
         id: gatewayNetworkPageComponent
 
         GatewayNetworkPage {
@@ -78,9 +110,10 @@ ApplicationWindow {
         switch (index) {
         case 0: return overviewPageComponent
         case 1: return patientPageComponent
-        case 2: return environmentPageComponent
-        case 3: return gatewayNetworkPageComponent
-        case 4: return locationPageComponent
+        case 2: return patientProfilePageComponent
+        case 3: return environmentPageComponent
+        case 4: return gatewayNetworkPageComponent
+        case 5: return locationPageComponent
         default: return overviewPageComponent
         }
     }

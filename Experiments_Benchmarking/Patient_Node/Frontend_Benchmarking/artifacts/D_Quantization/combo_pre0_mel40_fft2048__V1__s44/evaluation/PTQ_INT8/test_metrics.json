@@ -1,0 +1,78 @@
+{
+  "status": "TEST_EVALUATION_COMPLETE",
+  "generated_utc": "2026-10-21T16:05:36.690107+00:00",
+  "split": "test",
+  "test_accessed": true,
+  "historical_test_previously_inspected": true,
+  "plan_path": "D:\\NCKH_2026\\NCKH_2026_AIOT\\Experiments_Benchmarking\\Patient_Node\\Frontend_Benchmarking\\results\\D_Quantization\\quantization_plan.json",
+  "plan_sha256": "8258e0c64948a6d2916f84089bd590f40c8b026b22f713e5bfe1845dabbe544d",
+  "confusion_matrix_labels": [
+    "Asthma=0",
+    "Non-Asthma=1"
+  ],
+  "confusion_matrix": [
+    [
+      30,
+      8
+    ],
+    [
+      4,
+      117
+    ]
+  ],
+  "io": {
+    "input": {
+      "name": "serving_default_input_layer:0",
+      "shape": [
+        1,
+        40,
+        129,
+        1
+      ],
+      "dtype": "int8",
+      "scale": 0.003921568859368563,
+      "zero_point": -128
+    },
+    "output": {
+      "name": "StatefulPartitionedCall_1:0",
+      "shape": [
+        1,
+        1
+      ],
+      "dtype": "int8",
+      "scale": 0.00390625,
+      "zero_point": -128
+    }
+  },
+  "summary_row": {
+    "plan_sha256": "8258e0c64948a6d2916f84089bd590f40c8b026b22f713e5bfe1845dabbe544d",
+    "split": "test",
+    "priority_rank": 24,
+    "model_role": "C_FULL_MATRIX",
+    "trial_id": "combo_pre0_mel40_fft2048__V1__s44",
+    "variant_id": "combo_pre0_mel40_fft2048",
+    "seed": 44,
+    "method_id": "PTQ_INT8",
+    "training_mode": "PTQ",
+    "integer_mode": "INT8",
+    "experimental": false,
+    "accuracy": 0.9245283018867925,
+    "balanced_accuracy": 0.8782079164854284,
+    "macro_f1": 0.8922764227642277,
+    "asthma_precision": 0.8823529411764706,
+    "asthma_recall": 0.7894736842105263,
+    "asthma_f1": 0.8333333333333334,
+    "non_asthma_precision": 0.936,
+    "non_asthma_recall": 0.9669421487603306,
+    "non_asthma_f1": 0.9512195121951219,
+    "asthma_fn": 8,
+    "non_asthma_fp": 4,
+    "prediction_changes_vs_fp32": 3,
+    "mean_abs_probability_delta": 0.03390498086810112,
+    "max_abs_probability_delta": 0.91336989402771,
+    "model_size_bytes": 347368,
+    "input_dtype": "int8",
+    "output_dtype": "int8",
+    "model_sha256": "c4039d5bf638fbefbe4e437cc1b902c4294074905a573775a5a92935121b0cb7"
+  }
+}

@@ -9,7 +9,7 @@
 // Khởi tạo trạng thái, phiên dữ liệu và ngắt của ba nút vật lý.
 void StateMachine_Init(void);
 
-// Xử lý cờ nút, yêu cầu hủy và một bước của máy trạng thái.
+// Xử lý cờ nút, yêu cầu hủy, Light Sleep tại STANDBY và một bước state machine.
 void StateMachine_Run(void);
 
 // Trả về state hệ thống tại thời điểm gọi.
@@ -33,7 +33,7 @@ void StateMachine_SubmitAudioQuality(Audio_Quality_t quality);
 // TinyML báo kết quả; model_score bắt buộc nằm trong khoảng 0.0 đến 1.0.
 void StateMachine_SubmitAudioResult(
     Audio_Quality_t quality,
-    Interface_TinyML_t classification,
+    Inference_TinyML_t classification,
     float model_score
 );
 
@@ -56,6 +56,10 @@ const Patient_Session_t* StateMachine_GetCurrentSession(void);
 // Mô-đun truyền tin chỉ gọi sau khi payload đã được mã hóa và packet 56 byte
 // đã được sao chép an toàn vào hàng đợi Pending ACK.
 void StateMachine_NotifyEventQueued(void);
+
+// Ket thuc session chi sau khi Gateway ACK, hoac sau mot loi gui terminal.
+// acknowledged=true cho ACK_ACCEPTED va ACK_DUPLICATE.
+void StateMachine_NotifyEventDeliveryResult(bool acknowledged);
 
 // Chỉ true khi SESSION_READY đã được chuyển thành plaintext payload 16 byte.
 bool StateMachine_IsEventPayloadReady(void);

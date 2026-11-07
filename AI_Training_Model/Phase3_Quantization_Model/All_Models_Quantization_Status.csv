@@ -1,0 +1,8 @@
+﻿version,architecture,status,exit_code,output_dir
+V1,V1_SepConv2D_Flatten,SKIPPED_COMPLETE,0,D:\NCKH_2026\NCKH_2026_AIOT\AI_Training_Model\Phase3_Quantization_Model\Output_Quantize_V1
+V2,V2_SepConv2D_GAP,SKIPPED_COMPLETE,0,D:\NCKH_2026\NCKH_2026_AIOT\AI_Training_Model\Phase3_Quantization_Model\Output_Quantize_V2
+V3,V3_HelloEdge,SKIPPED_COMPLETE,0,D:\NCKH_2026\NCKH_2026_AIOT\AI_Training_Model\Phase3_Quantization_Model\Output_Quantize_V3
+V4_0,V4_0_MobileNet,SKIPPED_COMPLETE,0,D:\NCKH_2026\NCKH_2026_AIOT\AI_Training_Model\Phase3_Quantization_Model\Output_Quantize_V4_0
+V4_1,V4_1_MobileNet,SKIPPED_COMPLETE,0,D:\NCKH_2026\NCKH_2026_AIOT\AI_Training_Model\Phase3_Quantization_Model\Output_Quantize_V4_1
+V5,V5_ERespiNet,SKIPPED_COMPLETE,0,D:\NCKH_2026\NCKH_2026_AIOT\AI_Training_Model\Phase3_Quantization_Model\Output_Quantize_V5
+V6,V6_Azizi_SepCNN_Adapted,SUCCESS,0,D:\NCKH_2026\NCKH_2026_AIOT\AI_Training_Model\Phase3_Quantization_Model\Output_Quantize_V6

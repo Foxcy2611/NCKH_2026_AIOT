@@ -1,0 +1,25 @@
+﻿label,source_group,subband_hz,n,median,q25,q75
+Asthma,source ≤4 kHz,100-200,205,62.727,34.742,77.867
+Asthma,source ≤4 kHz,200-400,205,20.981,11.901,46.945
+Asthma,source ≤4 kHz,400-800,205,5.756,0.164,16.96
+Asthma,source ≤4 kHz,800-1200,205,0.084,0.0,0.353
+Asthma,source ≤4 kHz,1200-1600,205,0.001,0.0,0.005
+Asthma,source ≤4 kHz,1600-2000,205,0.0,0.0,0.0
+Non-Asthma,source ≤4 kHz,100-200,165,77.24,67.34,84.349
+Non-Asthma,source ≤4 kHz,200-400,165,12.441,7.654,19.568
+Non-Asthma,source ≤4 kHz,400-800,165,3.833,2.074,8.209
+Non-Asthma,source ≤4 kHz,800-1200,165,0.358,0.039,1.157
+Non-Asthma,source ≤4 kHz,1200-1600,165,0.055,0.0,0.264
+Non-Asthma,source ≤4 kHz,1600-2000,165,0.013,0.0,0.05
+Asthma,source >4 kHz,100-200,23,56.946,45.691,64.219
+Asthma,source >4 kHz,200-400,23,35.801,29.164,47.366
+Asthma,source >4 kHz,400-800,23,3.527,2.099,4.42
+Asthma,source >4 kHz,800-1200,23,0.114,0.047,0.268
+Asthma,source >4 kHz,1200-1600,23,0.045,0.016,0.075
+Asthma,source >4 kHz,1600-2000,23,0.011,0.005,0.028
+Non-Asthma,source >4 kHz,100-200,488,77.697,56.84,89.039
+Non-Asthma,source >4 kHz,200-400,488,14.945,7.89,27.855
+Non-Asthma,source >4 kHz,400-800,488,1.892,0.781,5.647
+Non-Asthma,source >4 kHz,800-1200,488,0.164,0.05,0.55
+Non-Asthma,source >4 kHz,1200-1600,488,0.065,0.016,0.193
+Non-Asthma,source >4 kHz,1600-2000,488,0.018,0.006,0.051

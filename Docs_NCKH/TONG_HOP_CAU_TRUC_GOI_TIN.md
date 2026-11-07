@@ -98,7 +98,7 @@ Lưu trạng thái một phiên đo bên trong Patient Node. Đây không phải
 | `session_id` | `uint32_t` | Định danh phiên CHECK hoặc MONITOR |
 | `event_type` | `Event_Type_t` | Loại phiên đo |
 | `audio_quality` | `Audio_Quality_t` | Kết quả kiểm tra chất lượng âm thanh |
-| `classification` | `Interface_TinyML_t` | Kết quả mô hình |
+| `classification` | `Inference_TinyML_t` | Kết quả mô hình |
 | `model_score` | `float` | Điểm của lớp được chọn, khoảng `0.0–1.0` |
 | `vitals_valid` | `bool` | Cho biết HR/SpO₂ có hợp lệ hay không |
 | `heart_rate` | `uint16_t` | Nhịp tim BPM |

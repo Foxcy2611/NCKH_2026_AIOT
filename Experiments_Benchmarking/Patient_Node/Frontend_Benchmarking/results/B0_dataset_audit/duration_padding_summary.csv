@@ -1,0 +1,12 @@
+﻿split,label,label_name,source_kind,n,requires_padding_n,usable_lt_1s_n,usable_lt_3s_n,padding_ge_50pct_n,padding_ge_80pct_n,median_original_duration_s,median_usable_duration_s,median_zero_pad_pct,padding_required_pct,padding_ge_50pct_pct
+train,0,Asthma,augmentation,695,0,0,0,0,0,5.0,5.0,0.0,0.0,0.0
+train,0,Asthma,playback,64,0,0,0,0,0,7.2,5.0,0.0,0.0,0.0
+train,0,Asthma,raw,228,9,3,5,4,3,6.0,5.0,0.0,3.9474,1.7544
+train,1,Non-Asthma,environment,270,0,0,0,0,0,5.0,5.0,0.0,0.0,0.0
+train,1,Non-Asthma,playback,64,0,0,0,0,0,7.2,5.0,0.0,0.0,0.0
+train,1,Non-Asthma,raw,653,11,0,2,2,0,6.0,5.0,0.0,1.6845,0.3063
+val,0,Asthma,playback,8,0,0,0,0,0,7.2,5.0,0.0,0.0,0.0
+val,0,Asthma,raw,30,0,0,0,0,0,6.0,5.0,0.0,0.0,0.0
+val,1,Non-Asthma,environment,30,0,0,0,0,0,5.0,5.0,0.0,0.0,0.0
+val,1,Non-Asthma,playback,8,0,0,0,0,0,7.2,5.0,0.0,0.0,0.0
+val,1,Non-Asthma,raw,78,3,0,0,0,0,6.0,5.0,0.0,3.8462,0.0

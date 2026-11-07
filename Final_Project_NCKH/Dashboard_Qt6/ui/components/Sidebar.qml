@@ -108,32 +108,40 @@ Rectangle {
             theme: root.theme
             selected: root.currentPage === 1
             iconText: "♥"
-            navText: "Patient"
+            navText: "Patient monitoring"
             onSelectedByUser: root.pageRequested(1)
         }
 
         NavItem {
             theme: root.theme
             selected: root.currentPage === 2
-            iconText: "◈"
-            navText: "Environment"
+            iconText: "◉"
+            navText: "Patient profile"
             onSelectedByUser: root.pageRequested(2)
         }
 
         NavItem {
             theme: root.theme
             selected: root.currentPage === 3
-            iconText: "⌁"
-            navText: "Gateway & Network"
+            iconText: "◈"
+            navText: "Environment"
             onSelectedByUser: root.pageRequested(3)
         }
 
         NavItem {
             theme: root.theme
             selected: root.currentPage === 4
+            iconText: "⌁"
+            navText: "Gateway & Network"
+            onSelectedByUser: root.pageRequested(4)
+        }
+
+        NavItem {
+            theme: root.theme
+            selected: root.currentPage === 5
             iconText: "⌖"
             navText: "Location"
-            onSelectedByUser: root.pageRequested(4)
+            onSelectedByUser: root.pageRequested(5)
         }
 
         Item {

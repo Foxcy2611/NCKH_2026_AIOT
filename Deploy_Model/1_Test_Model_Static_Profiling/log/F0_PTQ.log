@@ -1,0 +1,78 @@
+==================================================
+ ESP32-S3 STATIC MODEL PROFILING
+==================================================
+CPU frequency : 240 MHz
+
+========== MODEL SETUP ==========
+[MODEL] Active model       : F0__V1__s43 / PTQ_INT8
+[MODEL] Flash model size   : 543976 B
+[MODEL] Resolver           : AllOpsResolver
+[MODEL] Arena capacity     : 1048576 B (1024.0 KiB, PSRAM)
+[RAM] before setup       | Internal free=364636 B, largest=327668 B | PSRAM free=8386035 B, largest=8257524 B
+[AI] Input bytes         : 8256
+[AI] Input quantization  : scale=0.0039215689, zero_point=-128
+[AI] Output quantization : scale=0.0039062500, zero_point=-128
+[AI] Arena used          : 268772 B (262.5 KiB)
+[AI] Suggested next test : 285696 B (used + 16 KiB, rounded)
+[RAM] after setup        | Internal free=364436 B, largest=327668 B | PSRAM free=7337443 B, largest=7208948 B
+[AI] AllocateTensors OK -> operator compatibility: INITIAL PASS
+
+========== WARM-UP (NOT COUNTED) ==========
+[BENCH] Warm-up OK.
+
+========== ROUND 1: DETAILED RESULTS ==========
+[01] AST_038__P17WheezingIE_85__take01.wav      | true=ASTHMA     pred=ASTHMA     | raw=-101 | P(non)=0.105469 |  1869247 us | OK
+     [PARITY] py_raw=-127 esp_raw=-101 delta=+26 LSB | py_label=ASTHMA esp_label=ASTHMA | label_match=YES
+[02] P17WheezingIU_82.wav                       | true=ASTHMA     pred=ASTHMA     | raw=-125 | P(non)=0.011719 |  1869538 us | OK
+     [PARITY] py_raw=-128 esp_raw=-125 delta=+3 LSB | py_label=ASTHMA esp_label=ASTHMA | label_match=YES
+[03] P17WheezingRL_83.wav                       | true=ASTHMA     pred=ASTHMA     | raw=-127 | P(non)=0.003906 |  1869454 us | OK
+     [PARITY] py_raw=-128 esp_raw=-127 delta=+1 LSB | py_label=ASTHMA esp_label=ASTHMA | label_match=YES
+[04] P24WheezingRS_120.wav                      | true=ASTHMA     pred=ASTHMA     | raw=-122 | P(non)=0.023438 |  1869268 us | OK
+     [PARITY] py_raw=-128 esp_raw=-122 delta=+6 LSB | py_label=ASTHMA esp_label=ASTHMA | label_match=YES
+[05] P26WheezingRL_127.wav                      | true=ASTHMA     pred=ASTHMA     | raw=-126 | P(non)=0.007812 |  1869293 us | OK
+     [PARITY] py_raw=-128 esp_raw=-126 delta=+2 LSB | py_label=ASTHMA esp_label=ASTHMA | label_match=YES
+[06] P47WheezingRS_232.wav                      | true=ASTHMA     pred=ASTHMA     | raw=-127 | P(non)=0.003906 |  1869265 us | OK
+     [PARITY] py_raw=-128 esp_raw=-127 delta=+1 LSB | py_label=ASTHMA esp_label=ASTHMA | label_match=YES
+[07] P26Pneumonia72P.wav                        | true=NON-ASTHMA pred=ASTHMA     | raw= -20 | P(non)=0.421875 |  1869460 us | WRONG
+     [PARITY] py_raw=-20 esp_raw=-20 delta=+0 LSB | py_label=ASTHMA esp_label=ASTHMA | label_match=YES
+[08] P47COPDMc_372.wav                          | true=NON-ASTHMA pred=NON-ASTHMA | raw= 127 | P(non)=0.996094 |  1869464 us | OK
+     [PARITY] py_raw=127 esp_raw=127 delta=+0 LSB | py_label=NON-ASTHMA esp_label=NON-ASTHMA | label_match=YES
+[09] P47COPDMc_374.wav                          | true=NON-ASTHMA pred=NON-ASTHMA | raw= 127 | P(non)=0.996094 |  1869074 us | OK
+     [PARITY] py_raw=127 esp_raw=127 delta=+0 LSB | py_label=NON-ASTHMA esp_label=NON-ASTHMA | label_match=YES
+[10] P47COPDPr_371.wav                          | true=NON-ASTHMA pred=NON-ASTHMA | raw= 127 | P(non)=0.996094 |  1869059 us | OK
+     [PARITY] py_raw=127 esp_raw=127 delta=+0 LSB | py_label=NON-ASTHMA esp_label=NON-ASTHMA | label_match=YES
+[11] P50COPDMc_398.wav                          | true=NON-ASTHMA pred=NON-ASTHMA | raw= 127 | P(non)=0.996094 |  1869115 us | OK
+     [PARITY] py_raw=127 esp_raw=127 delta=+0 LSB | py_label=NON-ASTHMA esp_label=NON-ASTHMA | label_match=YES
+[12] P8Pneumonia28V.wav                         | true=NON-ASTHMA pred=NON-ASTHMA | raw= 127 | P(non)=0.996094 |  1869315 us | OK
+     [PARITY] py_raw=127 esp_raw=127 delta=+0 LSB | py_label=NON-ASTHMA esp_label=NON-ASTHMA | label_match=YES
+[BENCH] Stability round 2/3...
+[BENCH] Stability round 3/3...
+
+============================================================
+ TARGET BENCHMARK SUMMARY - REPORT SECTION 10.2
+============================================================
+Model                    : F0__V1__s43 / PTQ_INT8
+Model Flash size         : 543976 B
+Tensor Arena capacity    : 1048576 B
+Tensor Arena used        : 268772 B
+Arena next test (+16KiB) : 285696 B
+Internal setup delta     : 200 B
+PSRAM reserved delta     : 1048592 B
+Min internal since boot  : 359048 B
+Min PSRAM since boot     : 7337443 B
+Peak RAM estimate        : 269060 B (arena used + peak internal delta)
+Lowest internal observed : 364348 B
+Lowest PSRAM observed    : 7337443 B
+Inference count          : 36 OK / 0 failed
+Inference latency min    : 1868776 us (1868.776 ms)
+Inference latency avg    : 1869174.6 us (1869.175 ms)
+Inference latency max    : 1869538 us (1869.538 ms)
+Static sample accuracy   : 11/12 (91.67%)
+Python/ESP32 INT8 exact  : 6/12
+Python/ESP32 label match : 12/12
+Python/ESP32 INT8 MAE    : 3.250 LSB
+Python/ESP32 INT8 maxerr : 26 LSB
+Operator compatibility   : PASS (AllOpsResolver)
+Stability (3 rounds)     : PASS
+============================================================
+[BENCH] Hoan tat. Reset board de chay lai benchmark.

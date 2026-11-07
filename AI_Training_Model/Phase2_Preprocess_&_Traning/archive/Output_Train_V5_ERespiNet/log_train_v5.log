@@ -1,0 +1,71 @@
+1. ĐỌC BA TẬP DỮ LIỆU ĐÃ CHIA SẴN
+train: X=(1974, 64, 129, 1), Y=(1974,), Asthma=987, Non_Asthma=987
+val: X=(154, 64, 129, 1), Y=(154,), Asthma=38, Non_Asthma=116
+test: X=(159, 64, 129, 1), Y=(159,), Asthma=38, Non_Asthma=121
+
+2. CHUẨN HÓA VỀ [0, 1]
+TRAIN_MIN=-80.0, TRAIN_MAX=0.0
+
+3. KHỞI TẠO MÔ HÌNH
+WARNING:tensorflow:TensorFlow GPU support is not available on native Windows for TensorFlow >= 2.11. Even if CUDA/cuDNN are installed, GPU will not be used. Please use WSL2 or the TensorFlow-DirectML plugin.
+Model: "sequential"
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┓
+┃ Layer (type)                         ┃ Output Shape                ┃         Param # ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━┩
+│ conv2d (Conv2D)                      │ (None, 64, 129, 16)         │             160 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ batch_normalization                  │ (None, 64, 129, 16)         │              64 │
+│ (BatchNormalization)                 │                             │                 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ max_pooling2d (MaxPooling2D)         │ (None, 32, 64, 16)          │               0 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ conv2d_1 (Conv2D)                    │ (None, 32, 64, 32)          │           4,640 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ batch_normalization_1                │ (None, 32, 64, 32)          │             128 │
+│ (BatchNormalization)                 │                             │                 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ max_pooling2d_1 (MaxPooling2D)       │ (None, 16, 32, 32)          │               0 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ conv2d_2 (Conv2D)                    │ (None, 16, 32, 64)          │          18,496 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ batch_normalization_2                │ (None, 16, 32, 64)          │             256 │
+│ (BatchNormalization)                 │                             │                 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ max_pooling2d_2 (MaxPooling2D)       │ (None, 8, 16, 64)           │               0 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ flatten (Flatten)                    │ (None, 8192)                │               0 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ dense (Dense)                        │ (None, 64)                  │         524,352 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ dropout (Dropout)                    │ (None, 64)                  │               0 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ dense_1 (Dense)                      │ (None, 1)                   │              65 │
+└──────────────────────────────────────┴─────────────────────────────┴─────────────────┘
+ Total params: 548,161 (2.09 MB)
+ Trainable params: 547,937 (2.09 MB)
+ Non-trainable params: 224 (896.00 B)
+Class weights: {np.int64(0): np.float64(1.0), np.int64(1): np.float64(1.0)}
+
+4. BẮT ĐẦU HUẤN LUYỆN
+
+5. ĐÁNH GIÁ TẬP TEST
+5/5 ━━━━━━━━━━━━━━━━━━━━ 0s 21ms/step - accuracy: 0.9182 - loss: 0.5179 
+Test Loss: 0.5179
+Test Accuracy: 0.9182 (91.82%)
+
+Ma trận nhầm lẫn [Asthma, Non_Asthma]:
+[[ 35   3]
+ [ 10 111]]
+
+Báo cáo phân loại:
+              precision    recall  f1-score   support
+
+      Asthma     0.7778    0.9211    0.8434        38
+  Non_Asthma     0.9737    0.9174    0.9447       121
+
+    accuracy                         0.9182       159
+   macro avg     0.8757    0.9192    0.8940       159
+weighted avg     0.9269    0.9182    0.9205       159
+
+
+Hoàn thành. Model và báo cáo nằm tại: d:\NCKH_2026\NCKH_2026_AIOT\AI_Training_Model\Phase2_Preprocess_&_Traning\Output_Train_ERespiNet

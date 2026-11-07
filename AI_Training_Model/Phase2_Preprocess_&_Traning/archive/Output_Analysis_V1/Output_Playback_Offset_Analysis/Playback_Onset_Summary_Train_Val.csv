@@ -1,0 +1,3 @@
+﻿split,total_takes,detected_takes,detection_rate,mean_onset_seconds,median_onset_seconds,std_onset_seconds,min_onset_seconds,p10_onset_seconds,p90_onset_seconds,max_onset_seconds
+train,64,64,1.000000000,1.453437500,1.215000000,0.785933400,0.320000000,1.090000000,1.940000000,5.290000000
+val,8,8,1.000000000,1.222500000,1.145000000,0.153602572,1.070000000,1.084000000,1.466000000,1.480000000

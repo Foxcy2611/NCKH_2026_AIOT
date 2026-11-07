@@ -1,0 +1,30 @@
+1. Điểm quan trọng
+
+- Playback thực sự có lead-in. 
++ Detector bắt được onset ở 100% take, median khoảng 1.21 s.
++ Nhưng onset dao động khá nhiều (std ≈ 0.746 s, P90–P10 ≈ 0.639 s), nên không thể đơn giản hard-code “bỏ 1 giây đầu” cho toàn bộ file.
+
+2. Graph accuracy thú vị
+
+offset      Train recall     Val recall
+0.00           1.00            0.50   ← rất tệ trên Val
+0.25           0.969           1.00   ← tốt nhất tổng thể
+0.50           0.953           1.00
+0.75           0.938           1.00
+1.00           0.922           1.00
+1.25           0.859           0.875
+1.50           0.781           0.75
+
+=> Report cũng chốt fixed_0.25s đứng đầu vs Train Recall 96.875%, Val tận 100%
+
+- Model hiện tại đã được train bằng playback crop từ 0 s, nên nó đã học một phần cái alignment sai này.
+=> Bởi vậy mới có nghịch lý:
++ onset vật lý thực tế ≈ 1.2 s
++ nhưng model hiện tại thích crop ≈ 0.25 s
+
+- Có 2 vấn đề chồng lên nhau
+Playback recording
+→ có lead-in không đồng đều          ← lỗi dữ liệu
+
+Dataset cũ crop từ 0 s
+→ model học luôn vị trí sai đó       ← model/data coupling

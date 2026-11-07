@@ -1,0 +1,17 @@
+﻿test_name,file,true_label,true_class,model_a,model_a_p_non_asthma,model_a_predicted_label,model_a_predicted_class,model_a_correct,model_b,model_b_p_non_asthma,model_b_predicted_label,model_b_predicted_class,model_b_correct,p_non_delta_b_minus_a
+playback_only,Asthma/test/AST_037__P11WheezingRS_52__take01.wav,0,Asthma,V2_1_With_Playback,0.000000073,0,Asthma,1,V3_1_No_Playback,0.000000214,0,Asthma,1,+0.000000141
+playback_only,Asthma/test/AST_037__P11WheezingRS_52__take02.wav,0,Asthma,V2_1_With_Playback,0.000004713,0,Asthma,1,V3_1_No_Playback,0.000004202,0,Asthma,1,-0.000000512
+playback_only,Asthma/test/AST_038__P17WheezingIE_85__take01.wav,0,Asthma,V2_1_With_Playback,0.005666752,0,Asthma,1,V3_1_No_Playback,0.968932748,1,Non_Asthma,0,+0.963265996
+playback_only,Asthma/test/AST_038__P17WheezingIE_85__take02.wav,0,Asthma,V2_1_With_Playback,0.011078170,0,Asthma,1,V3_1_No_Playback,0.990503013,1,Non_Asthma,0,+0.979424844
+playback_only,Asthma/test/AST_039__P24WheezingRS_120__take01.wav,0,Asthma,V2_1_With_Playback,0.000022185,0,Asthma,1,V3_1_No_Playback,0.999948800,1,Non_Asthma,0,+0.999926615
+playback_only,Asthma/test/AST_039__P24WheezingRS_120__take02.wav,0,Asthma,V2_1_With_Playback,0.000001103,0,Asthma,1,V3_1_No_Playback,0.995494008,1,Non_Asthma,0,+0.995492905
+playback_only,Asthma/test/AST_040__P26WheezingIU_126__take01.wav,0,Asthma,V2_1_With_Playback,0.000002520,0,Asthma,1,V3_1_No_Playback,0.000150577,0,Asthma,1,+0.000148057
+playback_only,Asthma/test/AST_040__P26WheezingIU_126__take02.wav,0,Asthma,V2_1_With_Playback,0.000019205,0,Asthma,1,V3_1_No_Playback,0.000016211,0,Asthma,1,-0.000002994
+playback_only,Non_Asthma_Disease/test/BRO_010__P12BronchialSc_58__take01.wav,1,Non_Asthma,V2_1_With_Playback,0.904651046,1,Non_Asthma,1,V3_1_No_Playback,0.996649802,1,Non_Asthma,1,+0.091998756
+playback_only,Non_Asthma_Disease/test/BRO_010__P12BronchialSc_58__take02.wav,1,Non_Asthma,V2_1_With_Playback,0.823381782,1,Non_Asthma,1,V3_1_No_Playback,0.989071190,1,Non_Asthma,1,+0.165689409
+playback_only,Non_Asthma_Disease/test/COPD_010__P47COPDPr_375__take01.wav,1,Non_Asthma,V2_1_With_Playback,0.999999821,1,Non_Asthma,1,V3_1_No_Playback,1.000000000,1,Non_Asthma,1,+0.000000179
+playback_only,Non_Asthma_Disease/test/COPD_010__P47COPDPr_375__take02.wav,1,Non_Asthma,V2_1_With_Playback,1.000000000,1,Non_Asthma,1,V3_1_No_Playback,1.000000000,1,Non_Asthma,1,+0.000000000
+playback_only,Non_Asthma_Disease/test/HEA_010__P2Healthy72S__take01.wav,1,Non_Asthma,V2_1_With_Playback,0.960599601,1,Non_Asthma,1,V3_1_No_Playback,0.999981940,1,Non_Asthma,1,+0.039382339
+playback_only,Non_Asthma_Disease/test/HEA_010__P2Healthy72S__take02.wav,1,Non_Asthma,V2_1_With_Playback,0.992428720,1,Non_Asthma,1,V3_1_No_Playback,0.999999940,1,Non_Asthma,1,+0.007571220
+playback_only,Non_Asthma_Disease/test/PNE_010__P15Pneumonia81V__take01.wav,1,Non_Asthma,V2_1_With_Playback,0.999295354,1,Non_Asthma,1,V3_1_No_Playback,1.000000000,1,Non_Asthma,1,+0.000704646
+playback_only,Non_Asthma_Disease/test/PNE_010__P15Pneumonia81V__take02.wav,1,Non_Asthma,V2_1_With_Playback,0.999414742,1,Non_Asthma,1,V3_1_No_Playback,0.999999940,1,Non_Asthma,1,+0.000585198

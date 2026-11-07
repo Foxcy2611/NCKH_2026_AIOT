@@ -4,6 +4,10 @@
 #include "Audio_IO/I2S_Mic.h"
 #include "Core_Logic/Quality_Check.h"
 
+#include "Network/EspNow_Client.h"
+#include "Power/Power_Manager.h"
+#include "Power/Node_Battery.h"
+
 #include "Vitals_UI/PPG_Sensor.h"
 #include "Vitals_UI/UI_Oled.h"
 
@@ -17,6 +21,7 @@ namespace {
     constexpr uint8_t kMonitorEventBit = 1U << 1;
     constexpr uint32_t kButtonDebounceMs = 180;
     constexpr uint8_t kMonitorVoteRounds = 3;
+    constexpr uint32_t kStandbyAutoSleepMs = 15000;
 
     Patient_State_t current_state = STATE_STANDBY;
     Patient_Session_t current_session;
@@ -34,11 +39,19 @@ namespace {
     bool monitor_enabled = false;
     bool monitor_buffer_ready_displayed = false;
     bool vitals_sensor_available = false;
+    bool vitals_sensor_awake = false;
     bool vitals_wait_logged = false;
+    bool vitals_no_finger_logged = false;
+    uint32_t vitals_started_ms = 0;
     bool has_check_press = false;
-    bool has_monitor_press = false;
     uint32_t last_check_press_ms = 0;
-    uint32_t last_monitor_press_ms = 0;
+    bool monitor_button_armed = true;
+    bool monitor_release_timing = false;
+    uint32_t monitor_release_started_ms = 0;
+    uint32_t standby_started_ms = 0;
+    bool standby_sleep_requested = false;
+    bool sleep_button_release_timing = false;
+    uint32_t sleep_button_release_started_ms = 0;
 
     // Gom toàn bộ dữ liệu vote Monitor vào một chỗ thay vì dùng 7 biến rời.
     struct Monitor_Votes_t {
@@ -46,6 +59,8 @@ namespace {
         uint8_t count[3] = {0, 0, 0};
         float score_sum[3] = {0.0f, 0.0f, 0.0f};
     } monitor_votes;
+
+    void Begin_NewSession(Event_Type_t event_type);
 
     void IRAM_ATTR ISR_BTN_Sleep(void) {
         abort_requested = true;
@@ -59,10 +74,24 @@ namespace {
         pending_button_bits |= kMonitorEventBit;
     }
 
+    void ConfigureButtonInterrupts(void) {
+        detachInterrupt(digitalPinToInterrupt(PIN_BTN_SLEEP));
+        detachInterrupt(digitalPinToInterrupt(PIN_BTN_CHECK));
+        detachInterrupt(digitalPinToInterrupt(PIN_BTN_MONITOR));
+
+        pinMode(PIN_BTN_SLEEP, INPUT_PULLUP);
+        pinMode(PIN_BTN_CHECK, INPUT_PULLUP);
+        pinMode(PIN_BTN_MONITOR, INPUT_PULLUP);
+
+        attachInterrupt(digitalPinToInterrupt(PIN_BTN_SLEEP), ISR_BTN_Sleep, FALLING);
+        attachInterrupt(digitalPinToInterrupt(PIN_BTN_CHECK), ISR_BTN_Check, FALLING);
+        attachInterrupt(digitalPinToInterrupt(PIN_BTN_MONITOR), ISR_BTN_Monitor, FALLING);
+    }
+
     const char* const kStateNames[] = {
         "STANDBY", "MANUAL_CAPTURE", "AUDIO_QUALITY", "AI_PROCESSING",
-        "AUDIO_RESULT", "VITAL_CHECK", "SESSION_READY", "MONITOR_LISTENING",
-        "MONITOR_CAPTURE", "ERROR"
+        "AUDIO_RESULT", "VITAL_CHECK", "SESSION_READY", "EVENT_SENDING",
+        "MONITOR_LISTENING", "MONITOR_CAPTURE", "ERROR"
     };
     const char* const kEventNames[] = {"MANUAL_CHECK", "MONITOR_EVENT", "STATUS"};
     const char* const kQualityNames[] = {
@@ -87,14 +116,14 @@ namespace {
         return EnumName(value, kQualityNames, "AUDIO_UNKNOWN");
     }
 
-    const char* ClassificationName(Interface_TinyML_t value) {
+    const char* ClassificationName(Inference_TinyML_t value) {
         return EnumName(value, kClassificationNames, "CLASS_UNKNOWN");
     }
 
-    int UiClassificationCode(Interface_TinyML_t value) {
-        return value >= INTERFACE_ASTHMA_LIKE && value <= INTERFACE_UNSURE
+    int UiClassificationCode(Inference_TinyML_t value) {
+        return value >= INFERENCE_ASTHMA_LIKE && value <= INFERENCE_UNSURE
             ? static_cast<int>(value)
-            : static_cast<int>(INTERFACE_UNSURE);
+            : static_cast<int>(INFERENCE_UNSURE);
     }
 
     void RenderStateOnOled(Patient_State_t state) {
@@ -135,7 +164,136 @@ namespace {
             StateName(next_state)
         );
         current_state = next_state;
+        if (current_state == STATE_STANDBY) {
+            standby_started_ms = millis();
+            standby_sleep_requested = false;
+            sleep_button_release_timing = false;
+        }
         RenderStateOnOled(current_state);
+    }
+
+    void ClearPendingButtonFlags(void) {
+        noInterrupts();
+        pending_button_bits = 0;
+        abort_requested = false;
+        interrupts();
+    }
+
+    void ShutdownVitalsSensor(void) {
+        if (vitals_sensor_available && MAX30102_IsActive()
+            && !MAX30102_Shutdown()) {
+            Serial.println("[VITALS] Cảnh báo: không shutdown sạch MAX30102.");
+        }
+        vitals_sensor_awake = false;
+    }
+
+    void WakeVitalsSensorForCheck(void) {
+        vitals_sensor_awake = false;
+        if (!vitals_sensor_available) {
+            Serial.println("[VITALS] MAX30102 không khả dụng; CHECK vẫn tiếp tục phần audio.");
+            return;
+        }
+
+        vitals_sensor_awake = MAX30102_Wake();
+        Serial.println(
+            vitals_sensor_awake
+                ? "[VITALS] MAX30102 đã bật cho phiên CHECK."
+                : "[VITALS] Không thể bật MAX30102; phiên này sẽ không có sinh hiệu."
+        );
+    }
+
+    Button_Event_t RestoreAfterLightSleep(Power_Wake_Source_t wake_source) {
+        const bool radio_ready = EspNow_Resume();
+        const bool mic_ready = I2S_Mic_Resume();
+
+        // Phiên sau khi thức dậy phải bắt đầu bằng mẫu pin mới, không kế thừa
+        // EMA của phiên trước khi Light Sleep.
+        NodeBattery_ResetFilter();
+
+        // gpio_wakeup_enable() dùng LOW_LEVEL trong lúc ngủ. Gắn lại ISR để
+        // ba nút trở về đúng cơ chế FALLING edge của state machine.
+        ConfigureButtonInterrupts();
+        OLED_SetPower(true);
+        OLED_Show_Standby();
+        standby_started_ms = millis();
+        standby_sleep_requested = false;
+        sleep_button_release_timing = false;
+        ClearPendingButtonFlags();
+
+        if (!radio_ready) {
+            Serial.println("[POWER] ESP-NOW chưa phục hồi; Node vẫn cho phép thu và suy luận.");
+        }
+
+        if (!mic_ready) {
+            OLED_Show_MicError();
+            StateMachine_StateTransition(STATE_ERROR, "I2S_RESUME_FAILED");
+            return BTN_NONE;
+        }
+
+        switch (wake_source) {
+            case POWER_WAKE_CHECK:
+                has_check_press = true;
+                last_check_press_ms = millis();
+                Serial.println("[POWER] Đánh thức bởi nút CHECK.");
+                return BTN_CHECK_PRESSED;
+
+            case POWER_WAKE_MONITOR:
+                monitor_button_armed = false;
+                monitor_release_timing = false;
+                Serial.println("[POWER] Đánh thức bởi nút MONITOR.");
+                return BTN_MONITOR_PRESSED;
+
+            case POWER_WAKE_SLEEP:
+                Serial.println("[POWER] Đánh thức bởi nút SLEEP; giữ STANDBY.");
+                return BTN_NONE;
+
+            case POWER_WAKE_NONE:
+                Serial.println("[POWER] Đã thức nhưng không xác định được nút nguồn.");
+                return BTN_NONE;
+
+            case POWER_WAKE_ERROR:
+            default:
+                Serial.println("[POWER] Light Sleep trả về lỗi.");
+                return BTN_NONE;
+        }
+    }
+
+    Button_Event_t EnterStandbyLightSleep(void) {
+        if (current_state != STATE_STANDBY || EspNow_HasPendingEvent()) {
+            standby_started_ms = millis();
+            return BTN_NONE;
+        }
+
+        ShutdownVitalsSensor();
+
+        if (!I2S_Mic_Suspend()) {
+            Serial.println("[POWER] Hủy Light Sleep vì không suspend được I2S.");
+            standby_started_ms = millis();
+            return BTN_NONE;
+        }
+
+        if (!EspNow_Suspend()) {
+            Serial.println("[POWER] Hủy Light Sleep vì ESP-NOW vẫn bận.");
+            I2S_Mic_Resume();
+            standby_started_ms = millis();
+            return BTN_NONE;
+        }
+
+        ClearPendingButtonFlags();
+        OLED_SetPower(false);
+        Serial.println("[POWER] STANDBY không hoạt động 15 giây; vào Light Sleep.");
+
+        const Power_Wake_Source_t wake_source =
+            PowerManager_EnterLightSleep();
+        return RestoreAfterLightSleep(wake_source);
+    }
+
+    void BeginManualCheck(const char* transition_reason) {
+        monitor_enabled = false;
+        WakeVitalsSensorForCheck();
+        Begin_NewSession(EVENT_MANUAL_CHECK);
+        OLED_Show_PlaceNearMouth();
+        StateMachine_StateTransition(STATE_MANUAL_CAPTURE, transition_reason);
     }
 
     void Reset_MonitorVotes(void) {
@@ -145,11 +303,14 @@ namespace {
     void Reset_CurrentSession(void) {
         memset(&current_session, 0, sizeof(current_session));
         current_session.audio_quality = AUDIO_INACTIVE;
-        current_session.classification = INTERFACE_UNSURE;
+        current_session.classification = INFERENCE_UNSURE;
         current_session.vitals_valid = false;
 
         memset(&ready_payload, 0, sizeof(ready_payload));
         payload_built = false;
+        vitals_wait_logged = false;
+        vitals_no_finger_logged = false;
+        vitals_started_ms = 0;
         Reset_MonitorVotes();
     }
 
@@ -171,14 +332,14 @@ namespace {
         );
     }
 
-    uint8_t MonitorVoteIndex(Interface_TinyML_t classification) {
-        return classification >= INTERFACE_ASTHMA_LIKE
-            && classification <= INTERFACE_UNSURE
+    uint8_t MonitorVoteIndex(Inference_TinyML_t classification) {
+        return classification >= INFERENCE_ASTHMA_LIKE
+            && classification <= INFERENCE_UNSURE
             ? static_cast<uint8_t>(classification)
-            : static_cast<uint8_t>(INTERFACE_UNSURE);
+            : static_cast<uint8_t>(INFERENCE_UNSURE);
     }
 
-    void AddMonitorVote(Interface_TinyML_t classification, float score) {
+    void AddMonitorVote(Inference_TinyML_t classification, float score) {
         const uint8_t index = MonitorVoteIndex(classification);
         ++monitor_votes.round;
         ++monitor_votes.count[index];
@@ -199,24 +360,24 @@ namespace {
         }
 
         if (tied) {
-            current_session.classification = INTERFACE_UNSURE;
+            current_session.classification = INFERENCE_UNSURE;
             current_session.model_score = 0.0f;
             Serial.println("[RESULT] Ba vote không tạo được đa số, cần kiểm tra lại.");
             return;
         }
 
-        current_session.classification = static_cast<Interface_TinyML_t>(winner);
+        current_session.classification = static_cast<Inference_TinyML_t>(winner);
         current_session.model_score =
             monitor_votes.score_sum[winner] / monitor_votes.count[winner];
 
         switch (current_session.classification) {
-            case INTERFACE_ASTHMA_LIKE:
+            case INFERENCE_ASTHMA_LIKE:
                 Serial.println("[RESULT] Cảnh báo phát hiện âm thanh giống mẫu hen.");
                 break;
-            case INTERFACE_NON_ASTHMA:
+            case INFERENCE_NON_ASTHMA:
                 Serial.println("[RESULT] Không phát hiện âm thanh giống mẫu hen.");
                 break;
-            case INTERFACE_UNSURE:
+            case INFERENCE_UNSURE:
             default:
                 Serial.println("[RESULT] Không chắc chắn, cần kiểm tra lại.");
                 break;
@@ -224,7 +385,7 @@ namespace {
     }
 
     void HandleMonitorAudioResult(
-        Interface_TinyML_t classification,
+        Inference_TinyML_t classification,
         float safe_score
     ) {
         AddMonitorVote(classification, safe_score);
@@ -235,9 +396,9 @@ namespace {
             kMonitorVoteRounds,
             ClassificationName(classification),
             safe_score * 100.0f,
-            monitor_votes.count[INTERFACE_ASTHMA_LIKE],
-            monitor_votes.count[INTERFACE_NON_ASTHMA],
-            monitor_votes.count[INTERFACE_UNSURE]
+            monitor_votes.count[INFERENCE_ASTHMA_LIKE],
+            monitor_votes.count[INFERENCE_NON_ASTHMA],
+            monitor_votes.count[INFERENCE_UNSURE]
         );
 
         OLED_Show_AI_Result(UiClassificationCode(classification));
@@ -264,6 +425,26 @@ namespace {
 
         const uint32_t now = millis();
 
+        // Một lần nhấn MONITOR chỉ được nhận lại sau khi chân nút đã ở mức HIGH
+        // ổn định đủ thời gian debounce. Cách này chặn cạnh FALLING do dội nút còn
+        // sót lại sau khi state vừa chuyển từ STANDBY sang MONITOR_LISTENING.
+        if (!monitor_button_armed) {
+            if (digitalRead(PIN_BTN_MONITOR) == HIGH) {
+                if (!monitor_release_timing) {
+                    monitor_release_timing = true;
+                    monitor_release_started_ms = now;
+                } else if (
+                    static_cast<uint32_t>(now - monitor_release_started_ms)
+                    >= kButtonDebounceMs
+                ) {
+                    monitor_button_armed = true;
+                    monitor_release_timing = false;
+                }
+            } else {
+                monitor_release_timing = false;
+            }
+        }
+
         // Nếu hai nút đến cùng lúc, CHECK được ưu tiên và sự kiện MONITOR bị bỏ.
         if ((bits & kCheckEventBit) != 0U) {
             if (!has_check_press
@@ -275,10 +456,9 @@ namespace {
         }
 
         if ((bits & kMonitorEventBit) != 0U) {
-            if (!has_monitor_press
-                || static_cast<uint32_t>(now - last_monitor_press_ms) >= kButtonDebounceMs) {
-                has_monitor_press = true;
-                last_monitor_press_ms = now;
+            if (monitor_button_armed) {
+                monitor_button_armed = false;
+                monitor_release_timing = false;
                 return BTN_MONITOR_PRESSED;
             }
         }
@@ -313,19 +493,18 @@ namespace {
         payload->heart_rate      = session.vitals_valid ? session.heart_rate : 0U;
         payload->spo2            = session.vitals_valid ? session.spo2 : 0U;
 
-        // 255 = chưa có mô-đun quản lý pin; không được hiểu nhầm thành pin 0%.
-        payload->battery_node    = 255U;
+        //const NodeBatteryReading battery = NodeBattery_Read();
+        payload->battery_node = 75U;// = battery.percent;
 
         return true;
     }
 
     void Handle_Standby(Button_Event_t event) {
         if (event == BTN_CHECK_PRESSED) {
-            monitor_enabled = false;
-            Begin_NewSession(EVENT_MANUAL_CHECK);
-            OLED_Show_PlaceNearMouth();
-            StateMachine_StateTransition(STATE_MANUAL_CAPTURE, "CHECK");
+            BeginManualCheck("CHECK");
+            return;
         } else if (event == BTN_MONITOR_PRESSED) {
+            ShutdownVitalsSensor();
             monitor_enabled = true;
             Reset_CurrentSession();
             I2S_MonitorReset();
@@ -333,6 +512,38 @@ namespace {
             OLED_Show_MonitorPreparing();
             Serial.println("[MONITOR] Đã bật; đang ổn định micro và tạo bộ đệm 1 giây.");
             StateMachine_StateTransition(STATE_MONITOR_LISTENING, "MONITOR_ON");
+            return;
+        }
+
+        // Bấm SLEEP tại STANDBY chỉ bắt đầu ngủ sau khi nút đã được nhả ổn
+        // định, tránh mức LOW còn giữ làm ESP32 thức lại ngay lập tức.
+        if (standby_sleep_requested) {
+            if (digitalRead(PIN_BTN_SLEEP) == HIGH) {
+                const uint32_t now = millis();
+                if (!sleep_button_release_timing) {
+                    sleep_button_release_timing = true;
+                    sleep_button_release_started_ms = now;
+                } else if (
+                    static_cast<uint32_t>(now - sleep_button_release_started_ms)
+                    >= kButtonDebounceMs
+                ) {
+                    const Button_Event_t wake_event = EnterStandbyLightSleep();
+                    if (current_state == STATE_STANDBY && wake_event != BTN_NONE) {
+                        Handle_Standby(wake_event);
+                    }
+                }
+            } else {
+                sleep_button_release_timing = false;
+            }
+            return;
+        }
+
+        if (static_cast<uint32_t>(millis() - standby_started_ms)
+            >= kStandbyAutoSleepMs) {
+            const Button_Event_t wake_event = EnterStandbyLightSleep();
+            if (current_state == STATE_STANDBY && wake_event != BTN_NONE) {
+                Handle_Standby(wake_event);
+            }
         }
     }
 
@@ -366,7 +577,7 @@ namespace {
     }
 
     void Handle_AIProcessing(void) {
-        Interface_TinyML_t classification = INTERFACE_UNSURE;
+        Inference_TinyML_t classification = INFERENCE_UNSURE;
         float model_score = 0.0f;
 
         Serial.printf(
@@ -390,14 +601,37 @@ namespace {
     void Handle_AudioResult(Button_Event_t event) {
         if (event == BTN_CHECK_PRESSED) {
             vitals_wait_logged = false;
+            vitals_no_finger_logged = false;
+            vitals_started_ms = millis();
             StateMachine_StateTransition(STATE_VITAL_CHECK, "CHECK_VITALS");
+
+            if (vitals_sensor_available
+                && vitals_sensor_awake
+                && !MAX30102_BeginMeasurement()) {
+                Serial.println("[VITALS] Không thể bắt đầu phiên đo sạch; bỏ qua sinh hiệu.");
+                StateMachine_SubmitVitals(false, 0, 0);
+            }
         }
     }
 
     void Handle_VitalCheck(void) {
+        const uint32_t elapsed_ms =
+            static_cast<uint32_t>(millis() - vitals_started_ms);
+
+        if (elapsed_ms >= MAX30102_MEASUREMENT_TIMEOUT_MS) {
+            Serial.printf(
+                "[VITALS] Hết thời gian %lu ms; lưu HR=0, SpO2=0, valid=false.\n",
+                static_cast<unsigned long>(MAX30102_MEASUREMENT_TIMEOUT_MS)
+            );
+            StateMachine_SubmitVitals(false, 0, 0);
+            return;
+        }
+
         if(!vitals_sensor_available){
             if(!vitals_wait_logged){
-                Serial.println("[VITALS] MAX30102 chưa sẵn sàng; nhấn SLEEP để bỏ qua.");
+                Serial.println(
+                    "[VITALS] MAX30102 chưa sẵn sàng; sẽ tự bỏ qua khi hết timeout."
+                );
                 vitals_wait_logged = true;
             }
             return;
@@ -417,16 +651,26 @@ namespace {
                 &spo2, &valid_spo2
             );
 
-            StateMachine_SubmitVitals(
-                valid_hr && valid_spo2,
-                static_cast<uint16_t>(heart_rate),
-                static_cast<uint16_t>(spo2)
-            );
+            const bool vitals_valid = valid_hr && valid_spo2;
+            if (!vitals_valid) {
+                StateMachine_SubmitVitals(false, 0, 0);
+            } else {
+                StateMachine_SubmitVitals(
+                    true,
+                    static_cast<uint16_t>(heart_rate),
+                    static_cast<uint16_t>(spo2)
+                );
+            }
 
+        } else if (state == MAX30102_STATE_NO_FINGER) {
+            if (!vitals_no_finger_logged) {
+                Serial.println("[VITALS] Chưa phát hiện ngón tay; đang chờ trong deadline chung.");
+                vitals_no_finger_logged = true;
+            }
         } else if (state == MAX30102_STATE_TIMEOUT){
-            StateMachine_SubmitVitals(false, 0, 0); 
+            Serial.println("[VITALS] FIFO/I2C không có mẫu mới trong thời gian cho phép.");
+            StateMachine_SubmitVitals(false, 0, 0);
         }
-        // Chờ mô-đun MAX30102 gọi StateMachine_SubmitVitals().
     }
 
     void Handle_SessionReady(void) {
@@ -485,9 +729,7 @@ namespace {
 
     void Handle_Error(Button_Event_t event) {
         if (event == BTN_CHECK_PRESSED) {
-            monitor_enabled = false;
-            Begin_NewSession(EVENT_MANUAL_CHECK);
-            StateMachine_StateTransition(STATE_MANUAL_CAPTURE, "ERROR_RETRY");
+            BeginManualCheck("ERROR_RETRY");
         }
     }
 
@@ -504,6 +746,7 @@ namespace {
             case STATE_AUDIO_RESULT:
             case STATE_VITAL_CHECK:
                 // Giữ kết quả âm thanh, chỉ bỏ qua phần đo sinh hiệu.
+                ShutdownVitalsSensor();
                 current_session.vitals_valid = false;
                 current_session.heart_rate = 0;
                 current_session.spo2 = 0;
@@ -511,11 +754,14 @@ namespace {
                 break;
 
             case STATE_SESSION_READY:
+            case STATE_EVENT_SENDING:
                 // Không xóa phiên đã hoàn thành đang chờ gửi.
                 break;
 
             case STATE_STANDBY:
-                // Chế độ tiết kiệm điện sẽ được bổ sung ở bước nguồn.
+                standby_sleep_requested = true;
+                sleep_button_release_timing = false;
+                Serial.println("[POWER] Đã yêu cầu Light Sleep; hãy nhả nút SLEEP.");
                 break;
 
             default:
@@ -525,6 +771,7 @@ namespace {
                     Serial.println("[MONITOR] Đã hủy; đã xóa session, vote và buffer tạm.");
                 }
                 monitor_enabled = false;
+                ShutdownVitalsSensor();
                 Reset_CurrentSession();
                 StateMachine_StateTransition(STATE_STANDBY, "SLEEP_ABORT");
                 break;
@@ -541,20 +788,27 @@ void StateMachine_Init(void) {
     monitor_buffer_ready_displayed = false;
     vitals_sensor_available = false;
     vitals_wait_logged = false;
+    vitals_no_finger_logged = false;
+    vitals_started_ms = 0;
     abort_requested = false;
     pending_button_bits = 0;
     payload_built = false;
     has_check_press = false;
-    has_monitor_press = false;
+    monitor_button_armed = true;
+    monitor_release_timing = false;
+    monitor_release_started_ms = 0;
+    standby_started_ms = millis();
+    standby_sleep_requested = false;
+    sleep_button_release_timing = false;
+    sleep_button_release_started_ms = 0;
+    vitals_sensor_awake = false;
     Reset_CurrentSession();
 
-    pinMode(PIN_BTN_SLEEP, INPUT_PULLUP);
-    pinMode(PIN_BTN_CHECK, INPUT_PULLUP);
-    pinMode(PIN_BTN_MONITOR, INPUT_PULLUP);
+    ConfigureButtonInterrupts();
 
-    attachInterrupt(digitalPinToInterrupt(PIN_BTN_SLEEP), ISR_BTN_Sleep, FALLING);
-    attachInterrupt(digitalPinToInterrupt(PIN_BTN_CHECK), ISR_BTN_Check, FALLING);
-    attachInterrupt(digitalPinToInterrupt(PIN_BTN_MONITOR), ISR_BTN_Monitor, FALLING);
+    // Nếu nút đang bị giữ lúc boot, không nhận MONITOR cho tới khi đã nhả ổn định.
+    monitor_button_armed = digitalRead(PIN_BTN_MONITOR) == HIGH;
+
 }
 
 // ------------------- API MAIN ------------------- //
@@ -586,6 +840,9 @@ void StateMachine_Run(void) {
         case STATE_SESSION_READY:
             Handle_SessionReady();
             break;
+        case STATE_EVENT_SENDING:
+            // ESP-NOW duoc xu ly tai loop(); khong thu them audio trong luc cho ACK.
+            break;
         case STATE_MONITOR_LISTENING:
             Handle_MonitorListening(event);
             break;
@@ -596,6 +853,7 @@ void StateMachine_Run(void) {
             Handle_Error(event);
             break;
         default:
+            ShutdownVitalsSensor();
             Reset_CurrentSession();
             StateMachine_StateTransition(STATE_ERROR, "INVALID_STATE");
             break;
@@ -678,6 +936,10 @@ void StateMachine_SubmitAudioQuality(Audio_Quality_t quality) {
         return;
     }
 
+    if (quality != AUDIO_OK) {
+        ShutdownVitalsSensor();
+    }
+
     if(quality == AUDIO_INACTIVE){
         Serial.println("[QUALITY FAIL] Âm thanh gần như không có hoạt động. Yêu cầu thu lại.");
         OLED_Show_QualityError("AUDIO INACTIVE");
@@ -704,7 +966,7 @@ void StateMachine_SubmitAudioQuality(Audio_Quality_t quality) {
 
 void StateMachine_SubmitAudioResult(
     Audio_Quality_t quality,
-    Interface_TinyML_t classification,
+    Inference_TinyML_t classification,
     float model_score
 ) {
     if (current_state != STATE_AI_PROCESSING) {
@@ -740,6 +1002,7 @@ void StateMachine_SubmitVitals(
     current_session.spo2 = vitals_valid
         ? static_cast<uint8_t>(constrain(spo2, static_cast<uint16_t>(0), static_cast<uint16_t>(100)))
         : 0;
+    ShutdownVitalsSensor();
     OLED_Show_FinalResult(
         UiClassificationCode(current_session.classification),
         current_session.heart_rate,
@@ -756,6 +1019,7 @@ void StateMachine_ReportError(const char* reason) {
     }
 
     const char* safe_reason = reason != nullptr ? reason : "MODULE_ERROR";
+    ShutdownVitalsSensor();
     Serial.printf(
         "[ERROR] State=%s | Lỗi=%s\n",
         StateName(current_state),
@@ -780,21 +1044,39 @@ void StateMachine_NotifyEventQueued(void) {
         return;
     }
 
-    const bool return_to_monitor =
-        monitor_enabled && current_session.event_type == EVENT_MONITOR_EVENT;
+    Serial.println("[STATE] Packet da queue; dung audio va cho ACK tu Gateway.");
+    StateMachine_StateTransition(STATE_EVENT_SENDING, "EVENT_QUEUED_WAIT_ACK");
+}
 
-    OLED_Show_DataSent();
+void StateMachine_NotifyEventDeliveryResult(bool acknowledged) {
+    if(current_state != STATE_EVENT_SENDING){
+        Serial.println("[STATE] Bo qua DeliveryResult: khong o trang thai cho ACK.");
+        return;
+    }
+
+    if(acknowledged){
+        OLED_Show_ReplyOK();
+        Serial.println("[STATE] Gateway da ACK; ket thuc session va ve STANDBY.");
+    } else {
+        OLED_Show_NoReply();
+        Serial.println("[STATE] Gui that bai sau xu ly retry/NACK; ket thuc session.");
+    }
+
     delay(700);
+    ShutdownVitalsSensor();
+    if(monitor_enabled) I2S_MonitorReset();
+    monitor_enabled = false;
+    monitor_buffer_ready_displayed = false;
     Reset_CurrentSession();
-    if(return_to_monitor) PrepareNextMonitorCapture();
     StateMachine_StateTransition(
-        return_to_monitor ? STATE_MONITOR_LISTENING : STATE_STANDBY,
-        return_to_monitor ? "EVENT_QUEUED_MONITOR" : "EVENT_QUEUED"
+        STATE_STANDBY,
+        acknowledged ? "EVENT_ACK_CONFIRMED" : "EVENT_DELIVERY_FAILED"
     );
 }
 
 void StateMachine_SetVitalsAvailable(bool available){
     vitals_sensor_available = available;
+    vitals_sensor_awake = false;
     vitals_wait_logged = false;
 }
 

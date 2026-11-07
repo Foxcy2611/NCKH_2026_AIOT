@@ -13,7 +13,7 @@
 // 1. Các trạng thái của hệ thống
 // ============================
 typedef enum {
-    // Không có phiên đang chạy; chờ người dùng bấm CHECK hoặc MONITOR.
+    // Không có phiên đang chạy; sau 15 giây không thao tác sẽ Light Sleep.
     STATE_STANDBY = 0,
 
     // CHECK thủ công: INMP441 đang ghi đúng một đoạn âm thanh 5 giây.
@@ -34,6 +34,9 @@ typedef enum {
     // Phiên đã đủ dữ liệu; chờ gửi hoặc lưu chờ gửi lại rồi mới kết thúc.
     STATE_SESSION_READY,
 
+    // Packet da duoc queue; dung moi tac vu audio cho toi khi co ACK hoac loi gui cuoi cung.
+    STATE_EVENT_SENDING,
+
     // Monitor đang nghe liên tục và chờ VAD phát hiện âm thanh phù hợp.
     STATE_MONITOR_LISTENING,
 
@@ -52,14 +55,14 @@ typedef enum {
     BTN_NONE = 0,
     BTN_CHECK_PRESSED,
     BTN_MONITOR_PRESSED,
-    BTN_SLEEP_PRESSED       // Ưu tiên cao nhất, hủy ngang tác vụ
+    BTN_SLEEP_PRESSED       // Hủy/bỏ qua; tại STANDBY yêu cầu Light Sleep
 } Button_Event_t;
 
 // ============================
 // 3. Các trạng thái đánh giá chất lượng âm thanh
 // ============================
 typedef enum {
-    AUDIO_OK = 0,       // PASS: Đạt chuẩn để interface
+    AUDIO_OK = 0,       // PASS: Đạt chuẩn để inference
     AUDIO_TOO_WEAK,     // FAIL: Biên độ quá nhỏ
     AUDIO_TOO_LOUD,     // FAIL: Nhiễu rác
     AUDIO_INACTIVE      // FAIL: Không có tiếng động hoặc số khối vượt ngưỡng quy định
@@ -69,10 +72,10 @@ typedef enum {
 // 4. Kết quả phân loại từ TinyML
 // ============================
 typedef enum {
-    INTERFACE_ASTHMA_LIKE = 0,
-    INTERFACE_NON_ASTHMA,
-    INTERFACE_UNSURE            // Không chắc chắn
-} Interface_TinyML_t;
+    INFERENCE_ASTHMA_LIKE = 0,
+    INFERENCE_NON_ASTHMA,
+    INFERENCE_UNSURE            // Không chắc chắn
+} Inference_TinyML_t;
 
 // ============================
 // 5. Phân loại sự kiện
@@ -94,7 +97,7 @@ typedef struct {
 
     // --- Nhóm Xử lý Âm thanh & AI ---
     Audio_Quality_t audio_quality;      // Đánh giá sơ bộ file ghi âm trước khi cho phép suy luận
-    Interface_TinyML_t classification;  // Nhãn kết quả cuối cùng từ mạng DS-CNN (Asthma-like / Non-Asthma)
+    Inference_TinyML_t classification;  // Nhãn kết quả cuối cùng từ mạng DS-CNN (Asthma-like / Non-Asthma)
     float model_score;                  // Xác suất tự tin của AI (dải 0.0 đến 1.0)
 
     // --- Nhóm Sinh tồn (Vitals) ---

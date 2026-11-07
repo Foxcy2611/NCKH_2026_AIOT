@@ -1,9 +1,10 @@
-"""Sinh prediction reproducible cho thí nghiệm Classification Threshold.
+"""Sinh prediction tái lập cho nghiệm thu Classification Threshold.
 
-Baseline bị khóa:
-- Feature: Phase2/Output_Preprocess.
-- Normalization: Output_Train_V1_SepConv2D_Flatten.
-- Model: V1_PTQ_INT8.tflite.
+Baseline cuối được khóa:
+- Trial: combo_pre0_mel40_fft2048__V1__s44.
+- Feature: frontend C4 (pre-emphasis=0, 40 Mel, FFT=2048).
+- Normalization: lấy từ conversion_metadata.json của đúng model lượng tử.
+- Model: combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8.
 
 Script không train, không preprocess lại WAV và không chọn threshold. Validation
 được phép chạy trực tiếp. Test chỉ được mở sau khi final_threshold.json có trạng
@@ -41,20 +42,58 @@ CLASS_NAMES = {
 BINARY_THRESHOLD = 0.5
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-WORKSPACE_DIR = SCRIPT_DIR.parents[3]
+
+
+def find_workspace_root(start: Path) -> Path:
+    """Dò root dự án thay vì phụ thuộc cố định vào số cấp thư mục cha."""
+    start = start.resolve()
+    for candidate in (start, *start.parents):
+        if (
+            (candidate / "AI_Training_Model").is_dir()
+            and (candidate / "Experiments_Benchmarking" / "Patient_Node").is_dir()
+        ):
+            return candidate
+    raise FileNotFoundError(
+        "Không tìm thấy root dự án chứa AI_Training_Model và "
+        f"Experiments_Benchmarking từ: {start}"
+    )
+
+
+WORKSPACE_DIR = find_workspace_root(SCRIPT_DIR)
 AI_DIR = WORKSPACE_DIR / "AI_Training_Model"
 PHASE2_DIR = AI_DIR / "Phase2_Preprocess_&_Traning"
-FEATURE_DIR = PHASE2_DIR / "Output_Preprocess"
-TRAIN_DIR = PHASE2_DIR / "Output_Train_V1_SepConv2D_Flatten"
-NORMALIZATION_PATH = TRAIN_DIR / "Normalization_Params.txt"
-MODEL_PATH = (
-    AI_DIR
-    / "Phase3_Quantization_Model"
-    / "Output_Quantize_V1"
-    / "models"
-    / "V1_PTQ_INT8.tflite"
+FEATURE_DIR = (
+    WORKSPACE_DIR
+    / "Experiments_Benchmarking"
+    / "Patient_Node"
+    / "Frontend_Benchmarking"
+    / "artifacts"
+    / "features"
+    / "combo_pre0_mel40_fft2048"
 )
-RESULTS_DIR = SCRIPT_DIR / "results"
+FRONTEND_DIR = (
+    WORKSPACE_DIR
+    / "Experiments_Benchmarking"
+    / "Patient_Node"
+    / "Frontend_Benchmarking"
+)
+TRIAL_ID = "combo_pre0_mel40_fft2048__V1__s44"
+METHOD_ID = "QAT_INT8"
+MODEL_ID = f"{TRIAL_ID}_{METHOD_ID}"
+MODEL_PATH = (
+    FRONTEND_DIR
+    / "artifacts"
+    / "D_Quantization"
+    / TRIAL_ID
+    / "methods"
+    / "QAT_INT8"
+    / "QAT_INT8.tflite"
+)
+CONVERSION_METADATA_PATH = MODEL_PATH.with_name("conversion_metadata.json")
+EXPECTED_MODEL_SHA256 = (
+    "d081c1cfcd873c4e2182f9d9e0f8aff07a69ea0b041cf0d6d845d3222efc46b9"
+)
+RESULTS_DIR = SCRIPT_DIR / "results" / MODEL_ID
 FINAL_CONFIG_PATH = RESULTS_DIR / "final_threshold.json"
 
 CSV_COLUMNS = [
@@ -86,27 +125,28 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def read_normalization_params(path: Path) -> tuple[float, float]:
+def read_conversion_contract(path: Path) -> tuple[float, float, dict]:
     if not path.is_file():
-        raise FileNotFoundError(f"Không tìm thấy normalization: {path}")
+        raise FileNotFoundError(f"Không tìm thấy conversion metadata: {path}")
 
-    params: dict[str, float] = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
-        if "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        params[key.strip()] = float(value.strip())
+    metadata = json.loads(path.read_text(encoding="utf-8"))
+    if metadata.get("trial_id") != TRIAL_ID or metadata.get("method_id") != METHOD_ID:
+        raise ValueError(
+            "Sai conversion contract: cần "
+            f"trial={TRIAL_ID}, method={METHOD_ID}; nhận "
+            f"trial={metadata.get('trial_id')}, method={metadata.get('method_id')}"
+        )
+    if metadata.get("tflite_sha256") != EXPECTED_MODEL_SHA256:
+        raise ValueError("SHA-256 trong conversion metadata không phải model C4 QAT đã khóa")
 
-    if "TRAIN_MIN" not in params or "TRAIN_MAX" not in params:
-        raise ValueError("Normalization_Params.txt thiếu TRAIN_MIN/TRAIN_MAX")
-
-    train_min = params["TRAIN_MIN"]
-    train_max = params["TRAIN_MAX"]
+    normalization = metadata.get("normalization", {})
+    train_min = float(normalization["train_min"])
+    train_max = float(normalization["train_max"])
     if not np.isfinite(train_min) or not np.isfinite(train_max):
         raise ValueError("TRAIN_MIN/TRAIN_MAX không hữu hạn")
     if train_max <= train_min:
         raise ValueError("TRAIN_MAX phải lớn hơn TRAIN_MIN")
-    return train_min, train_max
+    return train_min, train_max, metadata
 
 
 def load_split(split: str) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -115,8 +155,8 @@ def load_split(split: str) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         raise ValueError("Threshold experiment chỉ cho phép split val hoặc test")
 
     paths = {
-        "x": FEATURE_DIR / f"X_{split}_mel.npy",
-        "y": FEATURE_DIR / f"Y_{split}_mel.npy",
+        "x": FEATURE_DIR / f"X_{split}.npy",
+        "y": FEATURE_DIR / f"Y_{split}.npy",
         "files": FEATURE_DIR / f"Files_{split}.npy",
     }
     missing = [str(path) for path in paths.values() if not path.is_file()]
@@ -127,7 +167,7 @@ def load_split(split: str) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     y_data = np.load(paths["y"])
     files_data = np.load(paths["files"], allow_pickle=False)
 
-    if x_data.shape[1:] != (64, 129, 1):
+    if x_data.shape[1:] != (40, 129, 1):
         raise ValueError(f"Sai input shape {split}: {x_data.shape}")
     if not (len(x_data) == len(y_data) == len(files_data)):
         raise ValueError(
@@ -150,12 +190,23 @@ def require_frozen_config(path: Path) -> dict:
         raise ValueError("final_threshold.json phải có status=FROZEN trước khi chạy Test")
     if "low_threshold" not in config or "high_threshold" not in config:
         raise ValueError("final_threshold.json thiếu low_threshold/high_threshold")
+    if config.get("model_sha256") != EXPECTED_MODEL_SHA256:
+        raise ValueError(
+            "final_threshold.json không thuộc model C4 V1 s44 QAT INT8 hiện hành"
+        )
     return config
 
 
 def create_interpreter(model_path: Path):
     if not model_path.is_file():
-        raise FileNotFoundError(f"Không tìm thấy V1 PTQ INT8: {model_path}")
+        raise FileNotFoundError(f"Không tìm thấy C4 V1 s44 QAT INT8: {model_path}")
+
+    model_hash = sha256_file(model_path)
+    if model_hash != EXPECTED_MODEL_SHA256:
+        raise ValueError(
+            "Model TFLite không đúng bản C4 QAT đã khóa. "
+            f"Expected={EXPECTED_MODEL_SHA256}, actual={model_hash}"
+        )
 
     interpreter = tf.lite.Interpreter(model_path=str(model_path))
     interpreter.allocate_tensors()
@@ -167,8 +218,8 @@ def create_interpreter(model_path: Path):
             "Baseline phải là Full INT8, "
             f"nhưng input={input_detail['dtype']}, output={output_detail['dtype']}"
         )
-    if tuple(int(v) for v in input_detail["shape"]) != (1, 64, 129, 1):
-        raise ValueError(f"Model input shape không phải [1,64,129,1]: {input_detail['shape']}")
+    if tuple(int(v) for v in input_detail["shape"]) != (1, 40, 129, 1):
+        raise ValueError(f"Model input shape không phải [1,40,129,1]: {input_detail['shape']}")
 
     input_scale, input_zero = input_detail["quantization"]
     output_scale, output_zero = output_detail["quantization"]
@@ -216,7 +267,9 @@ def generate_predictions(
         require_frozen_config(final_config_path)
 
     x_data, y_data, files_data = load_split(split)
-    train_min, train_max = read_normalization_params(NORMALIZATION_PATH)
+    train_min, train_max, conversion_metadata = read_conversion_contract(
+        CONVERSION_METADATA_PATH
+    )
     interpreter, input_detail, output_detail = create_interpreter(MODEL_PATH)
 
     input_scale, input_zero = input_detail["quantization"]
@@ -275,12 +328,17 @@ def generate_predictions(
         "sample_count": len(rows),
         "asthma_count": int(np.sum(y_data == LABEL_ASTHMA)),
         "non_asthma_count": int(np.sum(y_data == LABEL_NON_ASTHMA)),
-        "model": "V1_PTQ_INT8",
+        "experiment": "Patient_Node_Final_V1_Classification_Threshold",
+        "trial_id": TRIAL_ID,
+        "model": MODEL_ID,
         "model_path": str(MODEL_PATH.relative_to(WORKSPACE_DIR)).replace("\\", "/"),
         "model_sha256": model_hash,
-        "normalization_path": str(NORMALIZATION_PATH.relative_to(WORKSPACE_DIR)).replace(
-            "\\", "/"
-        ),
+        "conversion_metadata_path": str(
+            CONVERSION_METADATA_PATH.relative_to(WORKSPACE_DIR)
+        ).replace("\\", "/"),
+        "feature_dir": str(FEATURE_DIR.relative_to(WORKSPACE_DIR)).replace("\\", "/"),
+        "feature_contract": "Frontend C4: pre=0, mel=40, fft=2048, shape 40x129x1",
+        "normalization_method": conversion_metadata["normalization"].get("method"),
         "train_min": train_min,
         "train_max": train_max,
         "input_scale": float(input_scale),
@@ -303,7 +361,7 @@ def generate_predictions(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Sinh prediction bằng baseline V1 PTQ Full INT8."
+        description="Sinh prediction bằng model cuối C4 V1 s44 QAT Full INT8."
     )
     parser.add_argument(
         "--split",

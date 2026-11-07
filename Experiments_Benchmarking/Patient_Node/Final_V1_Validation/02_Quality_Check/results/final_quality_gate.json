@@ -1,0 +1,27 @@
+{
+  "status": "FROZEN",
+  "experiment": "Patient_Node_Final_V1_Quality_Gate",
+  "selection_split": "calibration",
+  "test_used_for_selection": false,
+  "audio_contract": "PCM16 LE mono, 16000Hz, 80000 samples, PRE-normalization",
+  "metrics_contract": "Exact Quality_Check.cpp block integer-MAV, strict comparisons, priority",
+  "thresholds": {
+    "min_rms": 20.0,
+    "min_active_ratio": 0.01,
+    "max_clipped_ratio": 0.01,
+    "clip_level": 32000,
+    "active_block_threshold": 20,
+    "block_size": 256
+  },
+  "manifest_sha256": "5ca46931d0b86c69714f14ee165ec90e802da56f15c2e7d8090ac55009e00e14",
+  "calibration_metrics_sha256": "ac0946ee38acc9a70153e2e2004a5fb3a655de1e86b856babc9d9d0df784a6a7",
+  "calibration_summary": {
+    "calibration_windows": 208,
+    "calibration_sessions": 104,
+    "state_counts": {
+      "AUDIO_OK": 207,
+      "AUDIO_INACTIVE": 1
+    }
+  },
+  "selection_note": "Tái lập Quality Gate V1 từ Calibration: giữ được Playback PCM16; ngưỡng block-MAV cao hơn loại thêm Playback. Không dùng Test để retune."
+}

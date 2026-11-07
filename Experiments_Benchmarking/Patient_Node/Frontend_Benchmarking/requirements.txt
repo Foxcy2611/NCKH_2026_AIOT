@@ -1,0 +1,17 @@
+# Phân tích tín hiệu, preprocess và notebook A-E
+numpy
+scipy
+librosa==0.11.0
+matplotlib
+pandas
+scikit-learn
+nbformat
+jupyter
+
+# Lượng tử hóa/QAT tại mục D
+tensorflow-model-optimization
+tf_keras
+
+# TensorFlow không được tự động nâng phiên bản tại đây.
+# Dùng đúng phiên bản của môi trường train được ghi trong
+# artifacts/models/<trial_id>/training_metadata.json.

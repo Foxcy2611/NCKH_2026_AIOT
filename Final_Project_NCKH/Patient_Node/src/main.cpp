@@ -2,15 +2,12 @@
 #include <Wire.h>
 
 #include "Audio_IO/I2S_Mic.h"
-
 #include "Core_Logic/State_Machine.h"
-
 #include "DSP_Preprocessing/Mel_Scale.h"
-
-#include "Model_AI/Interface_Asthma.h"
+#include "Model_AI/Inference_Asthma.h"
 
 #include "Network/EspNow_Client.h"
-
+#include "Power/Node_Battery.h"
 #include "Vitals_UI/PPG_Sensor.h"
 #include "Vitals_UI/UI_Oled.h"
 
@@ -32,17 +29,24 @@ void setup(void) {
     OLED_Show_Welcome();
     Serial.println("--> [INIT] 0. Khởi tạo I2C và OLED thành công.");
 
-    if (!Init_Mel_Filterbank()) {
+    if(!Init_Mel_Filterbank()) {
         Stop_OnInitError("[ERROR] Không khởi tạo được Mel Filterbank.");
     }
     Serial.println("--> [INIT] 1. Khởi tạo Mel Filterbank thành công.");
 
-    if (!Init_Asthma_Model()) {
+    if(!Init_Asthma_Model()) {
         Stop_OnInitError("[ERROR] Không khởi tạo được model.");
     }
     Serial.println("--> [INIT] 2. Khởi tạo model TFLite thành công.");
 
-    I2S_Mic_Init(PIN_I2S_SCK, PIN_I2S_WS, PIN_I2S_SD);
+    if(!I2S_Mic_Init(PIN_I2S_SCK, PIN_I2S_WS, PIN_I2S_SD)){
+        OLED_Show_MicError();
+        Stop_OnInitError(
+            "[FATAL] INMP441 khong san sang. Kiem tra day micro va khoi dong lai Node."
+        );
+    }
+    Serial.println("[MIC READY] Vung mau khoi dong hop le.");
+    Serial.println("[MIC WARNING] Khong thao micro khi Node dang hoat dong.");
     Serial.println("--> [INIT] 3. Khởi tạo Micro thành công.");
 
     StateMachine_Init();
@@ -52,14 +56,21 @@ void setup(void) {
     StateMachine_SetVitalsAvailable(vitals_ready);
     Serial.println(
         vitals_ready
-            ? "--> [INIT] MAX30102 sẵn sàng."
+            ? "--> [INIT] MAX30102 đã cấu hình, đang shutdown và chờ phiên CHECK."
             : "[WARNING] MAX30102 chưa sẵn sàng; có thể bỏ qua đo sinh hiệu."
     );
 
-    if (!EspNow_Setup()) {
+    if (!NodeBattery_Begin()) {
+        Serial.println("[WARNING] Đọc pin đã tắt hoặc cấu hình ADC không hợp lệ.");
+    } else {
+        Serial.println("--> [INIT] 5. Cấu hình đọc pin thành công.");
+    }
+
+
+    if(!EspNow_Setup()) {
         Serial.println("[WARNING] ESP-NOW chưa sẵn sàng; payload sẽ giữ tại SESSION_READY.");
     } else {
-        Serial.println("--> [INIT] 5. Khởi tạo ESP-NOW và AES-GCM thành công.");
+        Serial.println("--> [INIT] 6. Khởi tạo ESP-NOW và AES-GCM thành công.");
     }
 
     OLED_Show_Standby();
@@ -73,14 +84,25 @@ void loop(void) {
      * Chỉ kết thúc SESSION_READY sau khi plaintext đã được mã hóa và packet
      * 56 byte được sao chép an toàn vào pending của EspNow_Client.
      */
-    if (StateMachine_IsEventPayloadReady()) {
+    if(StateMachine_IsEventPayloadReady()) {
         const Node_Payload_t* payload =
             StateMachine_GetReadyEventPayload();
 
-        if (EspNow_QueuePatientEvent(payload)) {
+        if(EspNow_QueuePatientEvent(payload)) {
             StateMachine_NotifyEventQueued();
         }
     }
 
     EspNow_Process();
+
+    if(StateMachine_GetCurrentState() == STATE_EVENT_SENDING){
+        const Event_Send_Status_t send_status = EspNow_GetStatus();
+
+        if(send_status == STATUS_ACK_CONFIRMED){
+            StateMachine_NotifyEventDeliveryResult(true);
+        } else if(send_status == STATUS_NACK_RECEIVED
+            || send_status == STATUS_RETRY_EXCEEDED){
+            StateMachine_NotifyEventDeliveryResult(false);
+        }
+    }
 }

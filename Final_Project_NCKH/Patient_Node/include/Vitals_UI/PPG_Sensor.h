@@ -14,11 +14,36 @@ enum MAX30102_State
     MAX30102_STATE_TIMEOUT       // quá lâu không có mẫu mới (I2C/ngắt lỗi)
 };
 
+// Deadline chung của một phiên đo Vitals. State machine cũng dùng đúng giá trị
+// này cho trường hợp không có ngón tay, nên mọi nhánh đều tự thoát nhất quán.
+static constexpr uint32_t MAX30102_MEASUREMENT_TIMEOUT_MS = 10000UL;
+
 /* =========================================================
  * PUBLIC API
  * ========================================================= */
 
 bool MAX30102_Init(void);
+
+// Chuyển MAX30102 từ shutdown sang SpO2 khi bắt đầu phiên CHECK. Không xóa
+// FIFO; phiên đo sạch vẫn được tạo bởi MAX30102_BeginMeasurement().
+bool MAX30102_Wake(void);
+
+// Tắt LED RED/IR và ngắt dữ liệu khi không ở phiên CHECK. Cấu hình cảm biến
+// vẫn được giữ nên lần CHECK sau không phải reset/khởi tạo lại toàn bộ chip.
+bool MAX30102_Shutdown(void);
+
+bool MAX30102_IsActive(void);
+
+/*
+ * Bắt đầu một phiên đo độc lập:
+ * - bỏ toàn bộ 75/100 mẫu còn giữ từ cửa sổ trước;
+ * - vô hiệu cache HR/SpO2 cũ;
+ * - xóa FIFO phần cứng và trạng thái interrupt;
+ * - khởi động lại mốc timeout.
+ *
+ * Trả false nếu cảm biến không thể wake hoặc không thể reset FIFO/I2C.
+ */
+bool MAX30102_BeginMeasurement(void);
 
 /* ISR chỉ set flag, không I2C / delay / Serial. */
 void IRAM_ATTR MAX30102_ISR(void);
@@ -32,9 +57,9 @@ void IRAM_ATTR MAX30102_ISR(void);
 MAX30102_State MAX30102_Poll(void);
 
 /*
- * Lấy kết quả HR/SpO2 mới nhất đã tính (chỉ có ý nghĩa ngay sau khi
- * MAX30102_Poll() trả về MAX30102_STATE_RESULT_READY, nhưng vẫn an toàn
- * gọi bất cứ lúc nào để đọc giá trị cache gần nhất).
+ * Lấy kết quả HR/SpO2 mới nhất đã tính. Chỉ có ý nghĩa khi cờ valid tương
+ * ứng khác 0. Khi bắt đầu phiên mới, mất ngón tay, timeout hoặc thuật toán
+ * trả kết quả invalid, giá trị HR/SpO2 được trả về là 0 thay vì sentinel/NaN.
  */
 void MAX30102_GetLastResult(
     int32_t *heartRate,

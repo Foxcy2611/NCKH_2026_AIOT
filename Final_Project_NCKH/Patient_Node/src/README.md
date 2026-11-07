@@ -29,7 +29,7 @@ Patient_Node/
 │   ├── Quality_Check.cpp
 │   ├── DSP_Filter.cpp
 │   ├── Mel_Scale.cpp
-│   ├── Interface_Asthma.cpp
+│   ├── Inference_Asthma.cpp
 │   ├── PPG_Sensor.cpp
 │   ├── Secure_Sender.cpp
 │   ├── Secure_Response_Decryptor.cpp
@@ -56,7 +56,7 @@ Các file `.cpp` trong `src/` được PlatformIO biên dịch trực tiếp. Fi
 4. Micro I2S và các buffer âm thanh trong PSRAM.
 5. State machine, metadata và nút nhấn.
 6. ESP-NOW cùng hai chiều AES-GCM.
-7. I²C, OLED và MAX30102 sẽ được nối thêm sau.
+7. Bus I²C và OLED; MAX30102 được xác minh/cấu hình rồi đưa về shutdown cho tới khi bắt đầu CHECK.
 
 `loop()` hiện thực hiện ba việc liên tục:
 
@@ -79,7 +79,7 @@ Là thuật toán lõi quản lý toàn bộ tiến trình của Node:
 - Điều phối CHECK thủ công và MONITOR tự động.
 - Tổng hợp ba lần dự đoán trong MONITOR.
 - Tạo `Node_Payload_t` khi phiên hoàn tất.
-- Trở về `STANDBY` hoặc tiếp tục `MONITOR_LISTENING` sau khi sự kiện đã vào pending.
+- Sau khi gửi xong CHECK hoặc bộ ba vote MONITOR, chờ ACK/kết thúc retry rồi trở về `STANDBY`.
 
 Các state chính:
 
@@ -106,8 +106,10 @@ Phụ trách micro INMP441:
 - Chuyển mẫu 32 bit của INMP441 về mẫu signed 16 bit.
 - Cấp phát audio buffer, float buffer và pre-roll buffer trong PSRAM.
 - CHECK thủ công: thu 80.000 mẫu, tương đương 5 giây.
-- MONITOR: đọc từng chunk, tính VAD và duy trì bộ đệm trước kích hoạt 1 giây.
-- Sau khi VAD kích hoạt, ghép pre-roll với phần âm thanh tiếp theo để tạo đủ đoạn 5 giây.
+- MONITOR: đọc từng chunk, tính VAD và duy trì ring lịch sử 1 giây.
+- Chunk active đầu tiên là candidate onset. Sau 4 chunk active liên tiếp, hệ
+  thống truy hồi audio từ onset rồi thu tiếp để đủ đúng 5 giây tính từ onset;
+  không ghép toàn bộ 1 giây lịch sử vào đầu mẫu.
 - Cung cấp buffer cho kiểm tra chất lượng và tiền xử lý.
 
 CHECK thủ công thu theo vòng lặp chặn cho tới khi đủ mẫu, nhưng vẫn kiểm tra yêu cầu `SLEEP` sau mỗi chunk. MONITOR sử dụng các hàm từng bước để không khóa vòng lặp chính.
@@ -136,7 +138,7 @@ Thực hiện các bước xử lý tín hiệu trước Mel-Spectrogram:
 
 1. Đổi mẫu `int16_t` về `float`.
 2. Lọc Butterworth trong dải quan tâm.
-3. Pre-emphasis với hệ số hiện hành `0.97`.
+3. Không áp dụng pre-emphasis vì frontend C4 dùng hệ số `0.0`.
 
 Trạng thái bộ lọc được reset trước mỗi đoạn âm thanh để các phiên không ảnh hưởng lẫn nhau.
 
@@ -145,9 +147,9 @@ Trạng thái bộ lọc được reset trước mỗi đoạn âm thanh để c
 Chuyển tín hiệu âm thanh thành đầu vào của mô hình:
 
 - Sample rate: 16 kHz.
-- FFT: 1.024 điểm.
+- FFT: 2.048 điểm.
 - Hop length: 625 mẫu.
-- 64 Mel bins.
+- 40 Mel bins.
 - 129 frames.
 - Dải tần: 100–2.000 Hz.
 - Dùng frame căn giữa giống pipeline Python.
@@ -155,12 +157,12 @@ Chuyển tín hiệu âm thanh thành đầu vào của mô hình:
 
 Mel filter bank được cấp phát trong PSRAM bằng `Init_Mel_Filterbank()`.
 
-### `Interface_Asthma.cpp`
+### `Inference_Asthma.cpp`
 
 Phụ trách mô hình DS-CNN đã lượng tử INT8:
 
 - Cấp phát Tensor Arena 270 KiB trong PSRAM.
-- Kiểm tra model, kiểu tensor và kích thước đầu vào `[1, 64, 129, 1]`.
+- Kiểm tra model, kiểu tensor và kích thước đầu vào `[1, 40, 129, 1]`.
 - Chuẩn hóa Mel dB từ miền huấn luyện `[-80, 0]` về `[0, 1]`.
 - Lượng tử input sang `int8_t` theo scale và zero-point của tensor.
 - Gọi TFLite Micro `Invoke()`.
@@ -169,17 +171,17 @@ Phụ trách mô hình DS-CNN đã lượng tử INT8:
 Ngưỡng kết luận hiện hành:
 
 ```text
-P(non-asthma) <= 0.45  → ASTHMA_LIKE
-P(non-asthma) >= 0.65  → NON_ASTHMA
-0.45 < P < 0.65        → UNSURE
+P(non-asthma) <= 0.57  → ASTHMA_LIKE
+P(non-asthma) >= 0.77  → NON_ASTHMA
+0.47 < P < 0.77        → UNSURE
 ```
 
-Giá trị đưa về state machine dùng `Interface_TinyML_t`:
+Giá trị đưa về state machine dùng `Inference_TinyML_t`:
 
 ```text
-0 = INTERFACE_ASTHMA_LIKE
-1 = INTERFACE_NON_ASTHMA
-2 = INTERFACE_UNSURE
+0 = INFERENCE_ASTHMA_LIKE
+1 = INFERENCE_NON_ASTHMA
+2 = INFERENCE_UNSURE
 ```
 
 Mọi mô-đun hiển thị hoặc truyền dữ liệu phải dùng đúng ánh xạ này.
@@ -194,13 +196,30 @@ Phụ trách MAX30102 theo cách gọi từng bước:
 - Thu đủ mẫu và tính nhịp tim/SpO₂.
 - Trả kết quả hoặc timeout cho state machine.
 
+`MAX30102_Init()` xác minh/cấu hình sensor một lần khi boot rồi đưa sensor về shutdown.
+Khi bắt đầu CHECK, state machine gọi `MAX30102_Wake()`; khi vào `VITAL_CHECK`, nó gọi
+`MAX30102_BeginMeasurement()` để xóa cửa sổ 75/100 mẫu cũ, vô hiệu cache kết quả và
+flush FIFO phần cứng. Kết thúc/hủy/lỗi CHECK gọi `MAX30102_Shutdown()`. Vì vậy cửa sổ
+trượt 75/25 chỉ có ý nghĩa trong cùng một phiên; dữ liệu không đi qua ranh giới hai CHECK.
+
+Deadline toàn phiên là 10 giây, áp dụng chung cho `NO_FINGER`, FIFO/I²C không tiến triển và
+quá trình thu chưa hoàn tất. Hết deadline, phiên vẫn hoàn thành với
+`vitals_valid = 0`, `heart_rate = 0`, `spo2 = 0`.
+
 State machine chỉ gọi `MAX30102_Poll()` sau khi khởi tạo cảm biến thành công và đã gọi:
 
 ```cpp
 StateMachine_SetVitalsAvailable(true);
 ```
 
-Khi chưa có MAX30102, người dùng có thể nhấn `SLEEP` tại bước sinh hiệu để bỏ qua. Payload vẫn hợp lệ với `vitals_valid = 0`, `heart_rate = 0`, `spo2 = 0`.
+Khi chưa có MAX30102, người dùng có thể nhấn `SLEEP` để bỏ qua ngay hoặc chờ deadline
+10 giây. Payload vẫn hợp lệ với `vitals_valid = 0`, `heart_rate = 0`, `spo2 = 0`.
+
+### `Power_Manager.cpp`
+
+Chỉ được gọi tại STANDBY sau 15 giây không thao tác hoặc sau yêu cầu SLEEP thủ công.
+Module cấu hình GPIO4/5/6 làm nguồn `EXT1 ANY_LOW` và gọi ESP32-S3 Light Sleep. State
+machine chịu trách nhiệm tắt/khôi phục OLED, I2S, MAX30102 và ESP-NOW xung quanh lời gọi.
 
 ### `Secure_Sender.cpp`
 
@@ -275,7 +294,7 @@ Khi tích hợp cần bảo đảm:
 - Hàm vẽ không dùng `delay()` dài.
 - Chỉ đổi màn hình khi state hoặc dữ liệu cần hiển thị thay đổi.
 - Hoạt ảnh được giới hạn tốc độ, không làm chậm thu âm, TinyML hoặc ESP-NOW.
-- Ánh xạ kết quả AI đúng với `Interface_TinyML_t`.
+- Ánh xạ kết quả AI đúng với `Inference_TinyML_t`.
 
 ---
 
@@ -316,6 +335,7 @@ AES-GCM đã cung cấp kiểm tra toàn vẹn và xác thực packet. `Checksum
 ```text
 STANDBY
 → người dùng nhấn CHECK
+→ bật MAX30102 cho riêng phiên CHECK
 → tạo session EVENT_MANUAL_CHECK
 → MANUAL_CAPTURE: thu 5 giây
 → AUDIO_QUALITY: kiểm tra chất lượng
@@ -342,7 +362,18 @@ Sau khi có kết quả:
 ```text
 Nhấn CHECK
 → VITAL_CHECK
-→ MAX30102 trả kết quả
+→ reset buffer/cache và flush FIFO của phiên trước
+→ đặt ngón tay, giữ yên
+→ MAX30102 trả kết quả hợp lệ
+→ SESSION_READY
+```
+
+Nếu không có ngón tay, FIFO/I²C không tiến triển hoặc không đủ kết quả trong 10 giây:
+
+```text
+VITAL_CHECK
+→ timeout
+→ vitals_valid = 0, heart_rate = 0, spo2 = 0
 → SESSION_READY
 ```
 
@@ -362,6 +393,7 @@ Tạo plaintext 16 byte
 → lưu pending
 → gửi ESP-NOW
 → state machine trở về STANDBY
+→ MAX30102 đã shutdown
 ```
 
 CHECK chỉ suy luận một lần, không vote ba lần.
@@ -374,15 +406,16 @@ CHECK chỉ suy luận một lần, không vote ba lần.
 STANDBY
 → nhấn MONITOR
 → MONITOR_LISTENING
-→ micro warmup, duy trì pre-roll 1 giây và chạy VAD
+→ micro warmup, duy trì ring lịch sử 1 giây và chạy VAD
 ```
 
 Khi VAD kích hoạt:
 
 ```text
+→ truy hồi audio từ chunk active đầu tiên (khoảng 64 ms)
 → tạo hoặc tiếp tục session EVENT_MONITOR_EVENT
 → MONITOR_CAPTURE
-→ hoàn thiện đoạn thu 5 giây
+→ thu tiếp đến đủ 5 giây tính từ onset
 → AUDIO_QUALITY
 ```
 
@@ -403,9 +436,10 @@ Sau ba vote hợp lệ:
 - Trường hợp `1-1-1` trả về `UNSURE`.
 - MONITOR không yêu cầu đo MAX30102.
 
-Sau đó hệ thống tạo, mã hóa và enqueue sự kiện rồi tự quay lại `MONITOR_LISTENING`.
-
-Nhấn MONITOR lần nữa để tắt chế độ này và trở về `STANDBY`.
+Sau đó hệ thống tạo, mã hóa và enqueue đúng một sự kiện. Khi Gateway ACK thành công
+hoặc chu kỳ retry kết thúc, Node trở về `STANDBY`; firmware không tự mở thêm một chu kỳ
+ba vote mới. Trong lúc chưa đủ ba vote, người dùng vẫn có thể nhấn MONITOR lần nữa để
+hủy chế độ và trở về `STANDBY`.
 
 ---
 
@@ -452,7 +486,8 @@ Sequence chỉ tăng khi tạo packet mới. Retry không được gọi `Packet
 7. Không coi RF send callback là ACK của Gateway.
 8. OLED không được dùng `delay()` làm dừng vòng lặp chính.
 9. OLED và MAX30102 phải dùng pin từ `Board_Pinout.h`, không khai báo chân riêng trong thư viện.
-10. Khi thay đổi `Secure_Protocol.h`, Node và Gateway phải cùng dùng đúng một định nghĩa cấu trúc.
+10. Chỉ STANDBY được Light Sleep; không ngủ khi có pending/ACK hoặc đang chạy CHECK/MONITOR.
+11. Khi thay đổi `Secure_Protocol.h`, Node và Gateway phải cùng dùng đúng một định nghĩa cấu trúc.
 
 ---
 
@@ -461,7 +496,7 @@ Sequence chỉ tăng khi tạo packet mới. Retry không được gọi `Packet
 Đã có và đã build chung trong Patient Node:
 
 - Thu âm CHECK và MONITOR.
-- Pre-roll 1 giây và VAD.
+- Ring lịch sử 1 giây, xác nhận VAD 4 chunk và truy hồi candidate onset.
 - Kiểm tra chất lượng âm thanh.
 - Pipeline DSP/Mel tương ứng pipeline Python.
 - DS-CNN INT8 trên TFLite Micro.
@@ -477,6 +512,6 @@ Chưa hoàn tất kiểm thử tích hợp:
 - MAX30102 trên phần cứng thật.
 - MAC, Gateway ID và khóa AES triển khai thật.
 - Vòng truyền Node ↔ Gateway bằng hai bo mạch thật.
-- Battery và quản lý nguồn.
+- Đo dòng thực tế và kiểm thử lặp Light Sleep/wake trên phần cứng.
 
 Sau khi OLED được ghép và kiểm thử không gây trễ, Patient Node có thể được chốt ở mức **hoàn thiện mã nguồn, chờ kiểm thử tích hợp Gateway/MAX30102**.

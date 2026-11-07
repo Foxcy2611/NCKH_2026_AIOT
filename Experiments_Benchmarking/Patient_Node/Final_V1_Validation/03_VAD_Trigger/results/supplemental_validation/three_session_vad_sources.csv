@@ -1,0 +1,4 @@
+﻿source,duration_s,mean_mav,median_mav,max_mav,triggers,triggers_per_min,complete_in_wav
+Silence cũ,300.0,48.821333333333335,44.0,355,15,3.0,14
+Silence mới,300.0,4.57712,4.0,110,0,0.0,0
+Room noise 02,60.0,116.39306666666667,67.0,2854,9,9.0,8

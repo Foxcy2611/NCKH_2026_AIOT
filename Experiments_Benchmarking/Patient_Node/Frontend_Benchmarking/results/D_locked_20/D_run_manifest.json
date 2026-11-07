@@ -1,0 +1,25 @@
+{
+  "status": "D_TEST_COMPLETE",
+  "created_utc": "2026-10-13T06:57:16.478476+00:00",
+  "freeze_sha256": "e0274a8321dfdefd83188ab784b5d7619c3f8c08c2273666607248ae7e67f807",
+  "registered_trial_count": 20,
+  "test_wav_count": 159,
+  "test_fingerprint": "bc0e3b77577cee7bf407131b4ad623e63a2ac8f2687c908b5b27268bd7c1a965",
+  "primary_trial": "combo_pre0_mel40__V1__s43",
+  "baseline_trial": "F0__V1__s43",
+  "historical_test_previously_inspected": true,
+  "not_pristine_independent_holdout": true,
+  "tensorflow_version": "2.21.0",
+  "librosa_version": "0.11.0",
+  "scipy_version": "1.17.1",
+  "numpy_version": "2.4.4",
+  "logmel_raw_dtype": "float64",
+  "normalized_input_dtype": "float32",
+  "threshold": 0.5,
+  "result_sha256": {
+    "D_test_summary.csv": "247146dc2a957409b766d481efca433967ebb0ffa886b0ba93696a031247a886",
+    "D_test_predictions.csv": "922a4792354153a602e2fc37d4dd96dd05a335d6d931d29168cfa3d670444f6e",
+    "D_test_metadata.csv": "d49da196cb793ea82de6c876b28e02e0f0d77a5a53d52fc76abf662d196c6fb5",
+    "D_paired_vs_primary.csv": "906ddcbe5a857fae83a5bd7e06d5cced504370bf20baec12d04c2fe37236361c"
+  }
+}

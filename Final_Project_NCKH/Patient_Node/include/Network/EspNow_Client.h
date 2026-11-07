@@ -26,6 +26,12 @@ bool EspNow_Setup(void);
 // Kiểm tra ESP-NOW sẵn sàng hay chưa
 bool EspNow_IsReady(void);
 
+// Chỉ được gọi khi không còn packet pending. Tắt ESP-NOW/Wi-Fi trước Light Sleep.
+bool EspNow_Suspend(void);
+
+// Khởi tạo lại Wi-Fi channel, peer và callback sau Light Sleep.
+bool EspNow_Resume(void);
+
 // Đưa sự kiện vào vùng chờ
 bool EspNow_QueuePatientEvent(const Node_Payload_t* payload);
 

@@ -1,0 +1,13 @@
+Accuracy: 0.974026
+
+Class              Precision      Recall    F1-score   Support
+Asthma                0.9250      0.9737      0.9487        38
+Non-Asthma            0.9912      0.9741      0.9826       116
+accuracy                                      0.9740       154
+macro avg             0.9581      0.9739      0.9657       154
+weighted avg          0.9749      0.9740      0.9742       154
+
+Confusion matrix (actual rows × predicted columns):
+                       Pred Asthma  Pred Non-Asthma
+Actual Asthma                  37                 1
+Actual Non-Asthma               3               113

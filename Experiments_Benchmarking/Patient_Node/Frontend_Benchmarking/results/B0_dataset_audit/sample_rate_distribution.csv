@@ -1,0 +1,15 @@
+﻿split,label,label_name,source_kind,original_sr_hz,n,requires_padding_n,usable_lt_1s_n,usable_lt_3s_n,padding_ge_50pct_n,padding_ge_80pct_n
+train,0,Asthma,augmentation,16000,695,0,0,0,0,0
+train,0,Asthma,playback,16000,64,0,0,0,0,0
+train,0,Asthma,raw,4000,205,9,3,5,4,3
+train,0,Asthma,raw,44100,23,0,0,0,0,0
+train,1,Non-Asthma,environment,16000,270,0,0,0,0,0
+train,1,Non-Asthma,playback,16000,64,0,0,0,0,0
+train,1,Non-Asthma,raw,4000,165,1,0,0,0,0
+train,1,Non-Asthma,raw,44100,488,10,0,2,2,0
+val,0,Asthma,playback,16000,8,0,0,0,0,0
+val,0,Asthma,raw,4000,30,0,0,0,0,0
+val,1,Non-Asthma,environment,16000,30,0,0,0,0,0
+val,1,Non-Asthma,playback,16000,8,0,0,0,0,0
+val,1,Non-Asthma,raw,4000,1,0,0,0,0,0
+val,1,Non-Asthma,raw,44100,77,3,0,0,0,0

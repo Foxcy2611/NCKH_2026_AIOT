@@ -60,6 +60,13 @@ Yêu cầu khi build:
 - `has_patient_event = false`: `patient_event` phải là `null`; chỉ cập nhật Gateway
   và không xóa Patient Event gần nhất mà Qt6 đang giữ.
 - Trường cảm biến chỉ được dùng khi bit tương ứng trong `sensor_valid_mask` hợp lệ.
-- `vitals_valid = false`: HR và SpO2 được đánh dấu không hợp lệ.
+- `vitals_valid` mô tả **Patient Event hiện tại** có phép đo Vitals mới hay không;
+  cờ `false` không xóa HR/SpO2 hợp lệ gần nhất đang được Dashboard giữ.
+- Dashboard cache HR và SpO2 độc lập trong RAM. Một trường chỉ cập nhật khi JSON gửi
+  số hợp lệ (`heart_rate > 0`, `1 <= spo2 <= 100`); `null`, `0` hoặc giá trị ngoài miền
+  giữ nguyên cache trước đó.
+- `eventVitalsValid` giữ nguyên ý nghĩa cờ từ Node/Gateway. `heartRateAvailable` và
+  `spo2Available` điều khiển hiển thị từng chỉ số; vì vậy Monitor có thể cập nhật kết quả
+  AI mà không làm mất Vitals của lần CHECK gần nhất.
 - Classification: `0 = Asthma-like`, `1 = Non-asthma`, `2 = Unsure`.
 - Dữ liệu lịch sử trên biểu đồ giữ tối đa 14 điểm gần nhất.

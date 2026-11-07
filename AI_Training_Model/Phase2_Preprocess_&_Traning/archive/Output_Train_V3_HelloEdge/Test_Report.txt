@@ -1,0 +1,16 @@
+Test Loss: 0.534466
+Test Accuracy: 0.861635
+
+Confusion Matrix [Asthma, Non_Asthma]:
+[[ 32   6]
+ [ 16 105]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      Asthma     0.6667    0.8421    0.7442        38
+  Non_Asthma     0.9459    0.8678    0.9052       121
+
+    accuracy                         0.8616       159
+   macro avg     0.8063    0.8549    0.8247       159
+weighted avg     0.8792    0.8616    0.8667       159

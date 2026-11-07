@@ -1,0 +1,5 @@
+numpy
+scikit-learn
+tensorflow
+tensorflow-model-optimization
+tf_keras
