@@ -1,0 +1,99 @@
+{
+  "pipeline_name": "Dataset_V3_C4_No_Playback",
+  "dataset": "Dataset_Chia_V3",
+  "playback_included": false,
+  "architecture": "V1_SepConv2D_Flatten",
+  "seed": 44,
+  "frontend_variant_id": "combo_pre0_mel40_fft2048",
+  "frontend_config_sha256": "5ae8a2c91c92b58653d899ddec056485787b6307db2cc0c350382b4ded2576f8",
+  "input_shape": [
+    40,
+    129,
+    1
+  ],
+  "parameter_count": 331386,
+  "epochs_requested": 100,
+  "epochs_completed": 24,
+  "batch_size": 32,
+  "best_epoch_by_val_loss": 14,
+  "best_val_loss": 0.05548003688454628,
+  "best_val_accuracy": 0.97826087474823,
+  "test_loss": 0.5480664968490601,
+  "test_accuracy": 0.9020978808403015,
+  "normalization": {
+    "source": "train_only",
+    "train_min": -80.0,
+    "train_max": 0.0
+  },
+  "selection_monitor": "val_loss",
+  "test_used_for_training": false,
+  "preprocess_metadata": {
+    "pipeline_name": "Dataset_V3_C4_No_Playback",
+    "dataset": "Dataset_Chia_V3",
+    "playback_included": false,
+    "frontend_variant_id": "combo_pre0_mel40_fft2048",
+    "frontend_config_sha256": "5ae8a2c91c92b58653d899ddec056485787b6307db2cc0c350382b4ded2576f8",
+    "label_mapping": {
+      "Asthma": 0,
+      "Non_Asthma": 1
+    },
+    "input_shape": [
+      40,
+      129,
+      1
+    ],
+    "preprocess_config": {
+      "sample_rate_hz": 16000,
+      "duration_seconds": 5.0,
+      "samples": 80000,
+      "low_cut_hz": 100.0,
+      "high_cut_hz": 2000.0,
+      "filter_order": 5,
+      "pre_emphasis": 0.0,
+      "n_mels": 40,
+      "hop_length": 625,
+      "n_fft": 2048,
+      "window": "hann",
+      "center": true,
+      "pad_mode": "constant",
+      "power": 2.0,
+      "mel_scale": "slaney",
+      "top_db": 80.0
+    },
+    "splits": {
+      "train": {
+        "samples": 1846,
+        "asthma": 923,
+        "non_asthma": 923,
+        "feature_shape": [
+          1846,
+          40,
+          129,
+          1
+        ]
+      },
+      "val": {
+        "samples": 138,
+        "asthma": 30,
+        "non_asthma": 108,
+        "feature_shape": [
+          138,
+          40,
+          129,
+          1
+        ]
+      },
+      "test": {
+        "samples": 143,
+        "asthma": 30,
+        "non_asthma": 113,
+        "feature_shape": [
+          143,
+          40,
+          129,
+          1
+        ]
+      }
+    }
+  }
+}

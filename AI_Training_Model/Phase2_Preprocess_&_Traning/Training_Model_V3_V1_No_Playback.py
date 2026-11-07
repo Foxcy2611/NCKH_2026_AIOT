@@ -4,7 +4,7 @@ Tên script: Training_Model_V3_V1_No_Playback.py
 
 Tác dụng:
 - Nạp ba bộ X/Y/Files sinh từ Dataset_Chia_V3 (đã bỏ toàn bộ playback), sau đó
-  huấn luyện lại đúng kiến trúc V1 SepConv2D + Flatten.
+  huấn luyện lại kiến trúc V1 SepConv2D + Flatten bằng C4 và seed 44.
 - Đây là thí nghiệm đối chứng V1 có/không có playback; không dùng kiến trúc V5.
 - Chọn model tốt nhất theo val_loss, dừng sớm, giảm learning rate và lưu báo
   cáo/ma trận nhầm lẫn trên test.
@@ -13,10 +13,12 @@ Tác dụng:
 - Không gọi train_test_split trên folder đã chứa file tăng cường.
 - Min/max chuẩn hóa chỉ lấy từ train rồi áp dụng nguyên vẹn cho val/test.
 - Val dùng để chọn model; test chỉ dùng để lập báo cáo sau khi model đã chốt.
+- Kiểm tra Preprocess_Metadata.json và config SHA-256 trước epoch đầu tiên.
 ===============================================================================
 """
 
 import importlib
+import json
 import os
 import sys
 
@@ -37,7 +39,27 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 
-SEED = 42
+# C4 s44 là cấu hình/seed đã chốt từ Frontend_Benchmarking.
+PIPELINE_NAME = "Dataset_V3_C4_No_Playback"
+FRONTEND_VARIANT_ID = "combo_pre0_mel40_fft2048"
+FRONTEND_CONFIG_SHA256 = (
+    "5ae8a2c91c92b58653d899ddec056485787b6307db2cc0c350382b4ded2576f8"
+)
+EXPECTED_PREPROCESS_CONFIG = {
+    "sample_rate_hz": 16000,
+    "duration_seconds": 5.0,
+    "samples": 80000,
+    "low_cut_hz": 100.0,
+    "high_cut_hz": 2000.0,
+    "filter_order": 5,
+    "pre_emphasis": 0.0,
+    "n_mels": 40,
+    "hop_length": 625,
+    "n_fft": 2048,
+}
+EXPECTED_INPUT_SHAPE = (40, 129, 1)
+
+SEED = 44
 EPOCHS = 100
 BATCH_SIZE = 32
 
@@ -76,11 +98,63 @@ DIR_OUT_MODEL = os.path.join(
     ARCHITECTURE_CONFIG[MODEL_ARCHITECTURE]["output_dir"]
 )
 MODEL_PATH = os.path.join(DIR_OUT_MODEL, "Model_Asthma_V3_V1_No_Playback.keras")
+PREPROCESS_METADATA_PATH = os.path.join(DIR_FEATURES, "Preprocess_Metadata.json")
 
 os.makedirs(DIR_OUT_MODEL, exist_ok=True)
 
 tf.keras.utils.set_random_seed(SEED)
 np.random.seed(SEED)
+
+
+def load_and_validate_preprocess_metadata():
+    """Chặn train nếu feature V3 không được sinh từ đúng cấu hình C4."""
+    if not os.path.exists(PREPROCESS_METADATA_PATH):
+        raise FileNotFoundError(
+            "Thiếu Preprocess_Metadata.json. Hãy chạy lại "
+            "Preprocess_Audio_V3_No_Playback.py bằng cấu hình C4 trước khi train."
+        )
+
+    with open(PREPROCESS_METADATA_PATH, "r", encoding="utf-8") as file:
+        metadata = json.load(file)
+
+    errors = []
+    if metadata.get("pipeline_name") != PIPELINE_NAME:
+        errors.append(
+            f"pipeline_name={metadata.get('pipeline_name')!r}, expected={PIPELINE_NAME!r}"
+        )
+    if metadata.get("dataset") != "Dataset_Chia_V3":
+        errors.append(f"dataset={metadata.get('dataset')!r}")
+    if metadata.get("playback_included") is not False:
+        errors.append("playback_included phải bằng false")
+    if metadata.get("frontend_variant_id") != FRONTEND_VARIANT_ID:
+        errors.append(
+            f"frontend_variant_id={metadata.get('frontend_variant_id')!r}"
+        )
+    if metadata.get("frontend_config_sha256") != FRONTEND_CONFIG_SHA256:
+        errors.append("frontend_config_sha256 không khớp cấu hình C4 đã chốt")
+    if tuple(metadata.get("input_shape", ())) != EXPECTED_INPUT_SHAPE:
+        errors.append(
+            f"input_shape={metadata.get('input_shape')}, expected={EXPECTED_INPUT_SHAPE}"
+        )
+
+    actual_config = metadata.get("preprocess_config", {})
+    for key, expected_value in EXPECTED_PREPROCESS_CONFIG.items():
+        if actual_config.get(key) != expected_value:
+            errors.append(
+                f"preprocess_config.{key}={actual_config.get(key)!r}, "
+                f"expected={expected_value!r}"
+            )
+
+    if errors:
+        raise ValueError(
+            "Feature V3 không đúng hợp đồng C4:\n- " + "\n- ".join(errors)
+        )
+
+    print(
+        f"Metadata hợp lệ: {PIPELINE_NAME}, "
+        f"config_sha256={FRONTEND_CONFIG_SHA256}"
+    )
+    return metadata
 
 
 def load_split(split):
@@ -103,8 +177,11 @@ def load_split(split):
             f"X={len(x_data)}, Y={len(y_data)}, Files={len(files_data)}"
         )
 
-    if x_data.shape[1:] != (64, 129, 1):
-        raise ValueError(f"Sai kích thước X_{split}: {x_data.shape}")
+    if x_data.shape[1:] != EXPECTED_INPUT_SHAPE:
+        raise ValueError(
+            f"Sai kích thước X_{split}: actual={x_data.shape}, "
+            f"expected=(N, {EXPECTED_INPUT_SHAPE})"
+        )
 
     if np.isnan(x_data).any() or np.isinf(x_data).any():
         raise ValueError(f"X_{split} có NaN hoặc Inf")
@@ -228,8 +305,67 @@ def plot_training_history(history):
     plt.close()
 
 
+def save_training_metadata(
+    preprocess_metadata,
+    history,
+    model,
+    train_min,
+    train_max,
+    test_loss,
+    test_accuracy,
+):
+    """Lưu đủ cấu hình C4 s44 và kết quả để kiểm toán lần train V3."""
+    val_losses = history.history.get("val_loss", [])
+    val_accuracies = history.history.get("val_accuracy", [])
+    best_index = int(np.argmin(val_losses)) if val_losses else -1
+
+    metadata = {
+        "pipeline_name": PIPELINE_NAME,
+        "dataset": "Dataset_Chia_V3",
+        "playback_included": False,
+        "architecture": MODEL_ARCHITECTURE,
+        "seed": SEED,
+        "frontend_variant_id": FRONTEND_VARIANT_ID,
+        "frontend_config_sha256": FRONTEND_CONFIG_SHA256,
+        "input_shape": list(EXPECTED_INPUT_SHAPE),
+        "parameter_count": int(model.count_params()),
+        "epochs_requested": EPOCHS,
+        "epochs_completed": int(len(history.history.get("loss", []))),
+        "batch_size": BATCH_SIZE,
+        "best_epoch_by_val_loss": best_index + 1 if best_index >= 0 else None,
+        "best_val_loss": float(val_losses[best_index]) if best_index >= 0 else None,
+        "best_val_accuracy": (
+            float(val_accuracies[best_index])
+            if best_index >= 0 and best_index < len(val_accuracies)
+            else None
+        ),
+        "test_loss": float(test_loss),
+        "test_accuracy": float(test_accuracy),
+        "normalization": {
+            "source": "train_only",
+            "train_min": float(train_min),
+            "train_max": float(train_max),
+        },
+        "selection_monitor": "val_loss",
+        "test_used_for_training": False,
+        "preprocess_metadata": preprocess_metadata,
+    }
+
+    metadata_path = os.path.join(DIR_OUT_MODEL, "Training_Metadata.json")
+    with open(metadata_path, "w", encoding="utf-8") as file:
+        json.dump(metadata, file, ensure_ascii=False, indent=2)
+    print(f"Đã lưu metadata huấn luyện: {metadata_path}")
+
+
 def main():
-    print("1. ĐỌC BA TẬP DỮ LIỆU ĐÃ CHIA SẴN")
+    print("0. KIỂM TRA HỢP ĐỒNG C4 S44")
+    preprocess_metadata = load_and_validate_preprocess_metadata()
+    print(
+        f"Seed={SEED} | input={EXPECTED_INPUT_SHAPE} | "
+        f"variant={FRONTEND_VARIANT_ID}"
+    )
+
+    print("\n1. ĐỌC BA TẬP DỮ LIỆU ĐÃ CHIA SẴN")
     x_train_np, y_train_np = load_split("train")
     x_val_np, y_val_np = load_split("val")
     x_test_np, y_test_np = load_split("test")
@@ -333,6 +469,15 @@ def main():
         file.write(report)
 
     plot_training_history(history)
+    save_training_metadata(
+        preprocess_metadata=preprocess_metadata,
+        history=history,
+        model=model,
+        train_min=train_min,
+        train_max=train_max,
+        test_loss=test_loss,
+        test_accuracy=test_accuracy,
+    )
     print(f"\nHoàn thành. Model và báo cáo nằm tại: {DIR_OUT_MODEL}")
 
 

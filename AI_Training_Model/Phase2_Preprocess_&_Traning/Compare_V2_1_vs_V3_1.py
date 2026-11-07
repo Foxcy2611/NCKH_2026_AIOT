@@ -170,7 +170,7 @@ def load_test_artifacts(feature_dir: Path) -> tuple[np.ndarray, np.ndarray, np.n
     y_data = np.load(paths["y"]).astype(np.int64)
     files_data = np.load(paths["files"], allow_pickle=False).astype(str)
 
-    if x_data.shape[1:] != (64, 129, 1):
+    if x_data.shape[1:] != (40, 129, 1):
         raise ValueError(f"Sai feature shape trong {feature_dir}: {x_data.shape}")
     if not (len(x_data) == len(y_data) == len(files_data)):
         raise ValueError(f"X/Y/Files khong cung length trong {feature_dir}")
@@ -270,7 +270,7 @@ def load_model(path: Path):
         raise FileNotFoundError(f"Thieu model: {path}")
     model = tf.keras.models.load_model(path)
     input_shape = tuple(model.input_shape[1:])
-    if input_shape != (64, 129, 1):
+    if input_shape != (40, 129, 1):
         raise ValueError(f"Model {path.name} co input shape {model.input_shape}")
     output_shape = tuple(model.output_shape[1:])
     if output_shape != (1,):

@@ -3,10 +3,10 @@
 Tên script: Preprocess_Audio_V3_No_Playback.py
 
 Tác dụng:
-- Đọc riêng train/val/test đã chia sẵn và biến mỗi WAV thành Mel-Spectrogram
-  kích thước 64 x 129 x 1.
+- Đọc riêng train/val/test đã chia sẵn và biến mỗi WAV thành Log-Mel
+  kích thước 40 x 129 x 1 theo cấu hình C4 đã chốt ở Frontend.
 - Thực hiện: 16 kHz/5 giây, chuẩn hóa biên độ, Butterworth 100-2000 Hz,
-  pre-emphasis 0,97, Hann, Mel Slaney và dB trong khoảng gần [-80, 0].
+  không pre-emphasis, FFT 2048, hop 625, Hann, Mel Slaney và dB gần [-80, 0].
 - Nguồn là Dataset_Chia_V3 đã loại toàn bộ playback; mọi WAV đều dùng cửa sổ
   0,0-5,0 giây.
 - Lưu X, Y và tên file riêng cho từng tập; nhãn 0=Asthma, 1=Non-Asthma.
@@ -18,6 +18,7 @@ Tác dụng:
 ===============================================================================
 """
 
+import json
 import sys
 from pathlib import Path
 
@@ -36,6 +37,14 @@ if hasattr(sys.stdout, "reconfigure"):
 
 
 # Thông số phải giữ giống pipeline cũ và phần triển khai ESP32-S3.
+# C4 đã được chốt từ Frontend_Benchmarking. Hash này lấy từ
+# results/experiment_plan.csv và dùng để truy vết đúng cấu hình.
+PIPELINE_NAME = "Dataset_V3_C4_No_Playback"
+FRONTEND_VARIANT_ID = "combo_pre0_mel40_fft2048"
+FRONTEND_CONFIG_SHA256 = (
+    "5ae8a2c91c92b58653d899ddec056485787b6307db2cc0c350382b4ded2576f8"
+)
+
 SR = 16000
 DURATION = 5.0
 SAMPLES = int(SR * DURATION)
@@ -43,11 +52,13 @@ SAMPLES = int(SR * DURATION)
 LOW_CUT = 100.0
 HIGH_CUT = 2000.0
 ORDER = 5
-PRE_COEF = 0.97
+PRE_COEF = 0.0
 
-N_MELS = 64
+N_MELS = 40
 HOP_LENGTH = 625
-N_FFT = 1024
+N_FFT = 2048
+EXPECTED_MEL_SHAPE = (N_MELS, 1 + SAMPLES // HOP_LENGTH)
+EXPECTED_INPUT_SHAPE = (*EXPECTED_MEL_SHAPE, 1)
 
 # Ghi tường minh các giá trị mặc định của librosa 0.11.0 đang dùng.
 # Không để việc nâng cấp thư viện âm thầm làm thay đổi pipeline.
@@ -96,6 +107,7 @@ def apply_bandpass_filter(audio):
 
 
 def pre_emphasis(audio):
+    """Hàm đối chiếu lịch sử; cấu hình C4 đặt hệ số bằng 0 nên không gọi."""
     return np.append(audio[0], audio[1:] - PRE_COEF * audio[:-1])
 
 
@@ -121,7 +133,7 @@ def load_model_audio_window(file_path):
 
 
 def preprocess_audio_file(file_path):
-    """Tạo một ma trận Mel-Spectrogram kích thước 64 x 129."""
+    """Tạo một ma trận Log-Mel theo cấu hình C4: 40 x 129."""
     audio = load_model_audio_window(file_path)
 
     audio = librosa.util.normalize(
@@ -133,7 +145,8 @@ def preprocess_audio_file(file_path):
     )
 
     audio = apply_bandpass_filter(audio)
-    audio = pre_emphasis(audio)
+    if PRE_COEF > 0.0:
+        audio = pre_emphasis(audio)
 
     mel = librosa.feature.melspectrogram(
         y=audio,
@@ -160,9 +173,10 @@ def preprocess_audio_file(file_path):
         top_db=TOP_DB
     )
 
-    if mel_db.shape != (64, 129):
+    if mel_db.shape != EXPECTED_MEL_SHAPE:
         raise ValueError(
-            f"Sai kích thước Mel của {file_path.name}: {mel_db.shape}"
+            f"Sai kích thước Mel của {file_path.name}: "
+            f"actual={mel_db.shape}, expected={EXPECTED_MEL_SHAPE}"
         )
 
     return mel_db
@@ -231,7 +245,7 @@ def process_split(split):
             mel_db = preprocess_audio_file(file_path)
             features.append(mel_db)
             labels.append(label)
-            file_names.append(str(file_path.relative_to(DATA_DIR)))
+            file_names.append(file_path.relative_to(DATA_DIR).as_posix())
 
             if index < 3:
                 save_sample_image(mel_db, split, label, file_path)
@@ -267,12 +281,66 @@ def save_split(split, x_data, y_data, files_data):
     )
 
 
+def save_preprocess_metadata(split_summaries):
+    """Lưu hợp đồng preprocessing để script train kiểm tra trước epoch đầu."""
+    metadata = {
+        "pipeline_name": PIPELINE_NAME,
+        "dataset": "Dataset_Chia_V3",
+        "playback_included": False,
+        "frontend_variant_id": FRONTEND_VARIANT_ID,
+        "frontend_config_sha256": FRONTEND_CONFIG_SHA256,
+        "label_mapping": {
+            "Asthma": LABEL_ASTHMA,
+            "Non_Asthma": LABEL_NON_ASTHMA,
+        },
+        "input_shape": list(EXPECTED_INPUT_SHAPE),
+        "preprocess_config": {
+            "sample_rate_hz": SR,
+            "duration_seconds": DURATION,
+            "samples": SAMPLES,
+            "low_cut_hz": LOW_CUT,
+            "high_cut_hz": HIGH_CUT,
+            "filter_order": ORDER,
+            "pre_emphasis": PRE_COEF,
+            "n_mels": N_MELS,
+            "hop_length": HOP_LENGTH,
+            "n_fft": N_FFT,
+            "window": "hann",
+            "center": True,
+            "pad_mode": "constant",
+            "power": 2.0,
+            "mel_scale": "slaney",
+            "top_db": TOP_DB,
+        },
+        "splits": split_summaries,
+    }
+    metadata_path = OUTPUT_DIR / "Preprocess_Metadata.json"
+    metadata_path.write_text(
+        json.dumps(metadata, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    print(f"Đã lưu hợp đồng preprocessing: {metadata_path}")
+
+
 def main():
     print("BẮT ĐẦU TẠO MEL-SPECTROGRAM")
+    print(
+        f"Pipeline={PIPELINE_NAME} | C4={FRONTEND_CONFIG_SHA256[:12]}... | "
+        f"input={EXPECTED_INPUT_SHAPE} | pre-emphasis={PRE_COEF}"
+    )
 
+    split_summaries = {}
     for split in ["train", "val", "test"]:
         x_data, y_data, files_data = process_split(split)
         save_split(split, x_data, y_data, files_data)
+        split_summaries[split] = {
+            "samples": int(len(y_data)),
+            "asthma": int(np.sum(y_data == LABEL_ASTHMA)),
+            "non_asthma": int(np.sum(y_data == LABEL_NON_ASTHMA)),
+            "feature_shape": list(x_data.shape),
+        }
+
+    save_preprocess_metadata(split_summaries)
 
     print(f"\nHoàn thành. Kết quả được lưu tại: {OUTPUT_DIR}")
 

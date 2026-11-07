@@ -1,22 +1,38 @@
-# Thí nghiệm V3 - V1 không có Playback
+# Thí nghiệm Dataset V3 - C4 s44 không có Playback
 
-Thí nghiệm này giữ nguyên preprocessing và kiến trúc V1, chỉ thay dataset:
+Thí nghiệm này dùng pipeline C4 đã chốt tại Frontend và chỉ thay dataset:
 
 - baseline cũ: `Dataset_Chia_V2`, có playback;
 - thí nghiệm này: `Dataset_Chia_V3`, bỏ toàn bộ 160 playback;
-- Train V3 vẫn cân bằng `923 Asthma : 923 Non-Asthma`.
+- Train V3 vẫn cân bằng `923 Asthma : 923 Non-Asthma`;
+- kiến trúc `V1_SepConv2D_Flatten`, seed `44`.
+
+Hợp đồng C4:
+
+| Tham số | Giá trị |
+|---|---:|
+| Sample rate / cửa sổ | 16 kHz / 5 giây |
+| Butterworth band-pass | 100-2000 Hz, order 5 |
+| Pre-emphasis | `0.0` - không áp dụng |
+| Mel bins | 40 |
+| FFT / hop | 2048 / 625 |
+| Tensor đầu vào | `40 x 129 x 1` |
+| Frontend config SHA-256 | `5ae8a2c91c92b58653d899ddec056485787b6307db2cc0c350382b4ded2576f8` |
 
 Mục tiêu là kiểm tra playback có làm giảm khả năng tổng quát của mô hình khi âm
-thanh đi qua loa và INMP441 hay không. Không đổi kiến trúc, seed, optimizer,
+thanh đi qua loa và INMP441 hay không. Không đổi kiến trúc, optimizer,
 callback hoặc quy tắc chuẩn hóa để giữ phép so sánh công bằng.
+
+> Output V3 cũ dùng 64 Mel, FFT 1024, pre-emphasis 0.97 hoặc seed 42 chỉ là
+> artifact lịch sử. Muốn có kết quả C4 s44 phải chạy lại hai script bên dưới.
 
 ## Thứ tự chạy
 
 Từ workspace root:
 
 ```powershell
-python "AI_Training_Model/Phase2_Preprocess_&_Traning/Preprocess_Audio_V3_No_Playback.py"
-python "AI_Training_Model/Phase2_Preprocess_&_Traning/Training_Model_V3_V1_No_Playback.py"
+py -3.11 "AI_Training_Model/Phase2_Preprocess_&_Traning/Preprocess_Audio_V3_No_Playback.py"
+py -3.11 "AI_Training_Model/Phase2_Preprocess_&_Traning/Training_Model_V3_V1_No_Playback.py"
 ```
 
 `Preprocess_Audio_V3_No_Playback.py` kiểm tra trước khi chạy:
@@ -24,6 +40,7 @@ python "AI_Training_Model/Phase2_Preprocess_&_Traning/Training_Model_V3_V1_No_Pl
 - đúng `Dataset_Chia_V3`;
 - không còn `__take01`/`__take02`;
 - Train `923/923`, Val `30/108`, Test `30/113`.
+- tensor đúng `40 x 129 x 1` và ghi `Preprocess_Metadata.json`.
 
 Feature V3 được lưu tách biệt trong:
 
@@ -31,7 +48,8 @@ Feature V3 được lưu tách biệt trong:
 Output_Preprocess_V3_No_Playback/
 ```
 
-`Training_Model_V3_V1_No_Playback.py` kiểm tra lại X/Y/Files và count trước epoch đầu tiên. Model
+`Training_Model_V3_V1_No_Playback.py` kiểm tra metadata C4, config SHA-256,
+X/Y/Files và count trước epoch đầu tiên. Model
 tốt nhất cùng log, normalization và báo cáo test được lưu trong:
 
 ```text
@@ -49,7 +67,7 @@ Output_Train_V3_V1_No_Playback/Model_Asthma_V3_V1_No_Playback.keras
 Sau khi cả hai model đã tồn tại, chạy:
 
 ```powershell
-python "AI_Training_Model/Phase2_Preprocess_&_Traning/Compare_V2_1_vs_V3_1.py"
+py -3.11 "AI_Training_Model/Phase2_Preprocess_&_Traning/Compare_V2_1_vs_V3_1.py"
 ```
 
 Script chạy hai phép đánh giá khóa:

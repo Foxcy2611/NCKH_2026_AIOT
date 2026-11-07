@@ -5,8 +5,8 @@ Phase 2 có hai entry point chính và chạy độc lập với `Frontend_Bench
 1. `Preprocess_Audio.py`: chuyển WAV thành tensor Log-Mel;
 2. `Training_Model.py`: chuẩn hóa, huấn luyện và đánh giá các kiến trúc.
 
-Không script nào yêu cầu config SHA. Metadata chỉ ghi lại tham số thực sự đã dùng
-để truy vết kết quả.
+Hai entry point chính không yêu cầu config SHA. Nhánh đối chứng V3 chuyên biệt
+kiểm tra config SHA của C4 để tránh đọc nhầm feature lịch sử.
 
 ## 1. Đầu vào
 
@@ -141,3 +141,14 @@ mới được ghi tại `Architecture_Training_Summary.csv`.
 
 `C4_Architecture_Training_Summary.csv` và các output đã có vẫn được giữ nguyên
 như bằng chứng của lần thí nghiệm trước; script generic không xóa chúng.
+
+## 5. Đối chứng Dataset V2 và V3
+
+Nhánh V3 loại toàn bộ Playback nhưng giữ augmentation của Asthma Train. Sau khi
+đã chạy hai script V3 và `Compare_V2_1_vs_V3_1.py`, mở notebook:
+
+[`Dataset_V2_V3_C4_s44_Comparison.ipynb`](Dataset_V2_V3_C4_s44_Comparison.ipynb)
+
+Notebook đọc trực tiếp artifact hiện hành, kiểm tra hai model cùng V1/C4/seed 44,
+so sánh thành phần dataset, chỉ số Common Raw, Playback-only, confusion matrix và
+phân bố `p_non_asthma`. Notebook không huấn luyện hoặc sửa checkpoint.

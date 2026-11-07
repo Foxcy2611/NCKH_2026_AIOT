@@ -120,7 +120,7 @@ Các chỉ số RAM/Flash, Tensor Arena, DSP, Invoke và độ trễ truyền th
 
 **🎬 Video demo:** *Đang cập nhật.* Video và tài nguyên trình bày được quản lý tại [`Assets/`](./Assets/README.md). Sau khi đăng video, bổ sung liên kết tại đây.
 
-## 👥 11. Thành viên thực hiện
+## 👥 8. Thành viên thực hiện
 
 **Giảng viên hướng dẫn:** TS. Trần Thị Thúy Hà
 
