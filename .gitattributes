@@ -9,24 +9,23 @@
 **/Raw_PCM16_Test_Samples.h filter=lfs diff=lfs merge=lfs -text linguist-generated=true
 **/Static_Test_Tensors.h filter=lfs diff=lfs merge=lfs -text linguist-generated=true
 
-# Notebook chứa cả JSON, output và ảnh base64 nên dung lượng lớn hơn lượng code
-# thực tế. Chỉ loại các notebook lớn khỏi thanh Languages; hai notebook nhỏ bên
-# dưới vẫn được tính để GitHub hiển thị Jupyter Notebook ở tỷ lệ vừa phải:
-# - Final_V1_Validation/.../Threshold_Selection.ipynb (~0,12 MiB)
-# - Frontend_Benchmarking/.../B0_SampleRate_Source_Audit.ipynb (~0,07 MiB)
-# - Phase2.../Dataset_V2_V3_C4_s44_Comparison.ipynb (notebook so sánh nhỏ)
-# - Defense_Package/03_Defense_Notebook/*.ipynb (bộ notebook vấn đáp)
-AI_Training_Model/Phase2_Preprocess_&_Traning/Dataset_V2_V3_C4_s44_Comparison.ipynb linguist-detectable=true
-Defense_Package/03_Defense_Notebook/*.ipynb linguist-detectable=true
-AI_Training_Model/AI_Training_Model_Benchmark_Final.ipynb linguist-detectable=false
-Experiments_Benchmarking/Patient_Node/Final_V1_Validation/02_Quality_Check/Quality_Gate_Selection.ipynb linguist-detectable=false
-Experiments_Benchmarking/Patient_Node/Final_V1_Validation/03_VAD_Trigger/VAD_Trigger_Selection.ipynb linguist-detectable=false
-Experiments_Benchmarking/Patient_Node/Frontend_Benchmarking/Notebook/01_Baseline_DSP/A_F0_s42_Baseline_DSP_Foundation.ipynb linguist-detectable=false
-Experiments_Benchmarking/Patient_Node/Frontend_Benchmarking/Notebook/03_OFAT_Exploration/B_F0_OFAT_9Trials_Conclusion.ipynb linguist-detectable=false
-Experiments_Benchmarking/Patient_Node/Frontend_Benchmarking/Notebook/04_Fontend_Selection/C_Factorial_8x3_C4_Selection.ipynb linguist-detectable=false
-Experiments_Benchmarking/Patient_Node/Frontend_Benchmarking/Notebook/05_Quantization_Deployment/D_Quantization_ESP32S3_ThreeLogs_Final.ipynb linguist-detectable=false
-Experiments_Benchmarking/Patient_Node/Frontend_Benchmarking/Notebook/06_Final_Verifycation/E_Final_Verification_and_Model_Selection.ipynb linguist-detectable=false
-Experiments_Benchmarking/Patient_Node/Frontend_Benchmarking/Notebook/07_Research_Synthsis/F_NCKH_Final_Research_Synthesis.ipynb linguist-detectable=false
+# Notebook chứa JSON, output và ảnh base64 nên dung lượng sau khi chạy không phản
+# ánh lượng mã nguồn thực tế. Loại mọi notebook khỏi phép tính Linguist, sau đó
+# chỉ bật lại một notebook audit nhỏ để Jupyter Notebook vẫn xuất hiện ở tỷ lệ
+# đại diện mà không che khuất Python, C++, C, QML và CMake.
+**/*.ipynb linguist-vendored=true linguist-detectable=false
+
+# Chặn đích danh các notebook Defense đã lưu output/ảnh base64 (khoảng 10 MiB).
+# Các file vẫn được lưu và mở bình thường trên GitHub, chỉ không tham gia Languages.
+Defense_Package/03_Defense_Notebook/01_Dataset_DSP_Evidence.ipynb linguist-generated=true linguist-vendored=true linguist-detectable=false
+Defense_Package/03_Defense_Notebook/03_Embedded_System_Evidence.ipynb linguist-generated=true linguist-vendored=true linguist-detectable=false
+Defense_Package/03_Defense_Notebook/04_Why_Not_Tradeoffs.ipynb linguist-generated=true linguist-vendored=true linguist-detectable=false
+Defense_Package/03_Defense_Notebook/Defense_Evidence_Presentation.ipynb linguist-generated=true linguist-vendored=true linguist-detectable=false
+
+# Hai notebook đại diện có tổng dung lượng khoảng 0,88 MiB. Mức này giúp Jupyter
+# Notebook còn khoảng 20-30% theo khối lượng source hiện tại của repository.
+Defense_Package/03_Defense_Notebook/02_Model_Selection_Quantization.ipynb linguist-generated=false linguist-vendored=false linguist-detectable=true
+Experiments_Benchmarking/Patient_Node/Frontend_Benchmarking/Notebook/02_Dataset_Audit/B0_SampleRate_Source_Audit.ipynb linguist-vendored=false linguist-detectable=true
 
 AI_Training_Model/Phase3_Quantization_Model/Output_Quantize_*/headers/*.h linguist-generated=true
 Deploy_Model/1_Test_Model_Static_Profiling/include/Asthma_Model.h linguist-generated=true
