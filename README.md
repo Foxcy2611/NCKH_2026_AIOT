@@ -57,7 +57,8 @@ NCKH_2026_AIOT/
 ├── Docs_Member/                    # Ghi chép theo thành viên
 ├── Assets/                         # Ảnh và video demo
 ├── Paperwork/                      # Báo cáo và slide
-└── Defense_Package/                # Q&A, minh chứng và notebook phục vụ bảo vệ
+├── Defense_Package/                # Q&A, minh chứng và notebook phục vụ bảo vệ
+└── Archive/                        # Bản cũ chỉ để truy vết, không thuộc pipeline hiện hành
 ```
 
 **[Final_Project_NCKH](./Final_Project_NCKH/) là thư mục sản phẩm tích hợp hiện hành.** Các thư mục AI Training, Benchmark và standalone test được giữ lại để truy vết quá trình nghiên cứu, kiểm chứng và tái lập kết quả, không phải tất cả đều là thành phần cần chạy khi sử dụng sản phẩm.
@@ -109,7 +110,7 @@ Các chỉ số RAM/Flash, Tensor Arena, DSP, Invoke và độ trễ truyền th
 
 > **Lưu ý phiên bản:** Repository có thể còn các thử nghiệm lịch sử với frontend F0 hoặc mô hình/ngưỡng cũ. Khi build và kiểm thử, đối chiếu với source sản phẩm hiện hành và artifact model đã chọn trước khi sử dụng các kết quả đo.
 
-## 7. 🏆 Thành tựu & Sự công nhận (Recognitions & Achievements)
+## 7. 🏆 Thành tựu & Sự công nhận
 
 Khối lượng mã nguồn khảo sát và đánh giá hệ thống (`Experiments_Benchmarking`) của dự án đã được **XERJ** (AI-native search engine) đánh giá cao và lựa chọn đưa vào kho dữ liệu cốt lõi **Corpus Hub**. 
 
