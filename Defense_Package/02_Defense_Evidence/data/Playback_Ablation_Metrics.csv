@@ -1,0 +1,5 @@
+﻿test_name,model,sample_count,asthma_count,non_asthma_count,accuracy,asthma_precision,asthma_recall,asthma_f1,non_asthma_precision,non_asthma_recall,non_asthma_f1,true_asthma_pred_asthma,true_asthma_pred_non_asthma,true_non_asthma_pred_asthma,true_non_asthma_pred_non_asthma
+common_raw,V2_1_With_Playback,143,30,113,0.923076923,0.787878788,0.866666667,0.825396825,0.963636364,0.938053097,0.950672646,26,4,7,106
+common_raw,V3_1_No_Playback,143,30,113,0.902097902,0.722222222,0.866666667,0.787878788,0.962616822,0.911504425,0.936363636,26,4,10,103
+playback_only,V2_1_With_Playback,16,8,8,0.750000000,1.000000000,0.500000000,0.666666667,0.666666667,1.000000000,0.800000000,4,4,0,8
+playback_only,V3_1_No_Playback,16,8,8,0.875000000,1.000000000,0.750000000,0.857142857,0.800000000,1.000000000,0.888888889,6,2,0,8

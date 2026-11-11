@@ -11,7 +11,7 @@
 #include "Vitals_UI/PPG_Sensor.h"
 #include "Vitals_UI/UI_Oled.h"
 
-#include "board_pinout.h"
+#include "Board_Pinout.h"
 
 static void Stop_OnInitError(const char* message) {
     Serial.println(message);

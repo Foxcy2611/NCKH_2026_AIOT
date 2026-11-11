@@ -16,7 +16,7 @@
 
 ## 1. Cấu hình I2S hiện hành
 
-[I2S_Mic.cpp](../../Final_Project_NCKH/Patient_Node/src/I2S_Mic.cpp) dùng I2S_NUM_0, master RX, 16 kHz, slot32-bit, ONLY_RIGHT, 8 DMA buffer × 256 mẫu. Đấu chân theo [Board_Pinout.h](../../Final_Project_NCKH/Patient_Node/shared/board_pinout.h): SCK14, WS15, SD16.
+[I2S_Mic.cpp](../../Final_Project_NCKH/Patient_Node/src/I2S_Mic.cpp) dùng I2S_NUM_0, master RX, 16 kHz, slot32-bit, ONLY_RIGHT, 8 DMA buffer × 256 mẫu. Đấu chân theo [Board_Pinout.h](../../Final_Project_NCKH/Patient_Node/shared/Board_Pinout.h): SCK14, WS15, SD16.
 
 Mỗi chunk256 mẫu tương ứng16 ms. Chọn ONLY_RIGHT phải phù hợp cấu hình kênh của INMP441 trên mạch; đọc được DMA không tự chứng minh micro đang phát dữ liệu đúng.
 
@@ -91,7 +91,7 @@ Hiện `I2S_MonitorCaptureStep` trả false cả khi chưa đủ mẫu lẫn khi
 
 ## 6. Quality Gate trước normalize
 
-Nguồn: [Quality_Check.cpp](../../Final_Project_NCKH/Patient_Node/src/quality_check.cpp).
+Nguồn: [Quality_Check.cpp](../../Final_Project_NCKH/Patient_Node/src/Quality_Check.cpp).
 
 ```text
 RMS = sqrt(sum(x[n]^2) / N)

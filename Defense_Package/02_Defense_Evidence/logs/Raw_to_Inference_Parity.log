@@ -1,0 +1,236 @@
+========================================
+  TEST PIPELINE C++ VA INFERENCE ASTHMA
+========================================
+[SETUP] Khoi tao Mel Filterbank...
+[MEL] Đã cấp phát 164000 byte Mel Filterbank trong PSRAM.
+[SETUP] Khoi tao model TFLite...
+[AI] Model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8 | model_bytes=347968
+[AI] arena_capacity=1048576 | arena_used=169380 bytes
+[AI] input(scale=0.003921569,zp=-128) | output(scale=0.003906250,zp=-128)
+[AI] Khoi tao model thanh cong.
+[SETUP] Model dang chay: combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8
+[RAW_PCM16] Đã cấp phát buffer; bỏ qua I2S hardware, sẽ chạy 12 mẫu nhúng.
+[SETUP] San sang chay 12 mau RAW PCM16 qua pipeline C++.
+
+[RAW_PCM16] Mẫu 1/12: AST_038__P17WheezingIE_85__take01.wav | true=0 | model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Bỏ qua Pre-Emphasis theo cấu hình C4.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-69.1305 -67.4555 -69.2768 -67.6541 -67.9287 -68.2773 -68.4880 -68.3774 -69.4543 -70.1615 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-22.9024 -22.2206 -12.0235 -14.0919 -20.3638 -26.9977 -28.5425 -32.4927 -36.7524 -34.6396 
+[AI] model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8 | raw=-128 | p_non=0.000000000 | class=0 (ASTHMA)
+[RAW_RESULT] index=0,file=AST_038__P17WheezingIE_85__take01.wav,true=0,esp_pred=0,esp_raw=-128,esp_p_non=0.000000000,py_pred=0,py_raw=-128,py_p_non=0.000000000,raw_diff=0,prob_diff=0.000000000
+
+[RAW_PCM16] Mẫu 2/12: P17WheezingIU_82.wav | true=0 | model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Bỏ qua Pre-Emphasis theo cấu hình C4.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+0.0000 -1.7888 -3.6965 -5.0530 -6.2785 -7.3650 -8.3045 -9.1368 -9.8794 -10.6771 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-19.0819 -24.6636 -28.0922 -36.9913 -42.6049 -45.8217 -50.1754 -50.8483 -51.6402 -50.2549 
+[AI] model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8 | raw=-128 | p_non=0.000000000 | class=0 (ASTHMA)
+[RAW_RESULT] index=1,file=P17WheezingIU_82.wav,true=0,esp_pred=0,esp_raw=-128,esp_p_non=0.000000000,py_pred=0,py_raw=-128,py_p_non=0.000000000,raw_diff=0,prob_diff=0.000000000
+
+[RAW_PCM16] Mẫu 3/12: P17WheezingRL_83.wav | true=0 | model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Bỏ qua Pre-Emphasis theo cấu hình C4.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-32.0882 -35.9036 -35.5154 -45.2098 -47.8574 -51.1634 -55.6598 -59.6401 -65.5556 -59.3897 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-10.3522 -10.4000 -11.0826 -18.1048 -27.7531 -41.1282 -43.6443 -45.5305 -48.8972 -49.5965 
+[AI] model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8 | raw=-128 | p_non=0.000000000 | class=0 (ASTHMA)
+[RAW_RESULT] index=2,file=P17WheezingRL_83.wav,true=0,esp_pred=0,esp_raw=-128,esp_p_non=0.000000000,py_pred=0,py_raw=-128,py_p_non=0.000000000,raw_diff=0,prob_diff=0.000000000
+
+[RAW_PCM16] Mẫu 4/12: P24WheezingRS_120.wav | true=0 | model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Bỏ qua Pre-Emphasis theo cấu hình C4.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-54.2248 -52.6885 -50.0800 -50.6329 -53.7666 -57.6178 -59.3914 -63.2357 -65.8901 -63.1118 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-44.0576 -37.2091 -36.3119 -44.4194 -46.6099 -47.3096 -57.6134 -60.4394 -56.8052 -55.4384 
+[AI] model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8 | raw=-128 | p_non=0.000000000 | class=0 (ASTHMA)
+[RAW_RESULT] index=3,file=P24WheezingRS_120.wav,true=0,esp_pred=0,esp_raw=-128,esp_p_non=0.000000000,py_pred=0,py_raw=-128,py_p_non=0.000000000,raw_diff=0,prob_diff=0.000000000
+
+[RAW_PCM16] Mẫu 5/12: P26WheezingRL_127.wav | true=0 | model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Bỏ qua Pre-Emphasis theo cấu hình C4.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-59.4840 -52.2388 -49.3990 -50.2910 -51.3442 -52.5991 -52.2276 -50.8776 -49.0735 -45.6557 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-28.2544 -24.6702 -15.0450 -14.7283 -24.9255 -30.1023 -45.3804 -45.0341 -46.7331 -47.5626 
+[AI] model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8 | raw=-128 | p_non=0.000000000 | class=0 (ASTHMA)
+[RAW_RESULT] index=4,file=P26WheezingRL_127.wav,true=0,esp_pred=0,esp_raw=-128,esp_p_non=0.000000000,py_pred=0,py_raw=-128,py_p_non=0.000000000,raw_diff=0,prob_diff=0.000000000
+
+[RAW_PCM16] Mẫu 6/12: P47WheezingRS_232.wav | true=0 | model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Bỏ qua Pre-Emphasis theo cấu hình C4.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-25.8992 -28.8408 -33.1004 -39.5590 -39.9758 -39.8987 -43.9457 -40.1959 -39.1114 -37.8410 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-9.3561 -21.3299 -23.2765 -27.7575 -32.3825 -28.2760 -36.8738 -38.8308 -38.7902 -41.1104 
+[AI] model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8 | raw=-128 | p_non=0.000000000 | class=0 (ASTHMA)
+[RAW_RESULT] index=5,file=P47WheezingRS_232.wav,true=0,esp_pred=0,esp_raw=-128,esp_p_non=0.000000000,py_pred=0,py_raw=-128,py_p_non=0.000000000,raw_diff=0,prob_diff=0.000000000
+
+[RAW_PCM16] Mẫu 7/12: P26Pneumonia72P.wav | true=1 | model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Bỏ qua Pre-Emphasis theo cấu hình C4.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-21.9097 -22.6406 -24.8242 -26.2823 -27.6113 -28.3970 -29.2929 -30.7499 -31.6403 -32.2911 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-19.6092 -17.4230 -28.8461 -32.6464 -31.8748 -35.3963 -42.2246 -46.8719 -50.8860 -55.0408 
+[AI] model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8 | raw=64 | p_non=0.750000000 | class=1 (NON-ASTHMA)
+[RAW_RESULT] index=6,file=P26Pneumonia72P.wav,true=1,esp_pred=1,esp_raw=64,esp_p_non=0.750000000,py_pred=1,py_raw=111,py_p_non=0.933593750,raw_diff=47,prob_diff=0.183593750
+
+[RAW_PCM16] Mẫu 8/12: P47COPDMc_372.wav | true=1 | model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Bỏ qua Pre-Emphasis theo cấu hình C4.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-25.5014 -25.8812 -29.0505 -28.9029 -29.7470 -31.0228 -32.9328 -33.8452 -34.5188 -34.6912 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-25.1217 -23.5129 -18.8678 -13.9044 -14.1519 -22.1445 -30.7731 -30.5091 -25.6659 -24.6750 
+[AI] model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8 | raw=126 | p_non=0.992187500 | class=1 (NON-ASTHMA)
+[RAW_RESULT] index=7,file=P47COPDMc_372.wav,true=1,esp_pred=1,esp_raw=126,esp_p_non=0.992187500,py_pred=1,py_raw=127,py_p_non=0.996093750,raw_diff=1,prob_diff=0.003906250
+
+[RAW_PCM16] Mẫu 9/12: P47COPDMc_374.wav | true=1 | model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Bỏ qua Pre-Emphasis theo cấu hình C4.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-14.0134 -16.7240 -17.0065 -19.3622 -21.2369 -21.4166 -23.0982 -23.5887 -24.1176 -24.5619 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-19.6694 -17.1767 -19.1353 -25.4717 -29.9251 -32.0434 -33.4552 -37.1658 -40.4539 -37.6439 
+[AI] model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8 | raw=127 | p_non=0.996093750 | class=1 (NON-ASTHMA)
+[RAW_RESULT] index=8,file=P47COPDMc_374.wav,true=1,esp_pred=1,esp_raw=127,esp_p_non=0.996093750,py_pred=1,py_raw=127,py_p_non=0.996093750,raw_diff=0,prob_diff=0.000000000
+
+[RAW_PCM16] Mẫu 10/12: P47COPDPr_371.wav | true=1 | model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Bỏ qua Pre-Emphasis theo cấu hình C4.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-1.0361 -3.0536 -4.3993 -6.2073 -7.0389 -8.4666 -9.2804 -9.9528 -10.7158 -11.5314 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-14.5341 -15.4054 -15.6214 -10.7076 -10.2649 -13.2028 -15.9450 -19.1107 -24.7060 -26.7058 
+[AI] model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8 | raw=126 | p_non=0.992187500 | class=1 (NON-ASTHMA)
+[RAW_RESULT] index=9,file=P47COPDPr_371.wav,true=1,esp_pred=1,esp_raw=126,esp_p_non=0.992187500,py_pred=1,py_raw=126,py_p_non=0.992187500,raw_diff=0,prob_diff=0.000000000
+
+[RAW_PCM16] Mẫu 11/12: P50COPDMc_398.wav | true=1 | model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Bỏ qua Pre-Emphasis theo cấu hình C4.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-5.5625 -7.2599 -9.2376 -10.6550 -11.7658 -12.8315 -13.8876 -14.6158 -15.3891 -16.1850 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-23.5706 -29.2775 -33.5632 -35.6982 -42.3529 -45.4279 -47.9027 -47.4998 -54.3523 -52.9988 
+[AI] model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8 | raw=127 | p_non=0.996093750 | class=1 (NON-ASTHMA)
+[RAW_RESULT] index=10,file=P50COPDMc_398.wav,true=1,esp_pred=1,esp_raw=127,esp_p_non=0.996093750,py_pred=1,py_raw=127,py_p_non=0.996093750,raw_diff=0,prob_diff=0.000000000
+
+[RAW_PCM16] Mẫu 12/12: P8Pneumonia28V.wav | true=1 | model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8
+
+--- BẮT ĐẦU TIỀN XỬ LÝ ---
+
+1. Hoàn thành chuẩn hóa về Float [-1.0, 1.0]
+2. Hoàn thành bộ lọc Butterworth.
+3. Bỏ qua Pre-Emphasis theo cấu hình C4.
+4. Hoàn thành trích xuất năng lượng Mel.
+[DEBUG] Dang chay ban co TOP_DB CLIP - v2
+5. Hoàn thành ma trận Mel-Spectrogram dB!
+------------------------------
+[DEBUG] mel_db_buff frame 0, 10 gia tri mel dau:
+-19.3737 -19.5700 -24.8088 -19.9302 -20.4709 -21.0779 -22.6552 -24.6724 -26.5781 -27.8711 
+[DEBUG] mel_db_buff FRAME 64, 10 gia tri mel dau:
+-27.4412 -27.5034 -23.2162 -29.5284 -32.2867 -35.5995 -35.5945 -39.6293 -42.1133 -41.3553 
+[AI] model=combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8 | raw=127 | p_non=0.996093750 | class=1 (NON-ASTHMA)
+[RAW_RESULT] index=11,file=P8Pneumonia28V.wav,true=1,esp_pred=1,esp_raw=127,esp_p_non=0.996093750,py_pred=1,py_raw=127,py_p_non=0.996093750,raw_diff=0,prob_diff=0.000000000
+
+========== TỔNG KẾT RAW PCM16 -> C++ -> MODEL ==========
+Model: combo_pre0_mel40_fft2048__V1__s44 / QAT_INT8
+Đúng nhãn thật: 12/12
+Cùng dự đoán Python oracle: 12/12
+Output INT8 trùng tuyệt đối: 10/12 | max_raw_diff=47 | max_prob_diff=0.183593750
+=========================================================

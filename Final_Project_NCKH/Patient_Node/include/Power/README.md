@@ -14,7 +14,7 @@ Module này đo điện áp pin qua ADC của ESP32-S3, quy đổi sang phần t
 ## 2. Cấu hình phần cứng hiện tại
 
 - Bo mạch: ESP32-S3 DevKitC-1.
-- Chân đọc pin: `GPIO7`, tương ứng `ADC1_CH6`.
+- Chân đọc pin: `GPIO12`, tương ứng `ADC2_CH1`.
 - Điện áp tham chiếu phía pin: `8,39 V`.
 - Điện áp đo tại ADC ứng với mức trên: `2,56 V`.
 - Mức đầy: `8,39 V`.
@@ -22,13 +22,13 @@ Module này đo điện áp pin qua ADC của ESP32-S3, quy đổi sang phần t
 - Suy hao ADC: `ADC_11db`.
 - Khoảng ADC được chấp nhận: `150-3000 mV`.
 
-`GPIO7` hiện không xung đột với I2C (`GPIO8/9`), MAX30102 INT (`GPIO10`), I2S (`GPIO14/15/16`) hoặc ba nút (`GPIO4/5/6`).
+`GPIO12` hiện không xung đột với I2C (`GPIO8/9`), MAX30102 INT (`GPIO10`), I2S (`GPIO14/15/16`) hoặc ba nút (`GPIO4/5/6`).
 
-> Không nối trực tiếp pin 2S vào GPIO7. Điện áp pin phải đi qua đúng cầu chia áp của mạch Node. Cần so sánh `adcMv` và `voltage` của firmware với đồng hồ đo trước khi chốt hệ số hiệu chuẩn.
+> Không nối trực tiếp pin 2S vào GPIO12. Điện áp pin phải đi qua đúng cầu chia áp của mạch Node. Cần so sánh `adcMv` và `voltage` của firmware với đồng hồ đo trước khi chốt hệ số hiệu chuẩn.
 
 ## 3. Luồng hoạt động
 
-1. `setup()` gọi `NodeBattery_Begin()` để cấu hình GPIO7 và attenuation.
+1. `setup()` gọi `NodeBattery_Begin()` để cấu hình GPIO12 và attenuation.
 2. Khi state machine dựng event payload, `NodeBattery_Read()` lấy 8 mẫu ADC.
 3. Module bỏ mẫu nhỏ nhất và lớn nhất, sau đó lấy trung bình 6 mẫu còn lại.
 4. Giá trị ADC được đổi sang điện áp pin bằng tỷ lệ `8,39 / 2,56`.

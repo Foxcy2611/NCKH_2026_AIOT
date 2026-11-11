@@ -8,6 +8,7 @@ Thư mục này chứa các project nhỏ dùng để kiểm tra riêng phần c
 |---|---|---|
 | Thu âm qua INMP441 để tạo dataset | [ESP32_Read_INMP441](ESP32_Read_INMP441/README.md) | Đọc PCM16 16 kHz qua Serial; `Record_Audio.py` thu environment, `Record_Playback.py` phát WAV qua loa và thu lại, `Test_Audio.py` đo chất lượng WAV. |
 | Vẽ waveform, Log-Mel và đáp ứng Butterworth | [Audio_Visualizations](Audio_Visualizations/README.md) | Tạo hình minh họa offline từ WAV core và đúng pipeline Phase 2; xuất PNG/SVG phục vụ báo cáo. |
+| Vẽ kết quả Accuracy, Recall và confusion matrix | [AI_Result_Visualizations](AI_Result_Visualizations/README.md) | Đọc CSV/artifact đã có để tạo hình so sánh FP32-QAT và V2.1-V3.1; không train hoặc lượng tử hóa lại model. |
 | Kiểm tra playback làm lệch kết quả AI | [Asthma_Playback_Calibration](Asthma_Playback_Calibration/README.md) | Thu đúng cửa sổ 5 giây qua INMP441, dump PCM, so `p_non_asthma` giữa Python và ESP32, đo offset và phân tích ảnh hưởng loa/phòng/mic. |
 | Kiểm tra packet bảo mật Node → Gateway | [Patient_Node_Test](Patient_Node_Test/README.md) | Gửi event thủ công qua ESP-NOW/AES-GCM; thử packet mới, duplicate, replay và ciphertext sai tag bằng lệnh Serial. |
 | Thử driver cảm biến và FreeRTOS | [AIOT_2026](AIOT_2026/README.md) | Đọc các cảm biến trên ESP32, kiểm tra bus I2C, tác vụ và dữ liệu trước khi tích hợp Gateway/Node. |

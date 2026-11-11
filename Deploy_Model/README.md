@@ -29,6 +29,8 @@ không chứa dữ liệu thử, nhánh kiểm tensor, hiệu chuẩn hay log l�
 Các tham số hiện tại: 16 kHz, 5 giây, FFT 2048, Mel 40 x 129,
 không pre-emphasis, dB từ -80 đến 0,
 VAD 75 với 4 khối liên tiếp, bộ đệm trước kích hoạt 1 giây và Tensor Arena
-280 KiB trong PSRAM. Ngưỡng phân loại phải lấy từ bước Classification Threshold.
+192 KiB trong PSRAM ở `3_Model_Complete`. Project 1 và 2 vẫn cấp arena 1 MiB để
+profiling/kiểm chứng, không đại diện cấu hình firmware cuối. Ngưỡng phân loại phải lấy từ
+bước Classification Threshold.
 
 Hệ thống chỉ hỗ trợ sàng lọc mẫu âm thanh; không thay thế chẩn đoán y khoa.

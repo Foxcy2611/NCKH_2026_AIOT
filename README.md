@@ -32,7 +32,7 @@ Dự án nghiên cứu và xây dựng một **nguyên mẫu AIoT xử lý tại
 
 ## 2. 🧩 Kiến trúc tổng thể
 
-![Kiến trúc tổng thể Patient Node – IoT Gateway – Dashboard](./Final_Project_NCKH/Overview/Overview_Workflow.png)
+![Kiến trúc tổng thể Patient Node – IoT Gateway – Dashboard](./Final_Project_NCKH/System_Architecture/Overview_Workflow.png)
 
 Hệ thống có **ba phân hệ triển khai**: **Patient Node → IoT Gateway → Dashboard**. **AI Model** là thành phần phần mềm được nghiên cứu và đóng gói riêng, sau đó triển khai **bên trong Patient Node**, không phải một thiết bị vật lý thứ tư.
 
@@ -57,7 +57,7 @@ NCKH_2026_AIOT/
 ├── Docs_Member/                    # Ghi chép theo thành viên
 ├── Assets/                         # Ảnh và video demo
 ├── Paperwork/                      # Báo cáo và slide
-└── Committee_QnA/                  # Tài liệu chuẩn bị vấn đáp
+└── Defense_Package/                # Q&A, minh chứng và notebook phục vụ bảo vệ
 ```
 
 **[Final_Project_NCKH](./Final_Project_NCKH/) là thư mục sản phẩm tích hợp hiện hành.** Các thư mục AI Training, Benchmark và standalone test được giữ lại để truy vết quá trình nghiên cứu, kiểm chứng và tái lập kết quả, không phải tất cả đều là thành phần cần chạy khi sử dụng sản phẩm.
@@ -109,7 +109,15 @@ Các chỉ số RAM/Flash, Tensor Arena, DSP, Invoke và độ trễ truyền th
 
 > **Lưu ý phiên bản:** Repository có thể còn các thử nghiệm lịch sử với frontend F0 hoặc mô hình/ngưỡng cũ. Khi build và kiểm thử, đối chiếu với source sản phẩm hiện hành và artifact model đã chọn trước khi sử dụng các kết quả đo.
 
-## 7. 📚 Tài liệu, demo và nhóm thực hiện
+## 7. 🏆 Thành tựu & Sự công nhận (Recognitions & Achievements)
+
+Khối lượng mã nguồn khảo sát và đánh giá hệ thống (`Experiments_Benchmarking`) của dự án đã được **XERJ** (AI-native search engine) đánh giá cao và lựa chọn đưa vào kho dữ liệu cốt lõi **Corpus Hub**. 
+
+Mã nguồn của nhóm hiện đang được sử dụng làm tài liệu tham chiếu chuẩn (worked reference) để đào tạo và định hướng giải pháp cho các AI Coding Agent (như Claude Code, Cursor) trên toàn cầu khi giải quyết các bài toán tương tự về xử lý tín hiệu và đánh giá mô hình.
+
+![XERJ Recognition](/Achievements/XERJ_Email_Screenshot.png)
+
+## 8. 📚 Tài liệu, demo và nhóm thực hiện
 
 **Tài liệu chính:**
 
@@ -118,9 +126,9 @@ Các chỉ số RAM/Flash, Tensor Arena, DSP, Invoke và độ trễ truyền th
 - 🔐 [Đặc tả AES-128-GCM](./Docs_NCKH/Encrypt_AES-128-GCM_REVISED.md)
 - 📄 [Báo cáo NCKH](https://docs.google.com/document/d/1-8gFWI9OEdoooc5TgpuXBp2hJufUYXIVnaVUI4IQDnM/edit?tab=t.w6svx54cg3ib)
 
-**🎬 Video demo:** *Đang cập nhật.* Video và tài nguyên trình bày được quản lý tại [`Assets/`](./Assets/README.md). Sau khi đăng video, bổ sung liên kết tại đây.
+**🎬 Video demo:** Bạn có thể xem qua Video Demo thiết bị [tại đây.](/Assets/Demo.mp4)
 
-## 👥 8. Thành viên thực hiện
+## 👥 9. Thành viên thực hiện
 
 **Giảng viên hướng dẫn:** TS. Trần Thị Thúy Hà
 

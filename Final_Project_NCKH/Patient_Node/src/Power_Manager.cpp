@@ -4,7 +4,7 @@
 
 #include <esp_sleep.h>
 
-#include "board_pinout.h"
+#include "Board_Pinout.h"
 
 namespace {
     constexpr uint64_t kCheckWakeMask = 1ULL << PIN_BTN_CHECK;

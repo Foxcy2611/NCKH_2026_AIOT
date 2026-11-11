@@ -50,6 +50,7 @@ Project chính: [Final_Project_NCKH/Patient_Node](../../Final_Project_NCKH/Patie
 | INMP441 | SCK GPIO14, WS GPIO15, SD GPIO16 | Micro I2S mono |
 | Bus I2C | SDA GPIO8, SCL GPIO9 | OLED và MAX30102 |
 | MAX30102 INT | GPIO10 | Chân interrupt được khai báo |
+| Đọc điện áp pin | GPIO12, ADC2_CH1 | Nhận điện áp sau cầu chia áp; không nối trực tiếp pin 2S vào GPIO |
 | CHECK | GPIO4, `INPUT_PULLUP` | Bắt đầu CHECK/xác nhận đo sinh hiệu |
 | MONITOR | GPIO5, `INPUT_PULLUP` | Bắt đầu chế độ giám sát |
 | SLEEP | GPIO6, `INPUT_PULLUP` | Hủy/bỏ qua; tại STANDBY yêu cầu Light Sleep |

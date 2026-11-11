@@ -16,7 +16,7 @@ X_MAV = (1/N) . (n=0 -> N-1) Σ |xi|          => N = len 1 block ; block_mav
 + MAV tính theo từng block, tại từng thời điểm trong 5s (block) có thực sự phát âm thanh ?
 
 => Tính số block vượt ngưỡng "có hoạt động" (active block)
-+ INACTIVE: active block < 5%
++ INACTIVE: tỷ lệ active block < 1%
 + WEAK: Có hoạt động nhưng RMS toàn buffer dưới ngưỡng tối thiểu
 
 2. Nhiễu rác: Dựa vào tỉ lệ bị clipping
@@ -28,7 +28,7 @@ X_MAV = (1/N) . (n=0 -> N-1) Σ |xi|          => N = len 1 block ; block_mav
 typedef struct {
     float rms;
     int32_t peak;               // Biên độ tuyệt đối max trong suốt buffer
-    uint32_t clipped_samples;   // Số block chạm/gần chạm đỉnh
+    uint32_t clipped_samples;   // Số sample có |x| > 32000
     uint32_t active_blocks;     // Số block hoạt động
     uint32_t total_blocks;      // Tổng block đã chia (80k / 256)
 } Audio_Quality_Metrics_t;

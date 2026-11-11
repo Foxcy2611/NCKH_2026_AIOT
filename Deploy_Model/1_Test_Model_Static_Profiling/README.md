@@ -55,10 +55,12 @@ thật, không phải đề xuất cấu hình production.
 | Mức cấp phát | Dung lượng | Phần dư so với 169380 B | Nhận xét |
 |---|---:|---:|---|
 | 180 KiB | 184320 B | 14940 B (~14,6 KiB) | Chạy được về mặt số học nhưng biên khá mỏng |
-| 192 KiB | 196608 B | 27228 B (~26,6 KiB) | Mức thử tiếp theo được khuyến nghị |
-| 280 KiB | 286720 B | 117340 B (~114,6 KiB) | Cấu hình hiện hành, an toàn nhưng dư nhiều |
+| 192 KiB | 196608 B | 27228 B (~26,6 KiB) | Mức đã chốt cho `3_Model_Complete` và Patient Node |
+| 280 KiB | 286720 B | 117340 B (~114,6 KiB) | Mốc đối chiếu lịch sử; không phải cấu hình cuối |
+| 1 MiB | 1048576 B | 879196 B (~858,6 KiB) | Cấu hình cấp dư của project profiling này |
 
-Không hạ arena chỉ dựa trên phép trừ. Sau khi đổi phải build/upload bằng đúng
-phiên bản TensorFlow Lite Micro, xác nhận `AllocateTensors()` thành công, kiểm
-tra `arena_used_bytes()`, chạy đủ tensor parity và theo dõi biên PSRAM. Nếu
-192 KiB ổn định thì mới đồng bộ mức đó sang `3_Model_Complete` và Patient Node.
+Không hạ arena chỉ dựa trên phép trừ. Mức 192 KiB đã được đồng bộ sang
+`3_Model_Complete` và Patient Node sau bước kiểm chứng; project profiling này vẫn giữ
+1 MiB để đo nhiều model mà không làm sai ý nghĩa của cấu hình firmware cuối. Khi đổi
+model hoặc runtime vẫn phải xác nhận `AllocateTensors()`, `arena_used_bytes()`, tensor
+parity và biên PSRAM.

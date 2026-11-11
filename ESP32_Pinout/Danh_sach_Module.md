@@ -83,6 +83,7 @@ GPS, LTE và các cảm biến của Gateway vẫn cần được nghiệm thu t
 | **MAX30102** | I2C: SDA `GPIO8`, SCL `GPIO9`; INT `GPIO10` | Đo nhịp tim và SpO₂ theo từng phiên CHECK. Khi không hợp lệ, payload dùng `vitals_valid=false`, HR/SpO₂ bằng `0`. |
 | **OLED SSD1306 128×64** | I2C: SDA `GPIO8`, SCL `GPIO9`; địa chỉ `0x3C` | Hiển thị hướng dẫn thao tác, trạng thái thu âm/xử lý, kết quả AI, chỉ số sinh tồn và trạng thái gửi dữ liệu. |
 | **Ba nút nhấn CHECK, MONITOR, SLEEP/STOP** | Lần lượt `GPIO4`, `GPIO5`, `GPIO6` | Bắt đầu CHECK, bắt đầu/dừng MONITOR hoặc hủy/bỏ qua theo state. Tại STANDBY, `SLEEP` yêu cầu Light Sleep; không dùng Deep Sleep. |
+| **Đo điện áp pin Patient Node** | ADC tại `GPIO12` (`ADC2_CH1`), qua cầu chia áp | Đo điện áp và ước lượng phần trăm pin. Không được nối trực tiếp pin 2S vào GPIO; hệ số cầu chia áp phải được hiệu chuẩn trên mạch thật. |
 | **Wi-Fi 2.4 GHz / ESP-NOW tích hợp** | Bộ thu phát có sẵn trong ESP32-S3 | Gửi `Secure_Packet_t` đã mã hóa AES-128-GCM đến Gateway và nhận phản hồi ACK/NACK; không phải mô-đun rời. |
 
 OLED và MAX30102 dùng chung bus I2C của Patient Node. Phần thu phát ESP-NOW sử dụng

@@ -32,130 +32,116 @@ Flickable {
             subtitle: "Identity, respiratory-care context and the latest device snapshot"
         }
 
-        SurfaceCard {
+        Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 205
-            theme: root.theme
-            accentColor: root.theme.purple
+            Layout.preferredHeight: 318
 
-            Rectangle {
+            radius: 18
+            color: root.theme.surface2
+            border.width: 1
+            border.color: root.theme.border
+
+            ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: 1
-                radius: 17
-                color: "transparent"
+                anchors.margins: 16
+                spacing: 13
 
-                gradient: Gradient {
-                    orientation: Gradient.Horizontal
-                    GradientStop {
-                        position: 0.0
-                        color: root.theme.purpleSoft
-                    }
-                    GradientStop {
-                        position: 0.55
-                        color: root.theme.surface
-                    }
-                    GradientStop {
-                        position: 1.0
-                        color: root.theme.blueSoft
-                    }
-                }
-            }
-
-            RowLayout {
-                anchors.fill: parent
-                anchors.margins: 24
-                spacing: 22
-
-                Rectangle {
-                    width: 86
-                    height: 86
-                    radius: 27
-                    color: root.theme.purple
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: String(root.profile.name || "P").charAt(0).toUpperCase()
-                        color: "white"
-                        font.pixelSize: 35
-                        font.weight: Font.Bold
-                    }
-                }
-
-                ColumnLayout {
+                RowLayout {
                     Layout.fillWidth: true
-                    Layout.maximumWidth: 390
-                    spacing: 7
+                    Layout.preferredHeight: 80
+                    spacing: 15
 
-                    Text {
-                        Layout.fillWidth: true
-                        text: root.profile.name
-                        color: root.theme.text
-                        font.pixelSize: 25
-                        font.weight: Font.Bold
-                        elide: Text.ElideRight
-                    }
+                    Rectangle {
+                        Layout.preferredWidth: 80
+                        Layout.preferredHeight: 80
+                        radius: 15
+                        color: root.theme.purple
 
-                    Text {
-                        text: root.profile.patientId + "  •  " + root.profile.age + " years  •  " + root.profile.sex
-                        color: root.theme.text2
-                        font.pixelSize: 12
-                    }
-
-                    RowLayout {
-                        spacing: 8
-
-                        Pill {
-                            theme: root.theme
-                            label: root.profile.diagnosis
-                            dotColor: root.theme.amber
-                            pillColor: root.theme.amberSoft
-                        }
-
-                        Pill {
-                            theme: root.theme
-                            label: "Blood " + root.profile.bloodGroup
-                            dotColor: root.theme.red
-                            pillColor: root.theme.redSoft
+                        Text {
+                            anchors.centerIn: parent
+                            text: root.profile.shortId || "01"
+                            color: "white"
+                            font.pixelSize: 28
+                            font.weight: Font.Bold
                         }
                     }
 
-                    Text {
+                    ColumnLayout {
                         Layout.fillWidth: true
-                        text: root.profile.careNote
-                        color: root.theme.text2
-                        font.pixelSize: 11
-                        wrapMode: Text.WordWrap
+                        spacing: 4
+
+                        Text {
+                            Layout.fillWidth: true
+                            text: root.profile.name
+                            color: root.theme.text
+                            font.pixelSize: 24
+                            font.weight: Font.Bold
+                            elide: Text.ElideRight
+                        }
+
+                        Text {
+                            text: "Subject ID: " + root.profile.patientId
+                            color: root.theme.text2
+                            font.pixelSize: 13
+                        }
+
+                        RowLayout {
+                            spacing: 8
+
+                            Pill {
+                                theme: root.theme
+                                label: root.profile.participantType || root.profile.diagnosis
+                                dotColor: root.theme.green
+                                pillColor: root.theme.greenSoft
+                            }
+
+                            Pill {
+                                theme: root.theme
+                                label: root.profile.sessionLabel || "Demo session"
+                                dotColor: root.theme.blue
+                                pillColor: root.theme.blueSoft
+                            }
+                        }
                     }
                 }
 
+                Text {
+                    Layout.fillWidth: true
+                    text: root.profile.studyNote || root.profile.careNote
+                    color: root.theme.text2
+                    font.pixelSize: 13
+                    wrapMode: Text.WordWrap
+                }
+
                 Rectangle {
-                    Layout.fillHeight: true
-                    width: 1
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 1
                     color: root.theme.border
                 }
 
                 GridLayout {
                     Layout.fillWidth: true
+                    Layout.preferredHeight: 76
                     columns: 3
-                    columnSpacing: 12
-                    rowSpacing: 8
+                    columnSpacing: 10
 
                     Repeater {
                         model: [
                             {
-                                "label": "LAST HEART RATE",
-                                "value": root.dataSource.heartRateAvailable ? root.dataSource.heartRate + " BPM" : "N/A",
-                                "color": root.theme.red
+                                "label": "HEART RATE",
+                                "value": root.dataSource.heartRateAvailable
+                                         ? root.dataSource.heartRate + " BPM"
+                                         : "N/A"
                             },
                             {
-                                "label": "LAST SPO₂",
-                                "value": root.dataSource.spo2Available ? root.dataSource.spo2 + "%" : "N/A",
-                                "color": root.theme.green
+                                "label": "SpO₂",
+                                "value": root.dataSource.spo2Available
+                                         ? root.dataSource.spo2 + "%"
+                                         : "N/A"
                             },
                             {
-                                "label": "LATEST RESULT",
-                                "value": root.dataSource.classification,
-                                "color": root.dataSource.classification === "Non-asthma" ? root.theme.green : root.theme.amber
+                                "label": "AI CLASSIFICATION",
+                                "value": root.dataSource.classification
                             }
                         ]
 
@@ -163,51 +149,52 @@ Flickable {
                             required property var modelData
 
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 88
-                            radius: 14
+                            Layout.fillHeight: true
+                            radius: 11
                             color: root.theme.surface
                             border.width: 1
                             border.color: root.theme.border
 
                             Column {
                                 anchors.fill: parent
-                                anchors.margins: 13
+                                anchors.margins: 10
                                 spacing: 7
-
-                                Rectangle {
-                                    width: 9
-                                    height: 9
-                                    radius: 5
-                                    color: modelData.color
-                                }
 
                                 Text {
                                     width: parent.width
                                     text: modelData.value
                                     color: root.theme.text
-                                    font.pixelSize: 15
+                                    font.pixelSize: 22
                                     font.weight: Font.Bold
                                     elide: Text.ElideRight
                                 }
 
                                 Text {
+                                    width: parent.width
                                     text: modelData.label
                                     color: root.theme.text3
-                                    font.pixelSize: 8
-                                    font.letterSpacing: 0.7
+                                    font.pixelSize: 9
+                                    font.letterSpacing: 0.4
+                                    elide: Text.ElideRight
                                 }
                             }
                         }
                     }
+                }
 
-                    Text {
-                        Layout.columnSpan: 3
-                        Layout.fillWidth: true
-                        text: "Latest event: " + root.dataSource.eventTime + "  •  Session #" + root.dataSource.sessionId
-                        color: root.theme.text3
-                        font.pixelSize: 10
-                        horizontalAlignment: Text.AlignRight
+                Text {
+                    Layout.fillWidth: true
+                    text: {
+                        var eventUptime = String(root.dataSource.eventTime || "N/A")
+                        if (eventUptime.indexOf("Uptime ") === 0)
+                            eventUptime = eventUptime.substring(7)
+                        if (eventUptime === "N/A")
+                            eventUptime = "--:--:--"
+                        return "Session uptime: " + eventUptime + "  •  " + root.profile.patientId
                     }
+                    color: root.theme.text2
+                    font.pixelSize: 11
+                    horizontalAlignment: Text.AlignRight
                 }
             }
         }

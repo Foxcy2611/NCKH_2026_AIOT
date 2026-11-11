@@ -21,26 +21,30 @@ ApplicationWindow {
 
     color: appTheme.page
 
-    property string patientName: "Nguyễn Văn A"
-    property string patientId: "Patient #001"
+    property string patientName: "Test Participant 01"
+    property string patientId: "DEMO-001"
 
     // Hồ sơ hiển thị cục bộ. Có thể thay bằng database/API sau này
     // mà không ảnh hưởng luồng MQTT đang vận hành.
     property var patientProfile: ({
         "name": root.patientName,
         "patientId": root.patientId,
+        "shortId": "01",
+        "participantType": "Non-asthma participant",
+        "sessionLabel": "Demo session",
+        "studyNote": "Monitoring physiological signals and respiratory sound classification during the experimental session.",
         "dateOfBirth": "15/08/2002",
         "age": "24",
         "sex": "Male",
         "bloodGroup": "O+",
         "phone": "0901 234 567",
         "address": "Hà Đông, Hà Nội",
-        "diagnosis": "Bronchial asthma",
-        "severity": "Mild persistent",
-        "triggers": "Dust, cold air, exercise",
-        "allergies": "House-dust mite",
-        "medication": "Reliever inhaler as prescribed",
-        "careNote": "Follow the personal asthma action plan and monitor symptoms after exposure to known triggers.",
+        "diagnosis": "Non-asthma",
+        "severity": "Not applicable",
+        "triggers": "None recorded",
+        "allergies": "None recorded",
+        "medication": "None recorded",
+        "careNote": "Experimental participant profile. Not intended to represent a clinical diagnosis.",
         "emergencyName": "Nguyễn Thị B",
         "emergencyRelation": "Family",
         "emergencyPhone": "0909 876 543"

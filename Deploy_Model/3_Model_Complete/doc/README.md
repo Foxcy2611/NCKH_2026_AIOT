@@ -11,9 +11,9 @@ không chứa Quality Gate, PPG, packet bảo mật hay toàn bộ state machine
 - Ngưỡng phát hiện âm thanh: 75.
 - Điều kiện kích hoạt: 4 khối liên tiếp, mỗi khối 256 mẫu.
 - Độ trễ xác nhận VAD danh định: khoảng 64 ms; đoạn này được lấy lại từ ring.
-- Tensor Arena đang cấp: 280 KiB trong PSRAM. Phép đo tĩnh của đúng model C4
-  dùng 169.380 B; mức 192 KiB là ứng viên giảm hợp lý nhưng chỉ được đổi sau
-  khi build/upload và xác nhận lại `AllocateTensors()` trên firmware đích.
+- Tensor Arena đang cấp: 192 KiB (196.608 B) trong PSRAM. Phép đo tĩnh của đúng
+  model C4 dùng 169.380 B, còn khoảng 27.228 B (~26,6 KiB) dự phòng. Project 1 và 2
+  có thể giữ arena 1 MiB để profiling/kiểm chứng; đó không phải cấu hình firmware cuối.
 - Đầu vào mô hình: `[1, 40, 129, 1]`, INT8.
 - Ngưỡng ba trạng thái trên `p_non_asthma`: LOW=0,47 và HIGH=0,77.
 - Số lần bỏ phiếu: 3.

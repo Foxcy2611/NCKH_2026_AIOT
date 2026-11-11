@@ -33,8 +33,8 @@ File markdown này dùng để kết luận phân vùng bộ nhớ cho toàn b�
 | Tensor Arena cấp phát trong bài profiling | 1.048.576 B (1 MiB) |
 | Tensor Arena thực dùng | 169.380 B |
 | Arena tối thiểu đề xuất trong log để thử lại | 186.368 B (182 KiB) |
-| Arena chọn cho firmware cuối | 286.720 B (280 KiB) |
-| Dung lượng dự phòng theo mức đã đo | 117.340 B (~114,59 KiB) |
+| Arena chọn cho firmware cuối | 196.608 B (192 KiB) |
+| Dung lượng dự phòng theo mức đã đo | 27.228 B (~26,59 KiB) |
 | Internal RAM trống trước setup | 364.636 B |
 | Internal RAM trống sau setup | 364.436 B |
 | Internal RAM giảm khi setup | 200 B |
@@ -50,8 +50,8 @@ File markdown này dùng để kết luận phân vùng bộ nhớ cho toàn b�
 | Tensor Arena cấp phát trong bài profiling | 1.048.576 B (1 MiB) |
 | Tensor Arena thực dùng | 169.380 B |
 | Arena tối thiểu đề xuất trong log để thử lại | 186.368 B (182 KiB) |
-| Arena chọn cho firmware cuối | 286.720 B (280 KiB) |
-| Dung lượng dự phòng theo mức đã đo | 117.340 B (~114,59 KiB) |
+| Arena chọn cho firmware cuối | 196.608 B (192 KiB) |
+| Dung lượng dự phòng theo mức đã đo | 27.228 B (~26,59 KiB) |
 | Internal RAM trống trước setup | 364.636 B |
 | Internal RAM trống sau setup | 364.436 B |
 | Internal RAM giảm khi setup | 200 B |
@@ -86,7 +86,7 @@ constexpr float kMelDbMin = -80.0f;
 constexpr float kMelDbMax = 0.0f;
 
 // TensorFlow Lite Micro
-constexpr size_t kTensorArenaSize = 280 * 1024;
+constexpr size_t kTensorArenaSize = 192 * 1024;
 constexpr size_t kInputTensorElements = 40 * 129;
 
 constexpr float kInputScale = 0.0039215689f;

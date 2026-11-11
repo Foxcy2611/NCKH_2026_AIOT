@@ -15,7 +15,9 @@
 # - Final_V1_Validation/.../Threshold_Selection.ipynb (~0,12 MiB)
 # - Frontend_Benchmarking/.../B0_SampleRate_Source_Audit.ipynb (~0,07 MiB)
 # - Phase2.../Dataset_V2_V3_C4_s44_Comparison.ipynb (notebook so sánh nhỏ)
+# - Defense_Package/03_Defense_Notebook/*.ipynb (bộ notebook vấn đáp)
 AI_Training_Model/Phase2_Preprocess_&_Traning/Dataset_V2_V3_C4_s44_Comparison.ipynb linguist-detectable=true
+Defense_Package/03_Defense_Notebook/*.ipynb linguist-detectable=true
 AI_Training_Model/AI_Training_Model_Benchmark_Final.ipynb linguist-detectable=false
 Experiments_Benchmarking/Patient_Node/Final_V1_Validation/02_Quality_Check/Quality_Gate_Selection.ipynb linguist-detectable=false
 Experiments_Benchmarking/Patient_Node/Final_V1_Validation/03_VAD_Trigger/VAD_Trigger_Selection.ipynb linguist-detectable=false

@@ -12,7 +12,7 @@ repository để tránh lặp lại nhiều nguồn dễ lệch nhau.
 
 ## Sơ đồ tổng quan bản tích hợp
 
-[![Luồng tổng quan Final Project](./Overview/Overview_Workflow.png)](./Overview/Overview_Workflow.png)
+[![Luồng tổng quan Final Project](./System_Architecture/Overview_Workflow.png)](./System_Architecture/Overview_Workflow.png)
 
 Sơ đồ trên dùng để đọc nhanh quan hệ giữa Patient Node, Gateway và Dashboard từ
 lúc khởi tạo phần cứng đến thu dữ liệu, suy luận tại edge, truyền sự kiện bảo mật,

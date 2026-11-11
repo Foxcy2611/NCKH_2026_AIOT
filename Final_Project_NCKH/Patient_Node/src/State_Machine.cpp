@@ -12,7 +12,7 @@
 #include "Vitals_UI/UI_Oled.h"
 
 #include "Packet_Metadata.h"
-#include "board_pinout.h"
+#include "Board_Pinout.h"
 
 // Toàn bộ biến và hàm trong anonymous namespace chỉ tồn tại trong file này,
 // tương đương static nội bộ nhưng phù hợp hơn với C++.
@@ -493,9 +493,10 @@ namespace {
         payload->heart_rate      = session.vitals_valid ? session.heart_rate : 0U;
         payload->spo2            = session.vitals_valid ? session.spo2 : 0U;
 
-        //const NodeBatteryReading battery = NodeBattery_Read();
-        payload->battery_node = 75U;// = battery.percent;
-
+        //payload->battery_node = 75U;
+        const NodeBatteryReading battery = NodeBattery_Read();
+        payload->battery_node = battery.percent;
+        
         return true;
     }
 
@@ -520,7 +521,7 @@ namespace {
         if (standby_sleep_requested) {
             if (digitalRead(PIN_BTN_SLEEP) == HIGH) {
                 const uint32_t now = millis();
-                if (!sleep_button_release_timing) {
+                if (!sleep_button_release_timing){
                     sleep_button_release_timing = true;
                     sleep_button_release_started_ms = now;
                 } else if (
